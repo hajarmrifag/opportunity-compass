@@ -72,3 +72,29 @@ Known harmless test-only warning: React logs `href=""` for the stylesheet link, 
 | Mapping honesty | unit tests | source URL + retrievedAt kept; off-site apply URL dropped; unstated funding = unknown; invalid date = null; unknown requirement never passes; filters exclude unknowns; dedupe |
 | Server | unit tests (mocked fetch) | not configured → no network call; cache; 402 surfaced; rate limit after 6 |
 | **Unresolved** | — | Real search → source → save NOT validated: needs Firecrawl connector approval |
+
+## Live search — real-search validation (3 Oct 2026, ~07:20 UTC, connector "Firecrawl" linked, gateway mode)
+Fix found during validation: the extraction prompt treated official single-programme master's pages as "not a listing", so a master's search returned 0. The prompt now counts one official programme/job/fellowship/scholarship page as a listing and excludes directories, forums, Q&A and social posts. Re-run: UChicago and UC Irvine MSc pages extracted as `masters`, Quora/Facebook dropped.
+
+Server-side runs (`runLiveSearch`, real Firecrawl):
+| Query (category) | Time | Results / dropped | Example sources (original URLs) |
+|---|---|---|---|
+| software engineering summer internship 2027 (Internship) | 7.2 s | 3 / 5 | careers.twosigma.com/…Summer-2027/14016; careers.jnj.com/…/r-095602/… (deadline 2026-08-24); job-boards.greenhouse.io/pdtpartners/jobs/8077685 |
+| climate policy fellowship (Fellowship) | 8.1 s | 3 / 5 | cpo.noaa.gov/fellowships/; climatehq.sfsu.edu/…lej-climate-action-fellowship; climatesolutionsfoundation.com/csffellows (deadline 2026-04-15 → shown Closed) |
+| MSc data science scholarship (Master's) | 8.5 s | 0 / 8 before fix → after fix: datascience.uchicago.edu/…/ms-in-applied-data-science/, mds.ics.uci.edu/admissions/, msdatascience.as.miami.edu/admissions/… |
+| graduate analyst job (Job) | 13.5 s | 3 / 5 | goldmansachs.com/careers/students/…/new-analyst-programme; analysisgroup.com/careers/…/analyst/; ziprecruiter.com/… |
+
+Browser end-to-end (Playwright, 1280 px, real search):
+| Step | Result |
+|---|---|
+| Dashboard "Find real opportunities" → query → navigates to `/search?q=…` and runs | PASS — "6 listings · retrieved 10/3/2026 7:19:31 AM · 2 pages skipped" |
+| First result source | jpmorganchase.com/careers/explore-opportunities/programs/software-engineer-summer → HTTP 200 |
+| Eligibility & funding panel | requirements all "Unknown" (Passport not confirmed); funding all Unknown (page didn't state it) |
+| Save to My Journey → "✓ Saved" → Open details shows "From live web · unverified" + same source link | PASS |
+| Refresh My Journey → item still present | PASS |
+| Dashboard "Saved from live search" = 1; demo items excluded from counts | PASS |
+| Page errors | none |
+
+Gates after these changes: `tsgo --noEmit` exit 0 · `bunx vitest run` → 3 files, **28 passed** · `bun run build` exit 0 · no `lovc_`/gateway string in `dist/client`.
+
+Known limitations: extraction quality depends on each page (some fields "unknown"; scholarship *guide* pages can still be classified as listings — they are labelled unverified and filtered out when a category is selected); rate limit/cache are per server instance; job-board mirrors (Indeed/ZipRecruiter) may appear as sources.

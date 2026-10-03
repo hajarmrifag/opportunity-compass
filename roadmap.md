@@ -23,4 +23,5 @@
 - [x] Server search + mapping + caching/rate limit/cancel
 - [x] /search UI with filters, save to tracker
 - [x] Tests (28 pass), build, docs/LIVE_SEARCH.md
-- [ ] Real search validation — blocked: Firecrawl connector approval
+- [x] Real search validation (connector linked 3 Oct)
+- [x] Dashboard primary live search, demo excluded from counts
