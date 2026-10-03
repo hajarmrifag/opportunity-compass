@@ -50,15 +50,20 @@ export function extractionConflicts(results: DocumentExtractionResult[]): Extrac
     grouped.set(candidate.field, [...(grouped.get(candidate.field) ?? []), candidate]);
   }
   return [...grouped.entries()]
-    .filter(([, candidates]) => new Set(candidates.map((item) => item.value.trim().toLowerCase())).size > 1)
+    .filter(
+      ([, candidates]) =>
+        new Set(candidates.map((item) => item.value.trim().toLowerCase())).size > 1,
+    )
     .map(([field, candidates]) => ({ field, candidates }));
 }
 
 const degreeFrom = (value: string): DegreeLevel | null => {
   const normalized = value.toLowerCase();
-  return (Object.keys(DEGREE_LABELS) as DegreeLevel[]).find(
-    (key) => key === normalized || DEGREE_LABELS[key].toLowerCase() === normalized,
-  ) ?? null;
+  return (
+    (Object.keys(DEGREE_LABELS) as DegreeLevel[]).find(
+      (key) => key === normalized || DEGREE_LABELS[key].toLowerCase() === normalized,
+    ) ?? null
+  );
 };
 
 export function applyExtractedCandidates(
@@ -98,8 +103,12 @@ export function applyExtractedCandidates(
     evidence.push({ ...degree });
     provenance.degreeLevel = "extracted";
   }
-  const skills = [...new Set([...base.skills, ...(byField.get("skill") ?? []).map((item) => item.value)])];
-  const languages = [...new Set([...base.languages, ...(byField.get("language") ?? []).map((item) => item.value)])];
+  const skills = [
+    ...new Set([...base.skills, ...(byField.get("skill") ?? []).map((item) => item.value)]),
+  ];
+  const languages = [
+    ...new Set([...base.languages, ...(byField.get("language") ?? []).map((item) => item.value)]),
+  ];
   return {
     ...base,
     fullName: value("fullName", base.fullName),
@@ -119,8 +128,12 @@ export function applyExtractedCandidates(
     gpaScale: value("gpaScale", base.gpaScale),
     graduationDate: value("graduationDate", base.graduationDate ?? "") || null,
     graduationDatePrecision:
-      (value("graduationDatePrecision", base.graduationDatePrecision ?? "") as Profile["graduationDatePrecision"]) || null,
-    graduationYear: Number(value("graduationDate", base.graduationDate ?? "").slice(0, 4)) || base.graduationYear,
+      (value(
+        "graduationDatePrecision",
+        base.graduationDatePrecision ?? "",
+      ) as Profile["graduationDatePrecision"]) || null,
+    graduationYear:
+      Number(value("graduationDate", base.graduationDate ?? "").slice(0, 4)) || base.graduationYear,
     skills,
     languages,
     languageDetails: languages.map((name) => ({
@@ -128,7 +141,10 @@ export function applyExtractedCandidates(
       level: base.languageDetails.find((item) => item.name === name)?.level ?? "",
     })),
     fieldProvenance: provenance,
-    fieldEvidence: [...base.fieldEvidence.filter((item) => !evidence.some((next) => next.field === item.field)), ...evidence],
+    fieldEvidence: [
+      ...base.fieldEvidence.filter((item) => !evidence.some((next) => next.field === item.field)),
+      ...evidence,
+    ],
     sourceDocuments: results.map((result) => result.document),
     source: "cv_parser",
     confirmed: false,
@@ -137,7 +153,9 @@ export function applyExtractedCandidates(
 }
 
 export function canConfirmProfile(profile: Profile, unresolvedConflictCount: number) {
-  const hasEducation = profile.education.some((item) => item.degreeName.trim() || item.school.trim());
+  const hasEducation = profile.education.some(
+    (item) => item.degreeName.trim() || item.school.trim(),
+  );
   if (!hasEducation) return { ok: false, reason: "Add at least one degree or school." };
   if (profile.gpaValue.trim() && !profile.gpaScale.trim()) {
     return { ok: false, reason: "Add the GPA scale or remove the GPA value." };

@@ -46,12 +46,22 @@ export function normalizeProfile(profile: Profile | null | undefined): Profile |
     education: Array.isArray(profile.education)
       ? profile.education
       : profile.degreeLevel || profile.field
-        ? [{ id: "legacy-education", degreeLevel: profile.degreeLevel, degreeName: "", school: "", field: profile.field }]
+        ? [
+            {
+              id: "legacy-education",
+              degreeLevel: profile.degreeLevel,
+              degreeName: "",
+              school: "",
+              field: profile.field,
+            },
+          ]
         : [],
     gpaValue: profile.gpaValue ?? "",
     gpaScale: profile.gpaScale ?? "",
-    graduationDate: profile.graduationDate ?? (legacy.graduationYear ? String(legacy.graduationYear) : null),
-    graduationDatePrecision: profile.graduationDatePrecision ?? (legacy.graduationYear ? "year" : null),
+    graduationDate:
+      profile.graduationDate ?? (legacy.graduationYear ? String(legacy.graduationYear) : null),
+    graduationDatePrecision:
+      profile.graduationDatePrecision ?? (legacy.graduationYear ? "year" : null),
     languageDetails: Array.isArray(profile.languageDetails)
       ? profile.languageDetails
       : (profile.languages ?? []).map((name) => ({ name, level: "" })),
