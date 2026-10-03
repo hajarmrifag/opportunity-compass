@@ -31,6 +31,14 @@ const keyOf = (value: { currency: string; period: MoneyPeriod }) =>
 const knownAmount = (item: FinanceCost | FinanceSupport) =>
   item.knowledge === "unknown" || item.amount === null ? null : Math.max(0, item.amount);
 
+/**
+ * Only a user-confirmed actual award with a known amount reduces the base case.
+ * Estimated "confirmed" amounts and competitive/possible awards stay in the if-awarded scenario.
+ */
+export function baseOrIfAwarded(support: FinanceSupport): "confirmed" | "conditional" {
+  return support.award === "confirmed" && support.knowledge === "known" ? "confirmed" : "conditional";
+}
+
 function effectiveSupports(
   costs: FinanceCost[],
   supports: FinanceSupport[],
@@ -46,7 +54,7 @@ function effectiveSupports(
   const waived = new Map<FinanceComponent, number>();
   let total = 0;
   for (const support of supports) {
-    if (!support.applicable || support.award !== award) continue;
+    if (!support.applicable || baseOrIfAwarded(support) !== award) continue;
     const amount = knownAmount(support);
     if (amount === null) continue;
     if (support.kind === "waiver") {
@@ -85,7 +93,8 @@ export function calculateAffordability(scenario: FinanceScenario): Affordability
     const baseConfirmedSupport = effectiveSupports(costs, supports, "confirmed");
     const conditionalSupport = effectiveSupports(costs, supports, "conditional");
     const upfrontConfirmed = supports.reduce((sum, item) => {
-      if (!item.applicable || item.award !== "confirmed" || item.timing !== "upfront") return sum;
+      if (!item.applicable || baseOrIfAwarded(item) !== "confirmed" || item.timing !== "upfront")
+        return sum;
       return sum + (knownAmount(item) ?? 0);
     }, 0);
     const unknownComponents = [
