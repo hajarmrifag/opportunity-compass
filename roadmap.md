@@ -106,14 +106,12 @@
 - [x] Gmail scan fn returns honest "not set up" until per-user Google registration exists
 - [x] 71 tests pass, tsgo clean, build OK, browser check of /tracker (empty state) clean
 - [ ] Full data test after draft acceptance (migration not applied in draft)
-<<<<<<< roadmap.md
 - [ ] AI feedback: clarify user's requested change
 
 ## Exact cinema replay import
 - [x] Copy requested research and search source files from e7dd172
 - [x] Add only replay fixtures and merge cinema/evidence styles
 - [x] Verify recorded replay completion (6 pages, 3 kept, 3 rejected), stop control, source evidence, mobile layout, and homepage preservation; exact-file checks, 100 tests, and build passed
-=======
 
 ## Coffee chat referral + AI problem spotting (3 Oct)
 - [x] Staged additive migration: coffee_chats.referral (yes/no flag); comments stay in existing notes column
@@ -128,4 +126,3 @@
 - [x] 101 tests, tsgo clean, build OK
 - [ ] BLOCKED (draft acceptance): app_user_connections table does not exist until accepted — connecting Gmail saves the key only then; scan works after
 - [ ] Outlook (microsoft_outlook) connector: awaiting user's Microsoft app credentials
->>>>>>> /tmp/m/roadmap.md.d
