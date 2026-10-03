@@ -33,12 +33,16 @@ const Empty = () => <span className="italic text-muted-foreground">Not provided<
 export function StepConfirm({
   draft,
   saving,
+  emailOk,
+  emailGate,
   onEditStep,
   onCreate,
   onSaveLater,
 }: {
   draft: Profile;
   saving: boolean;
+  emailOk: boolean;
+  emailGate: ReactNode;
   onEditStep: (step: number) => void;
   onCreate: () => void;
   onSaveLater: () => void;
@@ -56,6 +60,13 @@ export function StepConfirm({
       <div className="mt-5 border border-border bg-card p-5">
         <PreviewRow label="Name" onEdit={() => onEditStep(2)}>
           {draft.fullName || <Empty />}
+        </PreviewRow>
+        <PreviewRow label="Email" onEdit={() => onEditStep(2)}>
+          {draft.emailTrackingOptOut ? (
+            <span className="italic text-muted-foreground">No email tracking — your choice</span>
+          ) : (
+            draft.email || <Empty />
+          )}
         </PreviewRow>
         <PreviewRow label="Education" onEdit={() => onEditStep(3)}>
           {education && (education.degreeName || education.school || education.field) ? (
@@ -131,8 +142,10 @@ export function StepConfirm({
         </PreviewRow>
       </div>
 
+      <div className="mt-5 border border-border bg-card p-5">{emailGate}</div>
+
       <div className="mt-5 flex flex-wrap gap-3">
-        <Button size="lg" disabled={saving} onClick={onCreate}>
+        <Button size="lg" disabled={saving || !emailOk} onClick={onCreate}>
           {saving ? "Creating your profile…" : "Create my profile"}
         </Button>
         <Button size="lg" variant="outline" disabled={saving} onClick={onSaveLater}>

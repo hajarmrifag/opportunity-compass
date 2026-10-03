@@ -81,6 +81,10 @@ export interface FieldEvidence {
 
 export interface Profile {
   fullName: string;
+  /** Student contact email: from documents or typed by the student. Used to check the connected Gmail matches. */
+  email: string;
+  /** Student ticked "I don't need email tracking" — allows a profile without an email. */
+  emailTrackingOptOut: boolean;
   degreeLevel: DegreeLevel | null;
   field: string;
   graduationYear: number | null;
@@ -121,6 +125,7 @@ export interface DocumentExtractionInput {
 
 export type ExtractableProfileField =
   | "fullName"
+  | "email"
   | "degreeLevel"
   | "degreeName"
   | "school"

@@ -54,6 +54,8 @@ export function normalizeProfile(profile: Profile | null | undefined): Profile |
   const legacy = profile as Profile & { graduationYear?: number | null };
   return {
     ...profile,
+    email: typeof profile.email === "string" ? profile.email : "",
+    emailTrackingOptOut: profile.emailTrackingOptOut === true,
     education: Array.isArray(profile.education)
       ? profile.education
       : profile.degreeLevel || profile.field

@@ -79,6 +79,7 @@ export function webSourceLabel(url: string): "linkedin" | "github" | "website" {
 
 export const EXTRACTABLE_FIELDS = [
   "fullName",
+  "email",
   "degreeLevel",
   "degreeName",
   "school",
@@ -95,6 +96,7 @@ export const EXTRACTABLE_FIELDS = [
 export const fieldLabel = (field: string) =>
   ({
     fullName: "Name",
+    email: "Email",
     degreeLevel: "Degree level",
     degreeName: "Degree",
     school: "School",
@@ -219,6 +221,7 @@ export function applyExtractedCandidates(
   return {
     ...base,
     fullName: value("fullName", base.fullName),
+    email: value("email", base.email ?? "").trim().toLowerCase(),
     degreeLevel: degree ? degreeFrom(degree.value) : base.degreeLevel,
     field: value("field", base.field),
     education: educationList,
@@ -265,8 +268,37 @@ export function canConfirmProfile(profile: Profile, unresolvedConflictCount: num
   if (profile.gpaValue.trim() && !profile.gpaScale.trim()) {
     return { ok: false, reason: "Add the GPA scale or remove the GPA value." };
   }
+  if (!normalizeEmail(profile.email) && !profile.emailTrackingOptOut) {
+    return {
+      ok: false,
+      reason: profile.email?.trim()
+        ? "That email doesn't look right — check it, or tick that you don't need email tracking."
+        : "Email missing — add your email, or tick that you don't need email tracking.",
+    };
+  }
   if (unresolvedConflictCount > 0) {
     return { ok: false, reason: "Resolve every document conflict before making the profile." };
   }
   return { ok: true, reason: "" };
+}
+
+// Strict enough to catch typos: one @, no spaces, no leading/trailing/consecutive
+// dots, and a domain ending in a dot + at least two letters.
+const EMAIL_RE =
+  /^(?!.*\.\.)[A-Za-z0-9](?:[A-Za-z0-9._%+-]*[A-Za-z0-9])?@(?:[A-Za-z0-9](?:[A-Za-z0-9-]*[A-Za-z0-9])?\.)+[A-Za-z]{2,}$/;
+/** Normalised Passport email, or "" when missing/invalid. */
+export function normalizeEmail(value: string | null | undefined): string {
+  const email = (value ?? "").trim().toLowerCase();
+  return EMAIL_RE.test(email) ? email : "";
+}
+/** Compare the Passport email with a connected inbox address. */
+export function emailMatchState(
+  passportEmail: string | null | undefined,
+  inboxEmail: string | null | undefined,
+): "missing" | "not_connected" | "match" | "mismatch" {
+  const a = normalizeEmail(passportEmail);
+  if (!a) return "missing";
+  const b = normalizeEmail(inboxEmail);
+  if (!b) return "not_connected";
+  return a === b ? "match" : "mismatch";
 }

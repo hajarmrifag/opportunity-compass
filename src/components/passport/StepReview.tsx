@@ -75,6 +75,7 @@ export function StepReview({
   onChooseConflict,
   educationEditor,
   detailsEditor,
+  emailGate,
   skillsEditor,
   preferencesEditor,
   experienceEditor,
@@ -87,6 +88,7 @@ export function StepReview({
   onChooseConflict: (field: string, value: string) => void;
   educationEditor: ReactNode;
   detailsEditor: ReactNode;
+  emailGate: ReactNode;
   skillsEditor: ReactNode;
   preferencesEditor: ReactNode;
   experienceEditor: ReactNode;
@@ -186,9 +188,18 @@ export function StepReview({
               <Row label="Graduation" source={provenance["graduationDate"]}>
                 {draft.graduationDate || <NotProvided />}
               </Row>
+              <Row label="Email" source={provenance["email"]}>
+                {draft.email || <NotProvided />}
+              </Row>
+              {emailGate}
             </div>
           }
-          editor={detailsEditor}
+          editor={
+            <>
+              {detailsEditor}
+              {emailGate}
+            </>
+          }
         />
 
         <ReviewCard
