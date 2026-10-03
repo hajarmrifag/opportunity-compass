@@ -1,6 +1,6 @@
 // @ts-nocheck -- verbatim teammate source; strict optional-type checks disabled here
 import { containsWord, extractNumbers, extractTerms } from "../plan/cvGuard";
-import type { BuilderAnswers, BuilderEntry, CheckedChange, CvChange, CvDocument, CvEntry, CvSection, Fact } from "./types";
+import type { BuilderAnswers, BuilderEntry, CheckedChange, CvChange, CvDocument, CvEntry, CvSection, Fact, SectionKind } from "./types";
 
 let counter = 0;
 export const newId = (prefix: string) => `${prefix}-${Date.now().toString(36)}-${(counter++).toString(36)}`;
@@ -15,6 +15,17 @@ const KNOWN_SECTIONS = [
 const EMAIL = /[\w.+-]+@[\w-]+\.[\w.-]+/;
 const PHONE = /(\+?\d[\d\s-]{6,}\d)/;
 const URL_RE = /(https?:\/\/\S+|linkedin\.com\/\S+)/i;
+
+/** Guesses the kind of a section from its title, for layout only. */
+export function sectionKind(title: string): SectionKind {
+  const t = title.toLowerCase();
+  if (/educat|qualif/.test(t)) return "education";
+  if (/skill|language|certif|award|achiev|honou?r|interest/.test(t)) return "skills";
+  if (/leader|activit|extracurric|volunt|societ/.test(t)) return "leadership";
+  if (/project/.test(t)) return "projects";
+  if (/experience|employment|work|intern/.test(t)) return "experience";
+  return "other";
+}
 
 /** Fallback when AI structuring is unavailable: keeps every line exactly as written. */
 export function cvFromPlainText(text: string): CvDocument {
@@ -32,12 +43,13 @@ export function cvFromPlainText(text: string): CvDocument {
       continue;
     }
     if (KNOWN_SECTIONS.includes(line.toLowerCase().replace(/[:]$/, ""))) {
-      current = { id: newId("s"), title: line.replace(/[:]$/, ""), entries: [{ id: newId("e"), heading: "", bullets: [] }] };
+      const title = line.replace(/[:]$/, "");
+      current = { id: newId("s"), title, kind: sectionKind(title), entries: [{ id: newId("e"), heading: "", bullets: [] }] };
       doc.sections.push(current);
       continue;
     }
     if (!current) {
-      current = { id: newId("s"), title: "Details", entries: [{ id: newId("e"), heading: "", bullets: [] }] };
+      current = { id: newId("s"), title: "Details", kind: "other", entries: [{ id: newId("e"), heading: "", bullets: [] }] };
       doc.sections.push(current);
     }
     current.entries[0].bullets.push({ id: newId("b"), text: line });
@@ -45,42 +57,51 @@ export function cvFromPlainText(text: string): CvDocument {
   return doc;
 }
 
+/** One point per line, exactly as the student wrote it (semicolons inside a point are kept). */
 const splitPoints = (description: string) =>
   description
-    .split(/\r?\n|;\s+/)
+    .split(/\r?\n/)
     .map((p) => p.replace(/^[\s•*\-–]+/, "").trim())
     .filter(Boolean);
 
+/** Organisation in bold with dates on the right; role or degree on the next line. */
 function entryFrom(e: BuilderEntry): CvEntry {
+  const org = e.organisation.trim();
+  const title = e.title.trim();
   return {
     id: newId("e"),
-    heading: e.title.trim(),
-    subheading: e.organisation.trim() || undefined,
+    heading: org || title,
+    subheading: org ? title || undefined : undefined,
     location: e.location?.trim() || undefined,
     dates: e.dates?.trim() || undefined,
     bullets: splitPoints(e.description).map((t) => ({ id: newId("b"), text: t })),
   };
 }
 
-/** Builds a first CV from the student's own answers. No AI, no rewording: every word is theirs. */
+/**
+ * Builds a first CV from the student's own answers, in the classic order used for finance and consulting:
+ * Education, Skills, Work experience, Leadership experience, Projects. No AI, no rewording: every word is theirs.
+ */
 export function buildFromAnswers(a: BuilderAnswers): CvDocument {
   const sections: CvSection[] = [];
-  const add = (title: string, entries: BuilderEntry[]) => {
+  const add = (title: string, kind: SectionKind, entries: BuilderEntry[]) => {
     const filled = entries.filter((e) => e.title.trim() || e.organisation.trim() || e.description.trim());
-    if (filled.length) sections.push({ id: newId("s"), title, entries: filled.map(entryFrom) });
+    if (filled.length) sections.push({ id: newId("s"), title, kind, entries: filled.map(entryFrom) });
   };
-  add("Education", a.education);
-  add("Experience", a.experience);
-  add("Leadership and activities", a.activities);
-  add("Projects", a.projects);
+  add("Education", "education", a.education);
 
-  const extras: CvEntry[] = [];
+  // Skills as labelled lines: "Languages: English (Fluent)"
+  const skills: CvEntry[] = [];
   const line = (label: string, value?: string) =>
-    value && value.trim() ? extras.push({ id: newId("e"), heading: label, bullets: [{ id: newId("b"), text: value.trim() }] }) : null;
-  line("Skills", a.skills);
+    value && value.trim() ? skills.push({ id: newId("e"), heading: label, bullets: [{ id: newId("b"), text: value.trim() }] }) : null;
   line("Languages", a.languages);
+  line("Technical skills", a.skills);
   line("Awards", a.awards);
-  if (extras.length) sections.push({ id: newId("s"), title: "Skills, languages and awards", entries: extras });
+  if (skills.length) sections.push({ id: newId("s"), title: "Skills", kind: "skills", entries: skills });
+
+  add("Work experience", "experience", a.experience);
+  add("Leadership experience", "leadership", a.activities);
+  add("Projects", "projects", a.projects);
 
   return {
     name: a.name.trim(),
@@ -93,6 +114,10 @@ export function buildFromAnswers(a: BuilderAnswers): CvDocument {
     sections,
   };
 }
+
+/** True when an entry should be shown as a labelled line, e.g. "Languages: English (Fluent)". */
+export const isLabelLine = (sectionKindValue: SectionKind | undefined, e: CvEntry) =>
+  sectionKindValue === "skills" && !!e.heading && !e.subheading && !e.dates && e.bullets.length === 1;
 
 /** Every piece of text in the CV becomes an allowed fact. */
 export function factsFromCv(doc: CvDocument, source: Fact["source"] = "cv"): Fact[] {
@@ -109,6 +134,7 @@ export function factsFromCv(doc: CvDocument, source: Fact["source"] = "cv"): Fac
   return facts;
 }
 
+/** Plain-text version in the same order and structure as the formatted CV (for pasting into forms). */
 export function flattenCv(doc: CvDocument): string {
   const out: string[] = [doc.name];
   const contact = [doc.contact.email, doc.contact.phone, doc.contact.location, ...(doc.contact.links ?? [])].filter(Boolean);
@@ -116,9 +142,15 @@ export function flattenCv(doc: CvDocument): string {
   if (doc.summary) out.push("", doc.summary);
   for (const s of doc.sections) {
     out.push("", s.title.toUpperCase());
+    const kind = s.kind ?? sectionKind(s.title);
     for (const e of s.entries) {
-      const head = [e.heading, e.subheading, e.location, e.dates].filter(Boolean).join(" | ");
-      if (head) out.push(head);
+      if (isLabelLine(kind, e)) {
+        out.push(`${e.heading}: ${e.bullets[0].text}`);
+        continue;
+      }
+      const head = [e.heading, e.location].filter(Boolean).join(", ");
+      if (head || e.dates) out.push([head, e.dates].filter(Boolean).join("    "));
+      if (e.subheading) out.push(e.subheading);
       e.bullets.forEach((b) => out.push(`• ${b.text}`));
     }
   }

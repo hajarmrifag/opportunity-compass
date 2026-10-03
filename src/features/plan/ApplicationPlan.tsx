@@ -1,5 +1,5 @@
 // @ts-nocheck -- verbatim teammate source; strict optional-type checks disabled here
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -8,7 +8,7 @@ import { CvStudio } from "../cv/CvStudio";
 import type { BuilderAnswers } from "../cv/types";
 import { DeadlineBanner } from "./DeadlineBanner";
 import { CoverLetterPanel } from "./DocumentTools";
-import { usePlanProgress, usePlanReference } from "./usePlanData";
+import { extractRequirementsFromPage, usePlanProgress, usePlanReference } from "./usePlanData";
 import type { ItemStatus, MoneyStep, OpportunityPlanRef, PlanItem, RequirementKind, TrackerState } from "./types";
 
 export interface ApplicationPlanProps {
@@ -74,7 +74,31 @@ export function ApplicationPlan(props: ApplicationPlanProps) {
     [ref.requirements, ref.notices, prog.userRequirements, prog.progress, moneySteps, tracker, opp.applicationDeadline],
   );
 
+  // If we have no steps from the official page yet, read it once (the AI extracts steps with quotes).
+  const [readingPage, setReadingPage] = useState(false);
+  useEffect(() => {
+    if (ref.loading || ref.error || !opp.officialUrl) return;
+    if (ref.requirements.some((r) => r.source === "official_page")) return;
+    const flag = `opportunityos.extracted.${opp.id}`;
+    try {
+      if (sessionStorage.getItem(flag)) return;
+      sessionStorage.setItem(flag, "1");
+    } catch {
+      /* ignore */
+    }
+    setReadingPage(true);
+    extractRequirementsFromPage(opp.id, opp.officialUrl)
+      .then(() => ref.reload())
+      .catch(() => undefined)
+      .finally(() => setReadingPage(false));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [ref.loading, ref.error, ref.requirements.length, opp.id, opp.officialUrl]);
+
   const [openTool, setOpenTool] = useState<"cv" | "cover_letter" | null>(null);
+  const toolRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (openTool) toolRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }, [openTool]);
   const [cvText, setCvText] = useState<string | undefined>(props.profileCvText);
   const [adding, setAdding] = useState(false);
 
@@ -121,6 +145,52 @@ export function ApplicationPlan(props: ApplicationPlanProps) {
       <CardContent className="space-y-6">
         <DeadlineBanner plan={plan} opportunity={opp} onStatus={prog.setStatus} />
 
+        {readingPage && <p className="text-sm text-muted-foreground">Reading the official page for application steps…</p>}
+
+        {!plan.closed && (
+          <DocumentsSection
+            cv={plan.items.find((i) => i.tool === "cv") ?? null}
+            coverLetter={plan.items.find((i) => i.tool === "cover_letter") ?? null}
+            onOpen={(tool) => setOpenTool(tool)}
+          />
+        )}
+
+        {openTool && (
+          <div ref={toolRef} className="scroll-mt-4 space-y-2">
+            <div className="flex justify-end">
+              <button className="text-xs text-muted-foreground underline" onClick={() => setOpenTool(null)}>
+                Close
+              </button>
+            </div>
+            {openTool === "cv" && (
+              <CvStudio
+                opportunity={docText}
+                officialUrl={opp.officialUrl}
+                profilePrefill={props.builderPrefill}
+                onReady={async (text) => {
+                  setCvText(text);
+                  const cv = plan.items.find((i) => i.tool === "cv");
+                  if (!cv) await prog.addRequirement("cv", "CV", "application", "ready");
+                  else if (!isDone(cv.status)) await prog.setStatus(cv.key, "ready");
+                  setOpenTool(null);
+                }}
+              />
+            )}
+            {openTool === "cover_letter" && (
+              <CoverLetterPanel
+                initialCv={cvText}
+                opportunity={docText}
+                onReady={async () => {
+                  const cl = plan.items.find((i) => i.tool === "cover_letter");
+                  if (!cl) await prog.addRequirement("cover_letter", "Cover letter", "application", "ready");
+                  else if (!isDone(cl.status)) await prog.setStatus(cl.key, "ready");
+                  setOpenTool(null);
+                }}
+              />
+            )}
+          </div>
+        )}
+
         {plan.notices.length > 0 && (
           <section>
             <h3 className="mb-1 text-sm font-semibold">Rules from the official page</h3>
@@ -155,6 +225,7 @@ export function ApplicationPlan(props: ApplicationPlanProps) {
                     item={item}
                     onStatus={(s) => prog.setStatus(item.key, s)}
                     onOpenTool={item.tool ? () => setOpenTool(item.tool) : undefined}
+                    onRemove={item.source === "student_added" ? () => prog.removeRequirement(item.key) : undefined}
                   />
                 ))}
               </ul>
@@ -180,30 +251,6 @@ export function ApplicationPlan(props: ApplicationPlanProps) {
           </div>
         )}
 
-        {openTool === "cv" && plan.documentTools.cv && (
-          <CvStudio
-            opportunity={docText}
-            profilePrefill={props.builderPrefill}
-            onReady={(text) => {
-              setCvText(text);
-              const cv = plan.items.find((i) => i.tool === "cv" && !isDone(i.status));
-              if (cv) prog.setStatus(cv.key, "ready");
-              setOpenTool(null);
-            }}
-          />
-        )}
-        {openTool === "cover_letter" && plan.documentTools.coverLetter && (
-          <CoverLetterPanel
-            initialCv={cvText}
-            opportunity={docText}
-            onReady={() => {
-              const cl = plan.items.find((i) => i.tool === "cover_letter" && !isDone(i.status));
-              if (cl) prog.setStatus(cl.key, "ready");
-              setOpenTool(null);
-            }}
-          />
-        )}
-
         {plan.canMarkSubmitted && (tracker.status === "saved" || tracker.status === "preparing") && props.onMarkSubmitted && (
           <div className="rounded-lg border p-3 text-sm">
             <p>Every application step is submitted. Update your tracker?</p>
@@ -223,6 +270,59 @@ export function ApplicationPlan(props: ApplicationPlanProps) {
 }
 
 // ---------- Pieces ----------
+
+const DOC_STATUS: Record<ItemStatus, string> = {
+  not_started: "Not started",
+  in_progress: "In progress",
+  ready: "Ready",
+  submitted: "Submitted",
+  not_needed: "Not needed",
+};
+
+/** Always visible: the student can prepare a CV or cover letter for any application without adding steps first. */
+function DocumentsSection({
+  cv,
+  coverLetter,
+  onOpen,
+}: {
+  cv: PlanItem | null;
+  coverLetter: PlanItem | null;
+  onOpen: (tool: "cv" | "cover_letter") => void;
+}) {
+  const where = (item: PlanItem | null, fallback: string) =>
+    !item ? fallback : item.source === "official_page" ? "Required by the official page" : "In your plan";
+  return (
+    <section className="space-y-3 rounded-lg border p-4" aria-label="Your documents">
+      <h3 className="text-sm font-semibold">Your documents for this application</h3>
+      <div className="flex flex-wrap items-center justify-between gap-2 text-sm">
+        <div>
+          <p className="font-medium">CV</p>
+          <p className="text-xs text-muted-foreground">
+            {where(cv, "Most applications ask for a CV")}
+            {cv ? `. ${DOC_STATUS[cv.status]}` : ""}
+          </p>
+        </div>
+        {cv?.status !== "not_needed" && (
+          <Button onClick={() => onOpen("cv")}>{cv && isDone(cv.status) ? "Open my CV" : "Tailor my CV for this opportunity"}</Button>
+        )}
+      </div>
+      <div className="flex flex-wrap items-center justify-between gap-2 text-sm">
+        <div>
+          <p className="font-medium">Cover letter</p>
+          <p className="text-xs text-muted-foreground">
+            {where(coverLetter, "Only if the application asks for one")}
+            {coverLetter ? `. ${DOC_STATUS[coverLetter.status]}` : ""}
+          </p>
+        </div>
+        {coverLetter?.status !== "not_needed" && (
+          <Button variant="outline" onClick={() => onOpen("cover_letter")}>
+            Draft a cover letter
+          </Button>
+        )}
+      </div>
+    </section>
+  );
+}
 
 const STATUS_OPTIONS: Array<{ value: ItemStatus; label: string }> = [
   { value: "not_started", label: "Not started" },
@@ -263,7 +363,17 @@ function DueText({ item }: { item: PlanItem }) {
   );
 }
 
-function PlanRow({ item, onStatus, onOpenTool }: { item: PlanItem; onStatus: (s: ItemStatus) => void; onOpenTool?: () => void }) {
+function PlanRow({
+  item,
+  onStatus,
+  onOpenTool,
+  onRemove,
+}: {
+  item: PlanItem;
+  onStatus: (s: ItemStatus) => void;
+  onOpenTool?: () => void;
+  onRemove?: () => void;
+}) {
   const [open, setOpen] = useState(false);
   const options = item.kind === "money" ? MONEY_OPTIONS : STATUS_OPTIONS;
   return (
@@ -305,6 +415,11 @@ function PlanRow({ item, onStatus, onOpenTool }: { item: PlanItem; onStatus: (s:
         {(item.evidenceQuote || item.note || item.sourceUrl) && (
           <button className="text-xs text-muted-foreground underline underline-offset-2" onClick={() => setOpen(!open)}>
             {open ? "Hide details" : "Details"}
+          </button>
+        )}
+        {onRemove && (
+          <button className="text-xs text-muted-foreground underline underline-offset-2" onClick={onRemove}>
+            Remove
           </button>
         )}
       </div>

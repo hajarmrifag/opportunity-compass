@@ -3,9 +3,9 @@ import { useEffect, useRef, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { CvBuilderForm } from "./CvBuilderForm";
-import { chatAboutCv, parseCv } from "./cvApi";
-import { acceptStudentFacts, applyChange, buildFromAnswers, checkChange, cvFromPlainText, factsFromCv, flattenCv } from "./cvModel";
-import { cvFileName, cvToDocxBlob, cvToPdfBlob, cvToTextBlob, downloadBlob, needsUnicodeFont } from "./exportCv";
+import { analyzeOffer, chatAboutCv, parseCv, type OfferAnalysis } from "./cvApi";
+import { acceptStudentFacts, applyChange, buildFromAnswers, checkChange, cvFromPlainText, factsFromCv, flattenCv, isLabelLine, sectionKind } from "./cvModel";
+import { contactLines, cvFileName, cvToDocxBlob, cvToPdfBlob, cvToTextBlob, downloadBlob, needsUnicodeFont } from "./exportCv";
 import { CvReadError, readCvFile } from "./readCvFile";
 import type { BuilderAnswers, ChatMessage, CheckedChange, CvDocument, Fact } from "./types";
 
@@ -29,10 +29,13 @@ type Pending = CheckedChange & { accepted: boolean };
  */
 export function CvStudio({
   opportunity,
+  officialUrl,
   profilePrefill,
   onReady,
 }: {
   opportunity: OpportunityText;
+  /** The opportunity's official page. The AI reads it to see what the employer asks for. */
+  officialUrl?: string | null;
   profilePrefill?: Partial<BuilderAnswers>;
   onReady: (cvText: string) => void;
 }) {
@@ -52,7 +55,33 @@ export function CvStudio({
   const [saved, setSaved] = useState<{ doc: CvDocument; facts: Fact[] } | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
 
-  const oppText = [opportunity.title, opportunity.organiser, opportunity.description, ...(opportunity.requirements ?? [])].filter(Boolean).join("\n");
+  // The AI reads the official page first, so the student never has to explain the job offer.
+  const [offer, setOffer] = useState<OfferAnalysis | null>(null);
+  const [offerState, setOfferState] = useState<"idle" | "loading" | "done" | "failed">("idle");
+  const offerPromise = useRef<Promise<OfferAnalysis | null> | null>(null);
+
+  useEffect(() => {
+    if (!officialUrl) return;
+    setOfferState("loading");
+    offerPromise.current = analyzeOffer(officialUrl, opportunity.title)
+      .then((o) => {
+        setOffer(o);
+        setOfferState("done");
+        return o;
+      })
+      .catch(() => {
+        setOfferState("failed");
+        return null;
+      });
+  }, [officialUrl, opportunity.title]);
+
+  const withOffer = (o: OfferAnalysis | null): OpportunityText => ({
+    ...opportunity,
+    description: o?.pageText || opportunity.description,
+    requirements: [...(opportunity.requirements ?? []), ...(o?.lookingFor.map((x) => x.point) ?? [])],
+  });
+  const effective = withOffer(offer);
+  const oppText = [effective.title, effective.organiser, effective.description, ...(effective.requirements ?? [])].filter(Boolean).join("\n");
 
   useEffect(() => {
     try {
@@ -127,11 +156,14 @@ export function CvStudio({
     setBusy("Thinking…");
     setError(null);
     try {
-      const res = await chatAboutCv({ cv, facts: currentFacts, opportunity, messages: nextHistory, mode: m });
+      const o = offer ?? (offerPromise.current ? await offerPromise.current : null);
+      const opp = withOffer(o);
+      const checkText = [opp.title, opp.organiser, opp.description, ...(opp.requirements ?? [])].filter(Boolean).join("\n");
+      const res = await chatAboutCv({ cv, facts: currentFacts, opportunity: opp, messages: nextHistory, mode: m });
       const added = acceptStudentFacts(res.newFacts, userMsg.content, currentFacts);
       const allFacts = [...currentFacts, ...added];
       setFacts(allFacts);
-      const checked = res.changes.map((c) => checkChange(cv, allFacts, oppText, c));
+      const checked = res.changes.map((c) => checkChange(cv, allFacts, checkText, c));
       const removed = checked.filter((c) => c.rejected).length;
       setPending(checked.filter((c) => !c.rejected).map((c) => ({ ...c, accepted: !c.needsConfirmation })));
       setGaps(res.gaps);
@@ -168,6 +200,7 @@ export function CvStudio({
             We suggest changes using only what is true about you. You decide what to keep, then download it as Word or PDF.
           </p>
         </div>
+        <OfferPanel offer={offer} state={offerState} title={opportunity.title} />
         <div className="flex flex-wrap gap-2">
           {saved && (
             <Button onClick={() => startWith(saved.doc, saved.facts, "tailor")} disabled={!!busy}>
@@ -238,37 +271,27 @@ export function CvStudio({
         </button>
       </div>
 
+      <div className="flex flex-wrap items-center gap-2 rounded-md border p-3">
+        <p className="mr-auto text-sm">
+          <span className="font-medium">Your CV file.</span>{" "}
+          <span className="text-muted-foreground">Download it and upload it to the application form.</span>
+        </p>
+        <Button size="sm" onClick={async () => downloadBlob(await cvToDocxBlob(doc), cvFileName(doc, "docx"))}>
+          Download Word
+        </Button>
+        <Button size="sm" variant="outline" onClick={() => downloadBlob(cvToPdfBlob(doc), cvFileName(doc, "pdf"))} disabled={unicode}>
+          Download PDF
+        </Button>
+        <Button size="sm" variant="outline" onClick={() => navigator.clipboard.writeText(flattenCv(doc))}>
+          Copy text
+        </Button>
+      </div>
+
+      <OfferPanel offer={offer} state={offerState} title={opportunity.title} compact />
+
       <div className="grid gap-4 lg:grid-cols-2">
-        {/* CV preview */}
-        <article className="rounded-md border bg-background p-4 text-sm" aria-label="CV preview">
-          <p className="text-center text-lg font-semibold">{doc.name || "Your name"}</p>
-          <p className="text-center text-xs text-muted-foreground">
-            {[doc.contact.email, doc.contact.phone, doc.contact.location, ...(doc.contact.links ?? [])].filter(Boolean).join("  |  ")}
-          </p>
-          {doc.summary && <p className="mt-3">{doc.summary}</p>}
-          {doc.sections.map((s) => (
-            <div key={s.id} className="mt-4">
-              <p className="border-b pb-1 font-semibold">{s.title}</p>
-              {s.entries.map((e) => (
-                <div key={e.id} className="mt-2">
-                  {(e.heading || e.subheading || e.dates) && (
-                    <p className="flex flex-wrap justify-between gap-2">
-                      <span className="font-medium">{[e.heading, e.subheading, e.location].filter(Boolean).join(", ")}</span>
-                      {e.dates && <span className="text-muted-foreground">{e.dates}</span>}
-                    </p>
-                  )}
-                  <ul className="list-disc pl-5">
-                    {e.bullets.map((b) => (
-                      <li key={b.id} className={changed.includes(b.id) ? "bg-primary/10" : ""}>
-                        {b.text}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              ))}
-            </div>
-          ))}
-        </article>
+        {/* CV preview: same layout as the Word and PDF files */}
+        <CvPage doc={doc} changed={changed} />
 
         {/* Conversation */}
         <div className="flex flex-col gap-3">
@@ -352,15 +375,9 @@ export function CvStudio({
         </div>
       </div>
 
-      {/* Download and finish */}
+      {/* Finish */}
       <div className="space-y-2 border-t pt-3">
         <div className="flex flex-wrap gap-2">
-          <Button variant="outline" onClick={async () => downloadBlob(await cvToDocxBlob(doc), cvFileName(doc, "docx"))}>
-            Download Word
-          </Button>
-          <Button variant="outline" onClick={() => downloadBlob(cvToPdfBlob(doc), cvFileName(doc, "pdf"))} disabled={unicode}>
-            Download PDF
-          </Button>
           <Button variant="outline" onClick={() => downloadBlob(cvToTextBlob(doc), cvFileName(doc, "txt"))}>
             Download text
           </Button>
@@ -377,6 +394,115 @@ export function CvStudio({
         </label>
       </div>
     </section>
+  );
+}
+
+/** On-screen CV in the classic layout: centred name, UPPERCASE ruled headings, organisation and dates on one line, role in italics. */
+function CvPage({ doc, changed }: { doc: CvDocument; changed: string[] }) {
+  return (
+    <article
+      className="overflow-x-auto rounded-md border bg-white p-6 font-serif text-[13px] leading-snug text-black shadow-sm"
+      style={{ fontFamily: '"Times New Roman", Times, serif' }}
+      aria-label="CV preview"
+    >
+      <p className="text-center text-xl">{doc.name || "Your name"}</p>
+      {contactLines(doc).map((l) => (
+        <p key={l} className="text-center text-[11px]">
+          {l}
+        </p>
+      ))}
+      {doc.summary && <p className="mt-2">{doc.summary}</p>}
+      {doc.sections.map((s) => {
+        const kind = s.kind ?? sectionKind(s.title);
+        return (
+          <section key={s.id} className="mt-3">
+            <h5 className="border-b border-black font-bold uppercase">{s.title}</h5>
+            {s.entries.map((e) =>
+              isLabelLine(kind, e) ? (
+                <p key={e.id} className={changed.includes(e.bullets[0].id) ? "bg-yellow-100" : ""}>
+                  <span className="font-bold">{e.heading}:</span> {e.bullets[0].text}
+                </p>
+              ) : (
+                <div key={e.id} className="mt-1">
+                  {(e.heading || e.dates) && (
+                    <p className="flex justify-between gap-4">
+                      <span className="font-bold">{[e.heading, e.location].filter(Boolean).join(", ")}</span>
+                      {e.dates && <span className="whitespace-nowrap">{e.dates}</span>}
+                    </p>
+                  )}
+                  {e.subheading && <p className={kind === "education" ? "" : "pl-3 font-bold italic"}>{e.subheading}</p>}
+                  <ul className="list-disc pl-6">
+                    {e.bullets.map((b) => (
+                      <li key={b.id} className={changed.includes(b.id) ? "bg-yellow-100" : ""}>
+                        {b.text}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ),
+            )}
+          </section>
+        );
+      })}
+    </article>
+  );
+}
+
+/** What the employer asks for, read from the official page. Every point can show its quote. */
+function OfferPanel({
+  offer,
+  state,
+  title,
+  compact,
+}: {
+  offer: OfferAnalysis | null;
+  state: "idle" | "loading" | "done" | "failed";
+  title: string;
+  compact?: boolean;
+}) {
+  const [open, setOpen] = useState(!compact);
+  if (state === "idle") return null;
+  if (state === "loading") return <p className="text-sm text-muted-foreground">Reading the official page for {title}…</p>;
+  if (state === "failed" || !offer)
+    return <p className="text-sm text-muted-foreground">We could not read the official page, so suggestions use the opportunity title only.</p>;
+
+  const docs = offer.documents;
+  return (
+    <div className="rounded-md border p-3 text-sm" aria-label="What the employer asks for">
+      <div className="flex items-center justify-between gap-2">
+        <p className="font-medium">What the official page asks for</p>
+        {compact && (
+          <button className="text-xs text-muted-foreground underline" onClick={() => setOpen(!open)}>
+            {open ? "Hide" : "Show"}
+          </button>
+        )}
+      </div>
+      {open && (
+        <div className="mt-2 space-y-2">
+          {offer.summary && <p>{offer.summary}</p>}
+          {offer.lookingFor.length > 0 && (
+            <ul className="list-disc space-y-1 pl-5">
+              {offer.lookingFor.map((x) => (
+                <li key={x.quote} title={`On the page: "${x.quote}"`}>
+                  {x.point}
+                </li>
+              ))}
+            </ul>
+          )}
+          <p className="text-xs text-muted-foreground">
+            {docs.length > 0
+              ? `Documents the page mentions: ${Array.from(new Set(docs.map((d) => d.kind.replace(/_/g, " ")))).join(", ")}.`
+              : "The official page does not mention documents. Most applications still ask for a CV, so it is worth having one ready."}
+          </p>
+          {offer.keywords.length > 0 && (
+            <p className="text-xs text-muted-foreground">Words from the page your CV can reflect, where true: {offer.keywords.join(", ")}</p>
+          )}
+          <a className="text-xs underline" href={offer.sourceUrl} target="_blank" rel="noreferrer">
+            Official page
+          </a>
+        </div>
+      )}
+    </div>
   );
 }
 
