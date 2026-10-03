@@ -125,3 +125,13 @@ $ bun run build      -> exit 0
 - `bunx vitest run`: 3 files, 39 tests passed. New tests cover user cancel, already-aborted request (no provider call), navigating away mid-search followed by a successful uncached search with no unhandled rejection, upstream timeout followed by success, abort during body read, and that a plain network failure stays a `provider_error`.
 - `tsgo --noEmit`: clean. `bun run build`: success.
 - Not done: live provider search (needs the connector; no new connections were made). No publishing.
+
+## Evidence — Firecrawl link verified + real live search on main (3 Oct 2026, 07:35 UTC)
+- The existing approved Firecrawl connection (created by Hajar, managed, gateway-backed) was already linked to this project; no new connection was created and nothing was purchased. `FIRECRAWL_API_KEY` and `LOVABLE_API_KEY` are present in the server runtime.
+- End-to-end browser run on `/search` (Playwright, real provider):
+  - `liveSearchStatus` returned `configured: true`.
+  - "undergraduate computer science scholarship 2026" → searched the live web, read 8 pages, all 8 honestly skipped as non-listings, empty state shown ("No matching listings found… We don't fill gaps with made-up results."). No page errors.
+  - "computer science scholarship" → real listings returned, e.g. a $2,500 mathematics/ML scholarship and the Mary E. and Elmer H. Dohrmann Scholarship, each with source (scholarships360.org), retrieved-at time, "From live web · unverified" badge, and a Save to My Journey button. No page errors, no unhandled rejections.
+- Formatting: `prettier --write` applied only to files changed by the abort/timeout repair (search.tsx, liveSearch.server.ts, liveSearchMapping.ts, liveSearch.functions.ts, journey.tsx, liveSearch.test.ts); `prettier --check` now passes on all of them. No other files touched.
+- Re-run after formatting: `bunx vitest run` 3 files, 39 tests passed; `tsgo --noEmit` clean; `bun run build` success.
+- No publishing, no new connections.
