@@ -13,19 +13,21 @@ import {
   SourceBadge,
 } from "@/components/ui-bits";
 import { CompareButton } from "@/components/CompareButton";
+import { ActionPlan } from "@/components/ActionPlan";
+import { FinancePanel } from "@/components/FinancePanel";
 
 export const Route = createFileRoute("/opportunities/$id")({
   head: () => ({
     meta: [
-      { title: "Opportunity details — OpportunityOS" },
+      { title: "Opportunity Brief — OpportunityOS" },
       {
         name: "description",
-        content: "Eligibility, relevance and funding coverage for an opportunity.",
+        content: "A sourced opportunity brief with eligibility, action plan and affordability scenario.",
       },
-      { property: "og:title", content: "Opportunity details — OpportunityOS" },
+      { property: "og:title", content: "Opportunity Brief — OpportunityOS" },
       {
         property: "og:description",
-        content: "Eligibility, relevance and funding coverage for an opportunity.",
+        content: "A sourced opportunity brief with eligibility, action plan and affordability scenario.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
@@ -36,7 +38,7 @@ export const Route = createFileRoute("/opportunities/$id")({
 
 const OVERALL = {
   meets_listed_criteria: {
-    t: "Meets all listed demo criteria",
+    t: "Meets all listed criteria checked",
     d: "This is not a guarantee of eligibility. Always confirm with the provider.",
   },
   not_eligible: { t: "One or more criteria not met", d: "Based on your confirmed Passport." },
@@ -75,11 +77,12 @@ function Detail() {
 
   return (
     <>
-      <Link to="/discover" className="text-sm text-muted-foreground hover:underline">
-        ← Discover
+      <Link to={app ? "/journey" : "/search"} className="text-sm text-muted-foreground hover:underline">
+        ← {app ? "My Journey" : "Live search"}
       </Link>
       <header className="atlas-detail-hero mt-3 mb-8 border-b border-border pb-8">
-        <div className="mb-2 flex flex-wrap gap-2">
+        <p className="atlas-kicker">Opportunity Brief</p>
+        <div className="mb-2 mt-3 flex flex-wrap gap-2">
           <CategoryChip opp={opp} />
           <SourceBadge opp={opp} />
         </div>
@@ -91,6 +94,14 @@ function Detail() {
         </p>
         <p className="mt-2 text-sm">
           <DeadlineText iso={opp.deadline} />
+        </p>
+        <p className="mt-3 max-w-3xl text-xs text-muted-foreground">
+          {opp.verification === "verified"
+            ? "Verified record"
+            : opp.isDemo
+              ? "Fictional demo record — no source facts are verified."
+              : "Retrieved source facts — not human-verified."}{" "}
+          Retrieved {opp.retrievedAt ? new Date(opp.retrievedAt).toLocaleString() : "Unknown"}.
         </p>
         {(timing.state === "expired" || timing.state === "invalid") && (
           <p role="note" className="mt-3 rounded-lg bg-warning-soft p-3 text-sm">
@@ -209,6 +220,18 @@ function Detail() {
               </div>
             </dl>
           </section>
+
+          {app ? (
+            <section className="border-t border-border pt-6" aria-label="Editable application action plan">
+              <ActionPlan application={app} />
+            </section>
+          ) : (
+            <section className="border-t border-border pt-6">
+              <h2 className="text-xl">Action plan</h2>
+              <p className="mt-2 text-sm text-muted-foreground">Save this opportunity to create and edit an action plan. Saving starts at Saved and never marks it Submitted.</p>
+              <button className="btn btn-sm mt-3" onClick={() => saveOpportunity(opp.id)}>Save to start a plan</button>
+            </section>
+          )}
         </div>
 
         <aside className="space-y-4 lg:sticky lg:top-8 lg:self-start">
@@ -247,15 +270,15 @@ function Detail() {
             </p>
           </div>
           <div className="border border-foreground bg-card p-5 text-sm">
-            <h2 className="mb-2 text-base">Source & verification</h2>
+            <h2 className="mb-2 text-base">Source evidence</h2>
             <p>
               Source:{" "}
               {sourceUrl ? (
                 <a className="underline" href={sourceUrl} target="_blank" rel="noopener noreferrer">
-                  link
+                  Open original source ↗
                 </a>
               ) : (
-                "None"
+                "Unknown — no source link available"
               )}
             </p>
             <p>Last verified: {opp.lastVerified ?? "Never — unverified"}</p>
@@ -264,6 +287,9 @@ function Detail() {
             )}
           </div>
         </aside>
+      </div>
+      <div className="mt-10">
+        <FinancePanel opportunityId={opp.id} />
       </div>
     </>
   );
