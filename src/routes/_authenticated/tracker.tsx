@@ -637,6 +637,7 @@ function GmailSection({
     setBusy("connect");
     try {
       const { authorizationUrl } = await startGmailConnect();
+      popup.location.href = authorizationUrl;
       const code = await new Promise<string | null>((resolve, reject) => {
         let poll: number | undefined;
         const cleanup = () => {
