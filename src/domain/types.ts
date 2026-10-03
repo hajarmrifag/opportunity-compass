@@ -161,6 +161,13 @@ export interface Requirement {
   values?: string[];
   min?: number;
   max?: number;
+  /** Optional (Part B). Absent = mandatory for curated data, "unclear" for web-retrieved data. */
+  importance?: "mandatory" | "preferred" | "unclear";
+  /** Optional (Part B). Requirements sharing a groupId are combined with groupLogic (default AND). */
+  groupId?: string;
+  groupLogic?: "AND" | "OR";
+  /** Optional (Part B). Minimum GPA on a named scale; compared only when scales are identical. */
+  gpa?: { min: number; scale: string };
 }
 
 export type CoverageStatus = "covered" | "partial" | "not_covered" | "unknown";
@@ -204,13 +211,29 @@ export interface RequirementResult {
   requirement: Requirement;
   status: RequirementStatus;
   reason: string;
+  /** Optional (Part B) detail: not_applicable = an alternative in the same OR group already passed. */
+  detailStatus?: RequirementStatus | "not_applicable";
+  importance?: "mandatory" | "preferred" | "unclear";
+  requiredValue?: string;
+  studentValue?: string; // "Not provided" when missing
+  source?: string;
+  note?: string;
 }
+export type RelevanceBand = "strong" | "possible" | "weak" | "not_enough_information";
 export interface EligibilityResult {
   opportunityId: string;
   overall: "meets_listed_criteria" | "not_eligible" | "incomplete";
   requirements: RequirementResult[];
-  relevance: { level: "high" | "medium" | "low"; reasons: string[] };
+  relevance: { level: "high" | "medium" | "low"; reasons: string[]; band?: RelevanceBand };
   basis: string; // e.g. "Based on demo criteria"
+  /** Optional (Part B): timing, kept separate from eligibility. */
+  deadline?: {
+    state: "open" | "closing_soon" | "expired" | "unknown" | "invalid";
+    days: number | null;
+  };
+  notes?: string[];
+  profileVersion?: string;
+  opportunityVersion?: string;
 }
 
 /** Integration point: real matching engine implements this. */

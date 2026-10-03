@@ -505,14 +505,19 @@ function Passport() {
 
       <ol className="mt-6 flex flex-wrap gap-2" aria-label="Profile steps">
         {STEPS.map((label, index) => (
-          <li
-            key={label}
-            aria-current={index === step ? "step" : undefined}
-            className={`profile-step ${index === step ? "profile-step-active" : ""} ${
-              index < step ? "opacity-80" : ""
-            }`}
-          >
-            <span className="font-semibold">{index + 1}.</span> {label}
+          <li key={label}>
+            <Button
+              type="button"
+              variant="ghost"
+              aria-current={index === step ? "step" : undefined}
+              disabled={extracting || webBusy}
+              onClick={() => setStep(index)}
+              className={`profile-step h-auto min-h-[44px] justify-start border-x-0 border-b-0 px-1 pb-2 font-sans normal-case ${index === step ? "profile-step-active" : ""} ${
+                index < step ? "opacity-80" : ""
+              }`}
+            >
+              <span className="font-semibold">{index + 1}.</span> {label}
+            </Button>
           </li>
         ))}
       </ol>

@@ -2,6 +2,8 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useStore } from "@/lib/store";
 import { deadlineState, safeHttpUrl } from "@/lib/validation";
 import { demoEligibilityAdapter } from "@/adapters/demoEligibility";
+import { ruleEligibilityAdapter, OVERALL_LABELS, BAND_LABELS } from "@/adapters/ruleEligibility";
+import type { EligibilityResult } from "@/domain/types";
 import { STATUS_LABELS } from "@/domain/types";
 import {
   CategoryChip,
@@ -69,7 +71,15 @@ function Detail() {
       />
     );
 
-  const result = demoEligibilityAdapter.evaluate(profile, opp);
+  // Recomputed on every render, so an edited or unconfirmed Passport never shows stale results.
+  let result: EligibilityResult;
+  let engineError = false;
+  try {
+    result = ruleEligibilityAdapter.evaluate(profile, opp);
+  } catch {
+    engineError = true;
+    result = demoEligibilityAdapter.evaluate(profile, opp);
+  }
   const app = getApplication(opp.id);
   const o = OVERALL[result.overall];
   const f = opp.funding;
@@ -150,8 +160,19 @@ function Detail() {
                 to update them.
               </p>
             )}
-            <p className="mt-2 font-semibold">{o.t}</p>
+            {engineError && (
+              <p role="alert" className="mt-2 rounded-lg bg-warning-soft p-3 text-sm">
+                The full check could not run, so this is a partial result from the basic check.
+              </p>
+            )}
+            <p className="mt-2 font-semibold">{OVERALL_LABELS[result.overall]}</p>
+            {timing.state === "expired" && (
+              <span className="chip chip-notmet mt-1">Closed — deadline passed</span>
+            )}
             <p className="text-sm text-muted-foreground">{o.d}</p>
+            <p className="text-sm text-muted-foreground">
+              Based on supplied information. Confirm on the official site.
+            </p>
             {!profile?.confirmed && (
               <Link to="/passport" className="btn btn-sm mt-3">
                 Confirm Passport to check
@@ -166,8 +187,20 @@ function Detail() {
                   <div>
                     <div className="font-medium">{r.requirement.label}</div>
                     <div className="text-sm text-muted-foreground">{r.reason}</div>
+                    {r.requiredValue && (
+                      <div className="text-xs text-muted-foreground">
+                        Required: {r.requiredValue} · Your value: {r.studentValue ?? "Not provided"}
+                        {r.source ? ` · Source: ${r.source}` : ""}
+                        {r.importance && r.importance !== "mandatory" ? ` · ${r.importance}` : ""}
+                      </div>
+                    )}
+                    {r.note && <div className="text-xs italic text-muted-foreground">{r.note}</div>}
                   </div>
-                  <ReqStatus s={r.status} />
+                  {r.detailStatus === "not_applicable" ? (
+                    <span className="chip chip-muted">Not applicable</span>
+                  ) : (
+                    <ReqStatus s={r.status} />
+                  )}
                 </li>
               ))}
               {result.requirements.length === 0 && (
@@ -176,17 +209,26 @@ function Detail() {
                 </li>
               )}
             </ul>
+            {result.notes && result.notes.length > 0 && (
+              <ul className="mt-3 list-disc pl-5 text-sm text-muted-foreground">
+                {result.notes.map((n) => (
+                  <li key={n}>{n}</li>
+                ))}
+              </ul>
+            )}
           </section>
 
           <section className="atlas-fact-section border-t border-border pt-6" aria-labelledby="rel">
             <h2 id="rel" className="text-xl">
               Relevance to you{" "}
-              <span className="chip chip-teal ml-2 align-middle capitalize">
-                {result.relevance.level}
+              <span className="chip chip-teal ml-2 align-middle">
+                {result.relevance.band
+                  ? BAND_LABELS[result.relevance.band]
+                  : result.relevance.level}
               </span>
             </h2>
             <p className="text-sm text-muted-foreground">
-              Separate from eligibility — how well this fits your preferences.
+              Separate from eligibility — it never overrides Not eligible or Closed.
             </p>
             <ul className="mt-3 list-disc pl-5 text-sm">
               {result.relevance.reasons.map((r) => (
