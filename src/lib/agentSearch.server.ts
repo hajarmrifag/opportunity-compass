@@ -46,6 +46,8 @@ export interface AgentDeps {
   modelTimeoutMs?: number;
   reserveSlot?: () => boolean;
   useCache?: boolean;
+  /** Override the planner/reviewer model (Recommended page uses its own, with fallback). */
+  model?: string;
 }
 
 class StepError extends Error {
@@ -72,6 +74,7 @@ async function callModel(
   schema: object,
   signal: AbortSignal,
   run: { id?: string },
+  model: string = AGENT_MODEL,
 ): Promise<unknown> {
   const headers: Record<string, string> = {
     "Content-Type": "application/json",
@@ -85,7 +88,7 @@ async function callModel(
     signal,
     headers,
     body: JSON.stringify({
-      model: AGENT_MODEL,
+      model,
       input: [
         { role: "system", content: system },
         { role: "user", content: user },
@@ -234,6 +237,7 @@ export async function runAgentSearch(
   const f = deps.fetch ?? fetch;
   const reserveSlot = deps.reserveSlot ?? reserveSearchSlot;
   const modelTimeout = deps.modelTimeoutMs ?? AGENT_MODEL_TIMEOUT_MS;
+  const model = deps.model ?? AGENT_MODEL;
   const ac = new AbortController();
   let timedOut = false;
   const timer = setTimeout(() => {
@@ -279,6 +283,7 @@ export async function runAgentSearch(
         REVIEW_SCHEMA,
         s,
         run,
+        model,
       );
       const out = parseReview(
         raw,
@@ -301,6 +306,7 @@ export async function runAgentSearch(
         PLAN_SCHEMA,
         s,
         run,
+        model,
       );
       const q = parsePlan(raw);
       if (!q)
@@ -447,7 +453,7 @@ export async function runAgentSearch(
       reviewed,
       retrievedAt,
       cached: false,
-      model: AGENT_MODEL,
+      model,
     };
     if (useCache) {
       cache.set(key, { at: Date.now(), value });
