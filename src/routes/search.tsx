@@ -10,6 +10,7 @@ import { CoverageChip, DeadlineText, EmptyState, PageHeader, ReqStatus } from "@
 import { deadlineState } from "@/lib/validation";
 
 export const Route = createFileRoute("/search")({
+  validateSearch: (s: Record<string, unknown>): { q?: string } => (typeof s["q"] === "string" && s["q"] ? { q: s["q"].slice(0, 200) } : {}),
   head: () => ({
     meta: [
       { title: "Live search — OpportunityOS" },
@@ -28,7 +29,9 @@ function LiveSearchPage() {
   const search = useServerFn(liveSearch);
   const status$ = useServerFn(liveSearchStatus);
   const [configured, setConfigured] = useState<boolean | null>(null);
-  const [form, setForm] = useState<LiveSearchInput>(EMPTY);
+  const { q } = Route.useSearch();
+  const [form, setForm] = useState<LiveSearchInput>({ ...EMPTY, query: q ?? "" });
+  const autoRan = useRef(false);
   const [status, setStatus] = useState<Status>("idle");
   const [error, setError] = useState("");
   const [resp, setResp] = useState<LiveSearchResponse | null>(null);
@@ -39,11 +42,15 @@ function LiveSearchPage() {
     return () => abortRef.current?.abort();
   }, [status$]);
 
+  useEffect(() => {
+    if (configured && q && !autoRan.current) { autoRan.current = true; void run({ ...EMPTY, query: q }); }
+  }, [configured, q]); // eslint-disable-line react-hooks/exhaustive-deps
+
   const set = <K extends keyof LiveSearchInput>(k: K, v: LiveSearchInput[K]) => setForm((f) => ({ ...f, [k]: v }));
 
-  const submit = async (e: FormEvent) => {
-    e.preventDefault();
-    const parsed = liveSearchInput.safeParse(form);
+  const submit = (e: FormEvent) => { e.preventDefault(); void run(form); };
+  const run = async (input: LiveSearchInput) => {
+    const parsed = liveSearchInput.safeParse(input);
     if (!parsed.success) { setError(parsed.error.issues[0]?.message ?? "Check your search"); setStatus("error"); return; }
     abortRef.current?.abort();
     const ac = new AbortController();

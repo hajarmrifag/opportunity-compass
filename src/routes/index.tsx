@@ -1,4 +1,5 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { useState } from "react";
 import { effectiveDeadline, daysUntil, useStore } from "@/lib/store";
 import { STATUS_LABELS, STATUSES } from "@/domain/types";
 import { DEADLINE_WINDOW_DAYS } from "@/lib/validation";
@@ -17,8 +18,15 @@ export const Route = createFileRoute("/")({
 });
 
 function Dashboard() {
-  const { ready, profile, applications, opportunities, getOpportunity } = useStore();
+  const { ready, profile, applications, getOpportunity } = useStore();
+  const navigate = useNavigate();
+  const [q, setQ] = useState("");
   if (!ready) return <Loading />;
+
+  // Live counts exclude fictional fixtures entirely.
+  const realApps = applications.filter((a) => { const o = getOpportunity(a.opportunityId); return !!o && !o.isDemo; });
+  const liveSaved = realApps.filter((a) => getOpportunity(a.opportunityId)?.verification === "web_retrieved").length;
+  const demoTracked = applications.length - realApps.length;
 
   const counts = STATUSES.map((s) => ({ s, n: applications.filter((a) => a.status === s).length }));
   const upcoming = applications
@@ -39,12 +47,22 @@ function Dashboard() {
           <Link to="/passport" className="btn">{profile ? "Review & confirm" : "Create Passport"}</Link>
         </div>
       )}
-      <section aria-label="Summary" className="mb-8 grid grid-cols-2 gap-3 md:grid-cols-4">
-        <Stat label="Opportunities available" value={opportunities.length} />
-        <Stat label="Tracked" value={applications.length} />
-        <Stat label="Submitted or later" value={applications.filter((a) => ["submitted", "interview", "offer"].includes(a.status)).length} />
+      <section aria-labelledby="live-h" className="card mb-6 p-5">
+        <h2 id="live-h" className="text-xl">Find real opportunities</h2>
+        <p className="mb-3 text-sm text-muted-foreground">Live web search for internships, fellowships, master's programmes and jobs, with links to the original pages.</p>
+        <form className="flex flex-col gap-2 sm:flex-row" onSubmit={(e) => { e.preventDefault(); if (q.trim().length >= 2) navigate({ to: "/search", search: { q: q.trim() } }); }}>
+          <label htmlFor="dq" className="sr-only">What are you looking for?</label>
+          <input id="dq" value={q} maxLength={200} onChange={(e) => setQ(e.target.value)} placeholder="e.g. paid data science internship in Europe" />
+          <button className="btn shrink-0" type="submit" disabled={q.trim().length < 2}>Search the web</button>
+        </form>
+      </section>
+      <section aria-label="Summary" className="mb-2 grid grid-cols-2 gap-3 md:grid-cols-4">
+        <Stat label="Saved from live search" value={liveSaved} />
+        <Stat label="Tracked (real)" value={realApps.length} />
+        <Stat label="Submitted or later (real)" value={realApps.filter((a) => ["submitted", "interview", "offer"].includes(a.status)).length} />
         <Stat label={`Deadlines in next ${DEADLINE_WINDOW_DAYS} days`} value={upcoming.length} />
       </section>
+      <p className="mb-8 text-xs text-muted-foreground">Counts exclude fictional demo items{demoTracked ? ` (${demoTracked} demo item${demoTracked === 1 ? "" : "s"} tracked for testing)` : ""}. Deadline list covers everything you track.</p>
       <div className="grid gap-6 lg:grid-cols-2">
         <section className="card p-5">
           <h2 className="mb-3 text-xl">Deadlines in the next {DEADLINE_WINDOW_DAYS} days</h2>
@@ -64,7 +82,7 @@ function Dashboard() {
         <section className="card p-5">
           <h2 className="mb-3 text-xl">Pipeline</h2>
           {applications.length === 0 ? (
-            <EmptyState title="Nothing tracked yet" body="Save opportunities from Discover or add one you found elsewhere." action={<Link to="/discover" className="btn">Discover</Link>} />
+            <EmptyState title="Nothing tracked yet" body="Save opportunities from Live search or add one you found elsewhere." action={<Link to="/search" className="btn">Live search</Link>} />
           ) : (
             <ul className="space-y-2">
               {counts.map(({ s, n }) => (
