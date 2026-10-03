@@ -115,7 +115,10 @@ export interface ExtractionConflict {
 
 export function extractionConflicts(results: DocumentExtractionResult[]): ExtractionConflict[] {
   const grouped = new Map<string, ExtractionCandidate[]>();
-  for (const candidate of results.flatMap((result) => result.candidates)) {
+  const list = Array.isArray(results) ? results : [];
+  for (const candidate of list.flatMap((result) =>
+    Array.isArray(result?.candidates) ? result.candidates : [],
+  )) {
     if (candidate.field === "skill" || candidate.field === "language") continue;
     grouped.set(candidate.field, [...(grouped.get(candidate.field) ?? []), candidate]);
   }
