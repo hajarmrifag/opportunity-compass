@@ -14,16 +14,275 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      advice_log: {
+        Row: {
+          advice: string
+          created_at: string
+          date: string
+          id: string
+          resource_ids: string[]
+          stats: Json
+          user_id: string
+        }
+        Insert: {
+          advice?: string
+          created_at?: string
+          date?: string
+          id?: string
+          resource_ids?: string[]
+          stats?: Json
+          user_id?: string
+        }
+        Update: {
+          advice?: string
+          created_at?: string
+          date?: string
+          id?: string
+          resource_ids?: string[]
+          stats?: Json
+          user_id?: string
+        }
+        Relationships: []
+      }
+      application_events: {
+        Row: {
+          application_id: string
+          date: string
+          id: string
+          source: string
+          status: string
+          user_id: string
+        }
+        Insert: {
+          application_id: string
+          date?: string
+          id?: string
+          source?: string
+          status: string
+          user_id?: string
+        }
+        Update: {
+          application_id?: string
+          date?: string
+          id?: string
+          source?: string
+          status?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "application_events_application_id_fkey"
+            columns: ["application_id"]
+            isOneToOne: false
+            referencedRelation: "applications"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      applications: {
+        Row: {
+          applied_date: string | null
+          company: string
+          created_at: string
+          id: string
+          listing_id: string
+          notes: string
+          role: string
+          source: string
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          applied_date?: string | null
+          company: string
+          created_at?: string
+          id?: string
+          listing_id: string
+          notes?: string
+          role: string
+          source?: string
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Update: {
+          applied_date?: string | null
+          company?: string
+          created_at?: string
+          id?: string
+          listing_id?: string
+          notes?: string
+          role?: string
+          source?: string
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      coffee_chats: {
+        Row: {
+          company: string
+          contact_name: string
+          created_at: string
+          date: string | null
+          id: string
+          notes: string
+          outcome: string
+          user_id: string
+        }
+        Insert: {
+          company?: string
+          contact_name: string
+          created_at?: string
+          date?: string | null
+          id?: string
+          notes?: string
+          outcome?: string
+          user_id?: string
+        }
+        Update: {
+          company?: string
+          contact_name?: string
+          created_at?: string
+          date?: string | null
+          id?: string
+          notes?: string
+          outcome?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      email_suggestions: {
+        Row: {
+          company: string | null
+          confidence: number | null
+          created_at: string
+          email_type: string | null
+          event_datetime: string | null
+          evidence: string | null
+          gmail_message_id: string
+          id: string
+          role: string | null
+          state: string
+          user_id: string
+        }
+        Insert: {
+          company?: string | null
+          confidence?: number | null
+          created_at?: string
+          email_type?: string | null
+          event_datetime?: string | null
+          evidence?: string | null
+          gmail_message_id: string
+          id?: string
+          role?: string | null
+          state?: string
+          user_id?: string
+        }
+        Update: {
+          company?: string | null
+          confidence?: number | null
+          created_at?: string
+          email_type?: string | null
+          event_datetime?: string | null
+          evidence?: string | null
+          gmail_message_id?: string
+          id?: string
+          role?: string | null
+          state?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      outreach_templates: {
+        Row: {
+          body: string
+          channel: string
+          created_at: string
+          id: string
+          title: string
+          user_id: string
+        }
+        Insert: {
+          body?: string
+          channel?: string
+          created_at?: string
+          id?: string
+          title: string
+          user_id?: string
+        }
+        Update: {
+          body?: string
+          channel?: string
+          created_at?: string
+          id?: string
+          title?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      resources: {
+        Row: {
+          created_at: string
+          id: string
+          notes: string
+          tag: string
+          title: string
+          url: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          notes?: string
+          tag?: string
+          title: string
+          url?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          notes?: string
+          tag?: string
+          title?: string
+          url?: string | null
+        }
+        Relationships: []
+      }
+      user_roles: {
+        Row: {
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "admin" | "user"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +409,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["admin", "user"],
+    },
   },
 } as const
