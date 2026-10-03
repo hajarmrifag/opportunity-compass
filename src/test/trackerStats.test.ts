@@ -78,6 +78,7 @@ describe("tracker dashboard stats", () => {
     expect(due.map((a) => a.id)).toEqual(["x"]);
     const chat: CoffeeChat = {
       id: "c",
+      referral: null,
       contact_name: "S",
       company: "",
       date: "2026-10-02",
