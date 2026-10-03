@@ -1,0 +1,82 @@
+import type { ReactNode } from "react";
+import type { CoverageStatus, Opportunity, RequirementStatus } from "@/domain/types";
+import { CATEGORY_LABELS } from "@/domain/types";
+import { daysUntil } from "@/lib/store";
+
+export function DemoBadge() {
+  return <span className="chip chip-demo" title="Fictional demo data, not verified">Demo data</span>;
+}
+
+export function SourceBadge({ opp }: { opp: Opportunity }) {
+  if (opp.isDemo) return <DemoBadge />;
+  if (opp.verification === "user_entered") return <span className="chip chip-muted">Added by you</span>;
+  return <span className="chip chip-met">Verified</span>;
+}
+
+export function CategoryChip({ opp }: { opp: Opportunity }) {
+  return <span className="chip chip-teal">{CATEGORY_LABELS[opp.category]}</span>;
+}
+
+export function DeadlineText({ iso }: { iso: string | null }) {
+  const d = daysUntil(iso);
+  if (!iso || d === null) return <span className="text-muted-foreground">Deadline unknown</span>;
+  const label = d < 0 ? "Passed" : d === 0 ? "Today" : `${d} day${d === 1 ? "" : "s"} left`;
+  return (
+    <span className={d >= 0 && d <= 14 ? "font-semibold text-warning-strong" : "text-muted-foreground"}>
+      {new Date(iso + "T00:00:00").toLocaleDateString(undefined, { day: "numeric", month: "short", year: "numeric" })} · {label}
+    </span>
+  );
+}
+
+const REQ: Record<RequirementStatus, { label: string; cls: string; icon: string }> = {
+  met: { label: "Met", cls: "chip-met", icon: "✓" },
+  not_met: { label: "Not met", cls: "chip-notmet", icon: "✕" },
+  unknown: { label: "Unknown", cls: "chip-unknown", icon: "?" },
+};
+export function ReqStatus({ s }: { s: RequirementStatus }) {
+  const r = REQ[s];
+  return <span className={`chip ${r.cls}`}><span aria-hidden>{r.icon}</span> {r.label}</span>;
+}
+
+const COV: Record<CoverageStatus, { label: string; cls: string }> = {
+  covered: { label: "Covered", cls: "chip-met" },
+  partial: { label: "Partial", cls: "chip-unknown" },
+  not_covered: { label: "Not covered", cls: "chip-notmet" },
+  unknown: { label: "Unknown", cls: "chip-muted" },
+};
+export function CoverageChip({ s }: { s: CoverageStatus }) {
+  return <span className={`chip ${COV[s].cls}`}>{COV[s].label}</span>;
+}
+
+export function EmptyState({ title, body, action }: { title: string; body: string; action?: ReactNode }) {
+  return (
+    <div className="card flex flex-col items-center gap-3 p-10 text-center">
+      <div aria-hidden className="h-10 w-10 rounded-full bg-teal-soft" />
+      <h3 className="font-display text-xl">{title}</h3>
+      <p className="max-w-md text-sm text-muted-foreground">{body}</p>
+      {action}
+    </div>
+  );
+}
+
+export function Loading() {
+  return (
+    <div role="status" aria-live="polite" className="space-y-3">
+      <div className="h-8 w-48 animate-pulse rounded bg-muted" />
+      <div className="h-32 animate-pulse rounded-xl bg-muted" />
+      <span className="sr-only">Loading…</span>
+    </div>
+  );
+}
+
+export function PageHeader({ title, sub, right }: { title: string; sub?: string; right?: ReactNode }) {
+  return (
+    <header className="mb-6 flex flex-wrap items-end justify-between gap-4">
+      <div>
+        <h1 className="font-display text-3xl md:text-4xl">{title}</h1>
+        {sub && <p className="mt-1 text-muted-foreground">{sub}</p>}
+      </div>
+      {right}
+    </header>
+  );
+}
