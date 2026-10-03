@@ -19,6 +19,7 @@ const NAV = [
   { to: "/search", label: "Live search", mobileLabel: "Live", icon: Search },
   { to: "/discover", label: "Demo listings", mobileLabel: "Demo", icon: Compass },
   { to: "/journey", label: "My Journey", mobileLabel: "Journey", icon: RouteIcon },
+  { to: "/tracker", label: "Tracker", mobileLabel: "Tracker", icon: FolderSearch2 },
   { to: "/passport", label: "Passport", mobileLabel: "Passport", icon: UserRound },
 ] as const;
 
