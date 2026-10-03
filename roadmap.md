@@ -9,3 +9,5 @@
 - [ ] docs/DEMO_SCRIPT.md
 - [ ] docs/AUTH_DB_PLAN.md (per-user RLS, provenance, migration/rollback, isolation tests, approvals) — plan only, no backend
 - [ ] Typecheck, unit tests, browser tests (core + mobile); final report
+- [ ] Fix off-by-one days-left (calendar-day diff in local tz, no hardcoded today); test it
+- [ ] Dashboard: deadline list window = 14-day count; record in QA
