@@ -10,7 +10,6 @@ import {
 } from "@/lib/recommended";
 import { runRecommended, _clearRecommendedCache } from "@/lib/recommended.server";
 import { _clearAgentCache } from "@/lib/agentSearch.server";
-import { idFromUrl } from "@/lib/liveSearchMapping";
 import { DEMO_PROFILE, EMPTY_PROFILE } from "@/data/fixtures";
 
 const hints = profileHints(DEMO_PROFILE);
@@ -110,19 +109,21 @@ describe("runRecommended", () => {
           status: 200,
         }),
     });
-    // Planner then reviewer: reviewer keeps everything.
+    // Planner then reviewer: reviewer keeps every candidate it is shown.
     let modelCalls = 0;
     const f2 = (async (url: string, init: RequestInit) => {
       if (url.includes("ai.gateway")) {
         modelCalls++;
-        return modelCalls === 1
-          ? sse({ queries: ["software internship apply deadline"] })
-          : sse({
-              decisions: [
-                { id: idFromUrl("https://org.example/intern-1"), keep: true, reason: "ok" },
-              ],
-              refine_query: null,
-            });
+        const body = JSON.parse(String(init.body));
+        if (body.text.format.name === "search_plan")
+          return sse({ queries: ["software internship apply deadline"] });
+        const ids = [...body.input[1].content.matchAll(/"id":"(live-[a-z0-9]+)"/g)].map(
+          (m) => m[1] as string,
+        );
+        return sse({
+          decisions: ids.map((id) => ({ id, keep: true, reason: "ok" })),
+          refine_query: null,
+        });
       }
       return f(url, init);
     }) as unknown as typeof fetch;
@@ -154,18 +155,16 @@ describe("runRecommended", () => {
   });
 
   it("serves the second identical request from cache without new provider calls", async () => {
-    let modelCalls = 0;
     const { f, calls } = mockFetch({
-      model: () => {
-        modelCalls++;
-        return modelCalls % 2 === 1
-          ? sse({ queries: ["software internship"] })
-          : sse({
-              decisions: [
-                { id: idFromUrl("https://org.example/intern-2"), keep: true, reason: "ok" },
-              ],
-              refine_query: null,
-            });
+      model: (body) => {
+        if (body.text.format.name === "search_plan") return sse({ queries: ["software internship"] });
+        const ids = [...body.input[1].content.matchAll(/"id":"(live-[a-z0-9]+)"/g)].map(
+          (m) => m[1] as string,
+        );
+        return sse({
+          decisions: ids.map((id) => ({ id, keep: true, reason: "ok" })),
+          refine_query: null,
+        });
       },
       search: () =>
         new Response(JSON.stringify({ data: [page("https://org.example/intern-2")] }), {
