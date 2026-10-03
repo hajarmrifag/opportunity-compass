@@ -143,7 +143,12 @@ function Passport() {
 
   const runExtraction = async () => {
     const readyDocuments = documents.filter((document) => document.state === "ready");
-    if (!readyDocuments.length) return;
+    if (!readyDocuments.length) {
+      // Web links are read and extracted immediately, so there is nothing left to do —
+      // go straight to the review step.
+      if (results.some((r) => r.ok)) setStep(2);
+      return;
+    }
     setExtracting(true);
     setMessage("");
     setStep(1);
@@ -230,7 +235,8 @@ function Passport() {
     setCreated(true);
   };
 
-  const hasSource = documents.some((document) => document.state !== "error");
+  const hasSource =
+    documents.some((document) => document.state !== "error") || results.some((r) => r.ok);
 
   // Resume at the review step when a saved profile or draft already has content.
   const resumed = useRef(false);
