@@ -5,13 +5,16 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { routeTree } from "@/routeTree.gen";
 
-function renderAt(path: string) {
+async function renderAt(path: string) {
   const queryClient = new QueryClient();
   const router = createRouter({
     routeTree,
     context: { queryClient },
     history: createMemoryHistory({ initialEntries: [path] }),
   });
+  // Resolve matches first, as SSR does before the shell is streamed; otherwise the
+  // document-level shell mounts before any route match exists and paints an empty body.
+  await router.load();
   // The root route's shellComponent renders <html>/<head>/<body>, as in production SSR.
   // Mount into the document itself (React 19 supports document as a root) instead of
   // nesting <html> inside a <div>, which React refuses to render.
@@ -30,7 +33,7 @@ afterEach(() => {
 // routes are rewritten as the app is built and this must keep passing.
 describe("App routing", () => {
   it("renders the index route", async () => {
-    const { container } = renderAt("/");
+    const { container } = await renderAt("/");
 
     await waitFor(() => expect(container.firstChild).not.toBeNull());
     await waitFor(() => expect(document.body.querySelector("main")).not.toBeNull());
@@ -39,7 +42,7 @@ describe("App routing", () => {
   it("renders the not-found route", async () => {
     vi.spyOn(console, "warn").mockImplementation(() => undefined);
 
-    const { container } = renderAt("/this-route-does-not-exist");
+    const { container } = await renderAt("/this-route-does-not-exist");
 
     await waitFor(() => expect(container.firstChild).not.toBeNull());
     await waitFor(() => expect(document.body.textContent).toContain("Page not found"));
