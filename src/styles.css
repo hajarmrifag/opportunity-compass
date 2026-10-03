@@ -291,6 +291,33 @@
   color: var(--accent-foreground);
   border-color: var(--primary);
 }
+@utility profile-step {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  border-top: 2px solid var(--border);
+  padding-top: 0.65rem;
+  color: var(--muted-foreground);
+  font-size: 0.78rem;
+  font-weight: 600;
+  & span {
+    display: grid;
+    height: 1.5rem;
+    width: 1.5rem;
+    place-items: center;
+    border-radius: 999px;
+    background: var(--muted);
+    color: var(--muted-foreground);
+  }
+}
+@utility profile-step-active {
+  border-color: var(--primary);
+  color: var(--foreground);
+  & span {
+    background: var(--primary);
+    color: var(--primary-foreground);
+  }
+}
 
 @media (prefers-reduced-motion: reduce) {
   *,

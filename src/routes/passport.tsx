@@ -1,172 +1,283 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useState, type ReactNode } from "react";
-import { z } from "zod";
+import { useMemo, useRef, useState, type ChangeEvent, type ReactNode } from "react";
+import { FileText, LockKeyhole, Plus, Trash2, Upload, WandSparkles } from "lucide-react";
+import { useServerFn } from "@tanstack/react-start";
 import { useStore } from "@/lib/store";
 import { EMPTY_PROFILE } from "@/data/fixtures";
-import { CATEGORY_LABELS, DEGREE_LABELS, type Category, type DegreeLevel, type Profile } from "@/domain/types";
+import {
+  CATEGORY_LABELS,
+  DEGREE_LABELS,
+  type Category,
+  type DocumentExtractionResult,
+  type DocumentLabel,
+  type DegreeLevel,
+  type Profile,
+} from "@/domain/types";
 import { Loading, PageHeader } from "@/components/ui-bits";
+import { Button } from "@/components/ui/button";
+import { extractProfile } from "@/lib/profileExtraction.functions";
+import {
+  applyExtractedCandidates,
+  canConfirmProfile,
+  extractionConflicts,
+  fieldLabel,
+} from "@/lib/profileExtraction";
 
 export const Route = createFileRoute("/passport")({
   head: () => ({
     meta: [
-      { title: "Opportunity Passport — OpportunityOS" },
-      { name: "description", content: "Review and confirm your student profile." },
-      { property: "og:title", content: "Opportunity Passport — OpportunityOS" },
-      { property: "og:description", content: "Review and confirm your student profile." },
+      { title: "Create your Opportunity Passport — OpportunityOS" },
+      { name: "description", content: "Build and confirm your student profile from documents or manual entry." },
+      { property: "og:title", content: "Create your Opportunity Passport — OpportunityOS" },
+      { property: "og:description", content: "Build and confirm your student profile from documents or manual entry." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: Passport,
 });
 
-const schema = z.object({
-  fullName: z.string().trim().min(1, "Name is required").max(100),
-  degreeLevel: z.string({ message: "Choose a degree level" }).min(1, "Choose a degree level"),
-  field: z.string().trim().min(1, "Field of study is required").max(100),
-  graduationYear: z.number({ message: "Enter a year" }).int().min(1990, "Year looks too early").max(2040, "Year looks too late"),
-  goals: z.string().max(1000),
-});
+type IntakeDocument = {
+  id: string;
+  name: string;
+  label: DocumentLabel;
+  kind: "pdf" | "text";
+  file?: File;
+  text?: string;
+  state: "ready" | "extracting" | "done" | "error";
+  error?: string;
+};
 
-const list = (s: string) => s.split(",").map((x) => x.trim()).filter(Boolean).slice(0, 30);
+const uid = () => Math.random().toString(36).slice(2, 10);
+const list = (value: string) => value.split(",").map((item) => item.trim()).filter(Boolean).slice(0, 30);
+
+async function fileBase64(file: File) {
+  const bytes = new Uint8Array(await file.arrayBuffer());
+  let binary = "";
+  for (let index = 0; index < bytes.length; index += 0x8000) {
+    binary += String.fromCharCode(...bytes.subarray(index, index + 0x8000));
+  }
+  return btoa(binary);
+}
 
 function Passport() {
   const { ready, profile, saveProfile, loadDemoProfile, profileDraft, setProfileDraft } = useStore();
-  const [p, setP] = useState<Profile>(EMPTY_PROFILE);
-  const [skills, setSkills] = useState("");
-  const [langs, setLangs] = useState("");
-  const [locs, setLocs] = useState("");
-  const [errors, setErrors] = useState<Partial<Record<string, string>>>({});
-  const [msg, setMsg] = useState("");
+  const extract = useServerFn(extractProfile);
+  const fileRef = useRef<HTMLInputElement>(null);
+  const [draft, setDraft] = useState<Profile>(() => profileDraft ?? profile ?? EMPTY_PROFILE);
+  const [documents, setDocuments] = useState<IntakeDocument[]>([]);
+  const [results, setResults] = useState<DocumentExtractionResult[]>([]);
+  const [choices, setChoices] = useState<Record<string, string>>({});
+  const [pasteOpen, setPasteOpen] = useState(false);
+  const [pasteName, setPasteName] = useState("Pasted notes");
+  const [pasteText, setPasteText] = useState("");
+  const [pasteLabel, setPasteLabel] = useState<DocumentLabel>("other");
+  const [message, setMessage] = useState("");
+  const [saving, setSaving] = useState(false);
 
-  useEffect(() => {
-    // Restore unsaved edits if the user navigated away; otherwise show the saved Passport.
-    const src = profileDraft ?? profile ?? EMPTY_PROFILE;
-    setP(src);
-    setSkills(src.skills.join(", "));
-    setLangs(src.languages.join(", "));
-    setLocs(src.preferences.locations.join(", "));
-  }, [profile]);
-
-  const build = (): Profile => ({ ...p, skills: list(skills), languages: list(langs), preferences: { ...p.preferences, locations: list(locs) } });
-  const dirty = !!profile && JSON.stringify(build()) !== JSON.stringify(profile);
-  const [hydrated, setHydrated] = useState(false);
-  useEffect(() => { if (ready) setHydrated(true); }, [ready]);
-  const draftJson = dirty ? JSON.stringify(build()) : "";
-  useEffect(() => {
-    if (!hydrated) return;
-    setProfileDraft(draftJson ? (JSON.parse(draftJson) as Profile) : null);
-  }, [draftJson, hydrated, setProfileDraft]);
+  const conflicts = useMemo(() => extractionConflicts(results), [results]);
+  const unresolved = conflicts.filter((item) => !choices[item.field]).length;
+  const confirmation = canConfirmProfile(draft, unresolved);
+  const hasDraft = profileDraft !== null || JSON.stringify(draft) !== JSON.stringify(profile ?? EMPTY_PROFILE);
 
   if (!ready) return <Loading />;
 
-  const submit = (confirm: boolean) => {
-    const next = build();
-    if (confirm) {
-      const r = schema.safeParse({ ...next, degreeLevel: next.degreeLevel ?? "", graduationYear: next.graduationYear ?? undefined });
-      if (!r.success) {
-        const e: Partial<Record<string, string>> = {};
-        r.error.issues.forEach((i) => { e[String(i.path[0])] = i.message; });
-        setErrors(e);
-        setMsg("Please fix the highlighted fields before confirming.");
-        return;
-      }
-    }
-    setErrors({});
-    saveProfile({ ...next, confirmed: confirm, confirmedAt: confirm ? new Date().toISOString() : null });
-    setMsg(confirm ? "Passport confirmed. Eligibility checks now use it." : "Draft saved (not confirmed).");
+  const persistDraft = (next: Profile) => {
+    setDraft(next);
+    setProfileDraft({ ...next, confirmed: false, confirmedAt: null });
   };
 
-  const toggleCat = (c: Category) =>
-    setP((x) => ({ ...x, preferences: { ...x.preferences, categories: x.preferences.categories.includes(c) ? x.preferences.categories.filter((y) => y !== c) : [...x.preferences.categories, c] } }));
+  const manual = (field: string, next: Profile) => {
+    persistDraft({
+      ...next,
+      fieldProvenance: { ...next.fieldProvenance, [field]: "manual" },
+      fieldEvidence: next.fieldEvidence.filter((item) => item.field !== field),
+      source: next.source === "demo" ? "demo" : "manual",
+    });
+  };
+
+  const addFiles = (event: ChangeEvent<HTMLInputElement>) => {
+    const incoming = [...(event.target.files ?? [])];
+    const available = 3 - documents.length;
+    const accepted: IntakeDocument[] = [];
+    const errors: string[] = [];
+    for (const file of incoming.slice(0, available)) {
+      if (file.type !== "application/pdf" && !file.name.toLowerCase().endsWith(".pdf")) {
+        errors.push(`${file.name}: only PDF files are supported.`);
+      } else if (file.size > 5 * 1024 * 1024) {
+        errors.push(`${file.name}: file is larger than 5 MB.`);
+      } else if (file.size === 0) {
+        errors.push(`${file.name}: file is empty.`);
+      } else {
+        accepted.push({ id: uid(), name: file.name, label: "cv", kind: "pdf", file, state: "ready" });
+      }
+    }
+    if (incoming.length > available) errors.push("You can add up to 3 documents.");
+    setDocuments((current) => [...current, ...accepted]);
+    setMessage(errors.join(" "));
+    event.target.value = "";
+  };
+
+  const addPasted = () => {
+    if (!pasteText.trim()) return setMessage("Paste some document text first.");
+    if (documents.length >= 3) return setMessage("You can add up to 3 documents.");
+    setDocuments((current) => [...current, { id: uid(), name: pasteName.trim() || "Pasted text", label: pasteLabel, kind: "text", text: pasteText.trim(), state: "ready" }]);
+    setPasteText("");
+    setPasteOpen(false);
+    setMessage("");
+  };
+
+  const runExtraction = async () => {
+    if (!documents.length) return setMessage("Add at least one PDF or pasted document first.");
+    setSaving(true);
+    setMessage("");
+    const collected: DocumentExtractionResult[] = [];
+    for (const document of documents) {
+      setDocuments((current) => current.map((item) => item.id === document.id ? { ...item, state: "extracting", error: undefined } : item));
+      try {
+        const content = document.kind === "pdf" && document.file ? await fileBase64(document.file) : document.text ?? "";
+        const result = await extract({ data: { name: document.name, label: document.label, mimeType: document.kind === "pdf" ? "application/pdf" : "text/plain", content } });
+        collected.push(result);
+        setDocuments((current) => current.map((item) => item.id === document.id ? { ...item, state: result.ok ? "done" : "error", error: result.error ?? undefined } : item));
+      } catch {
+        const result: DocumentExtractionResult = { ok: false, document: { name: document.name, label: document.label }, candidates: [], warnings: [], error: "Automatic extraction is unavailable. You can retry or enter the details manually." };
+        collected.push(result);
+        setDocuments((current) => current.map((item) => item.id === document.id ? { ...item, state: "error", error: result.error ?? undefined } : item));
+      }
+    }
+    setResults(collected);
+    const next = applyExtractedCandidates(profileDraft ?? profile ?? EMPTY_PROFILE, collected);
+    persistDraft(next);
+    setSaving(false);
+    setMessage(collected.some((item) => item.ok) ? "Extraction finished. Review every value and resolve any conflicts." : "Automatic extraction did not return any values. You can retry or continue manually.");
+  };
+
+  const chooseConflict = (field: string, value: string) => {
+    const nextChoices = { ...choices, [field]: value };
+    setChoices(nextChoices);
+    persistDraft(applyExtractedCandidates(draft, results, nextChoices));
+  };
+
+  const makeProfile = () => {
+    if (!confirmation.ok) return setMessage(confirmation.reason);
+    const now = new Date().toISOString();
+    saveProfile({ ...draft, confirmed: true, confirmedAt: now });
+    setDraft((current) => ({ ...current, confirmed: true, confirmedAt: now }));
+    setMessage("Profile made and confirmed. Matching can now use it.");
+  };
+
+  const education = draft.education[0] ?? { id: "education-primary", degreeLevel: null, degreeName: "", school: "", field: "" };
+  const updateEducation = (patch: Partial<typeof education>, field: string) => {
+    const nextEducation = { ...education, ...patch };
+    manual(field, { ...draft, education: [nextEducation, ...draft.education.slice(1)], degreeLevel: nextEducation.degreeLevel, field: nextEducation.field });
+  };
 
   return (
     <>
       <PageHeader
-        title="Opportunity Passport"
-        sub="Enter details manually. You must review and confirm before eligibility checks run."
-        right={<button className="btn btn-outline" onClick={() => { loadDemoProfile(); setMsg("Loaded fictional demo profile (Maya). Review, then confirm."); }}>Load demo profile</button>}
+        title="Make your Opportunity Passport"
+        sub="Upload papers or enter details yourself. Nothing is assumed, and matching uses only the profile you confirm."
+        right={<Button variant="outline" onClick={() => { loadDemoProfile(); setDraft({ ...EMPTY_PROFILE }); setMessage("Loaded the fictional Maya demo profile. Refresh to view it."); }}>Load demo profile</Button>}
       />
-      <div className="mb-4 flex flex-wrap items-center gap-2">
-        {profile?.confirmed
-          ? <span className="chip chip-met">✓ Confirmed {profile.confirmedAt ? new Date(profile.confirmedAt).toLocaleDateString() : ""}</span>
-          : <span className="chip chip-unknown">Not confirmed</span>}
-        {dirty && (
-          <span className="chip chip-unknown" role="status">
-            Unsaved edits — eligibility still uses your {profile?.confirmed ? "last confirmed" : "saved"} Passport until you {profile?.confirmed ? "confirm again" : "save and confirm"}
-          </span>
-        )}
-        {p.source === "demo" && <span className="chip chip-demo">Demo profile</span>}
-      </div>
-      {msg && <p role="status" className="mb-4 rounded-lg bg-teal-soft p-3 text-sm">{msg}</p>}
 
-      <form className="card grid gap-5 p-6 md:grid-cols-2" onSubmit={(e) => { e.preventDefault(); submit(true); }} noValidate>
-        <F id="fullName" label="Name" err={errors["fullName"]}>
-          <input id="fullName" value={p.fullName} maxLength={100} onChange={(e) => setP({ ...p, fullName: e.target.value })} aria-invalid={!!errors["fullName"]} />
-        </F>
-        <F id="degree" label="Degree level" err={errors["degreeLevel"]}>
-          <select id="degree" value={p.degreeLevel ?? ""} onChange={(e) => setP({ ...p, degreeLevel: (e.target.value || null) as DegreeLevel | null })} aria-invalid={!!errors["degreeLevel"]}>
-            <option value="">Select…</option>
-            {Object.entries(DEGREE_LABELS).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
-          </select>
-        </F>
-        <F id="field" label="Field of study" err={errors["field"]}>
-          <input id="field" value={p.field} maxLength={100} placeholder="e.g. Computer Science" onChange={(e) => setP({ ...p, field: e.target.value })} aria-invalid={!!errors["field"]} />
-        </F>
-        <F id="grad" label="Graduation year" err={errors["graduationYear"]}>
-          <input id="grad" type="number" inputMode="numeric" value={p.graduationYear ?? ""} onChange={(e) => setP({ ...p, graduationYear: e.target.value ? Number(e.target.value) : null })} aria-invalid={!!errors["graduationYear"]} />
-        </F>
-        <F id="skills" label="Skills (comma separated)">
-          <input id="skills" value={skills} maxLength={500} placeholder="Python, SQL" onChange={(e) => setSkills(e.target.value)} />
-        </F>
-        <F id="langs" label="Languages (comma separated)">
-          <input id="langs" value={langs} maxLength={300} placeholder="English, Spanish" onChange={(e) => setLangs(e.target.value)} />
-        </F>
-        <fieldset className="md:col-span-2">
-          <legend className="text-sm font-semibold">Preferred categories</legend>
-          <div className="mt-2 flex flex-wrap gap-2">
-            {(Object.keys(CATEGORY_LABELS) as Category[]).map((c) => (
-              <button type="button" key={c} aria-pressed={p.preferences.categories.includes(c)} onClick={() => toggleCat(c)} className={`btn btn-sm ${p.preferences.categories.includes(c) ? "" : "btn-outline"}`}>
-                {CATEGORY_LABELS[c]}
-              </button>
-            ))}
-          </div>
-        </fieldset>
-        <F id="locs" label="Preferred locations (comma separated)">
-          <input id="locs" value={locs} maxLength={300} onChange={(e) => setLocs(e.target.value)} />
-        </F>
-        <label className="flex items-center gap-2 self-end font-normal">
-          <input type="checkbox" className="w-auto" checked={p.preferences.remoteOk} onChange={(e) => setP({ ...p, preferences: { ...p.preferences, remoteOk: e.target.checked } })} />
-          Open to remote opportunities
-        </label>
-        <fieldset className="md:col-span-2">
-          <legend className="text-sm font-semibold">Funding needs</legend>
-          <div className="mt-2 flex flex-wrap gap-4">
-            {(["tuition", "living", "travel"] as const).map((k) => (
-              <label key={k} className="flex items-center gap-2 font-normal capitalize">
-                <input type="checkbox" className="w-auto" checked={p.fundingNeeds[k]} onChange={(e) => setP({ ...p, fundingNeeds: { ...p.fundingNeeds, [k]: e.target.checked } })} />
-                {k === "living" ? "Living costs" : k}
-              </label>
-            ))}
-          </div>
-        </fieldset>
-        <F id="goals" label="Goals" className="md:col-span-2">
-          <textarea id="goals" rows={3} maxLength={1000} value={p.goals} onChange={(e) => setP({ ...p, goals: e.target.value })} />
-        </F>
-        <div className="flex flex-wrap gap-3 md:col-span-2">
-          <button type="submit" className="btn">I've reviewed this — Confirm Passport</button>
-          <button type="button" className="btn btn-outline" onClick={() => submit(false)}>Save draft</button>
+      <ol className="mb-6 grid grid-cols-2 gap-2 sm:grid-cols-5" aria-label="Profile creation steps">
+        {["Upload", "Extract", "Review", "Fill gaps", "Make profile"].map((step, index) => (
+          <li key={step} className={`profile-step ${index <= (results.length ? 3 : documents.length ? 1 : 0) ? "profile-step-active" : ""}`}>
+            <span>{index + 1}</span>{step}
+          </li>
+        ))}
+      </ol>
+
+      {profile?.confirmed && (
+        <div className="action-band mb-6 flex flex-wrap items-center justify-between gap-3">
+          <div><strong>Confirmed profile remains active</strong><p className="text-sm text-muted-foreground">Your new upload and edits stay separate until you press Make profile.</p></div>
+          <span className="chip chip-met">Confirmed {profile.confirmedAt ? new Date(profile.confirmedAt).toLocaleDateString() : ""}</span>
         </div>
-        <p className="text-xs text-muted-foreground md:col-span-2">CV import is not available yet. Editing a confirmed Passport and saving a draft un-confirms it.</p>
-      </form>
+      )}
+      {message && <p role="status" className="mb-5 rounded-md bg-teal-soft p-3 text-sm">{message}</p>}
+
+      <section className="mb-8 border-y border-border py-6" aria-labelledby="documents-title">
+        <div className="flex flex-wrap items-start justify-between gap-4">
+          <div><p className="eyebrow">Steps 1–2</p><h2 id="documents-title" className="mt-1 text-2xl">Add your documents</h2><p className="mt-1 text-sm text-muted-foreground">Up to 3 PDFs, 5 MB each, or pasted text. Label each document yourself.</p></div>
+          <div className="flex gap-2">
+            <input ref={fileRef} className="sr-only" type="file" accept="application/pdf,.pdf" multiple onChange={addFiles} />
+            <Button variant="outline" onClick={() => fileRef.current?.click()} disabled={documents.length >= 3}><Upload />Add PDF</Button>
+            <Button variant="outline" onClick={() => setPasteOpen((open) => !open)} disabled={documents.length >= 3}><Plus />Paste text</Button>
+          </div>
+        </div>
+        {pasteOpen && (
+          <div className="mt-5 grid gap-3 border-l-2 border-primary pl-4 md:grid-cols-[1fr_160px]">
+            <F id="paste-name" label="Document name"><input id="paste-name" value={pasteName} onChange={(event) => setPasteName(event.target.value)} /></F>
+            <F id="paste-label" label="Document label"><select id="paste-label" value={pasteLabel} onChange={(event) => setPasteLabel(event.target.value as DocumentLabel)}><option value="cv">CV</option><option value="transcript">Transcript</option><option value="other">Other</option></select></F>
+            <F id="paste-text" label="Document text" className="md:col-span-2"><textarea id="paste-text" rows={6} value={pasteText} onChange={(event) => setPasteText(event.target.value)} placeholder="Paste the document exactly as written…" /></F>
+            <div><Button onClick={addPasted}>Add pasted document</Button></div>
+          </div>
+        )}
+        <div className="mt-5 grid gap-3">
+          {!documents.length && <div className="border border-dashed border-input p-6 text-center text-sm text-muted-foreground">No documents added. Manual entry is always available below.</div>}
+          {documents.map((document) => (
+            <div key={document.id} className="flex flex-wrap items-center gap-3 border-b border-border py-3">
+              <FileText className="size-5 text-primary" aria-hidden="true" />
+              <div className="min-w-0 flex-1"><p className="truncate font-semibold">{document.name}</p><p className="text-xs text-muted-foreground">{document.kind === "pdf" ? "PDF" : "Pasted text"} · {document.state === "extracting" ? "Extracting…" : document.state === "done" ? "Extracted" : document.state === "error" ? "Needs attention" : "Ready"}</p>{document.error && <p className="field-error">{document.error}</p>}</div>
+              <select aria-label={`Label ${document.name}`} className="w-36" value={document.label} onChange={(event) => setDocuments((current) => current.map((item) => item.id === document.id ? { ...item, label: event.target.value as DocumentLabel } : item))}><option value="cv">CV</option><option value="transcript">Transcript</option><option value="other">Other</option></select>
+              <Button size="icon" variant="ghost" aria-label={`Remove ${document.name}`} onClick={() => setDocuments((current) => current.filter((item) => item.id !== document.id))}><Trash2 /></Button>
+            </div>
+          ))}
+        </div>
+        <div className="mt-5 flex flex-wrap items-center gap-3">
+          <Button onClick={runExtraction} disabled={saving || !documents.length}><WandSparkles />{saving ? "Extracting documents…" : "Extract details"}</Button>
+          <span className="flex items-center gap-1 text-xs text-muted-foreground"><LockKeyhole className="size-3" />Files are processed privately and deleted after extraction.</span>
+        </div>
+      </section>
+
+      {conflicts.length > 0 && (
+        <section className="mb-8 border-l-2 border-warning-strong bg-warning-soft p-5" aria-labelledby="conflicts-title">
+          <p className="eyebrow">Needs your choice</p><h2 id="conflicts-title" className="mt-1 text-xl">Resolve document conflicts</h2>
+          <div className="mt-4 grid gap-5">
+            {conflicts.map((conflict) => <fieldset key={conflict.field}><legend className="font-semibold">{fieldLabel(conflict.field)}</legend><div className="mt-2 grid gap-2">{conflict.candidates.map((candidate, index) => <label key={`${candidate.sourceFile}-${index}`} className="flex cursor-pointer gap-3 border border-border bg-card p-3 font-normal"><input className="mt-1 w-auto" type="radio" name={conflict.field} checked={choices[conflict.field] === candidate.value} onChange={() => chooseConflict(conflict.field, candidate.value)} /><span><strong>{candidate.value}</strong><span className="block text-xs text-muted-foreground">{candidate.sourceFile}: “{candidate.snippet}”</span></span></label>)}</div></fieldset>)}
+          </div>
+        </section>
+      )}
+
+      <section aria-labelledby="review-title">
+        <p className="eyebrow">Steps 3–5</p><h2 id="review-title" className="mt-1 text-2xl">Review and fill the gaps</h2><p className="mt-1 text-sm text-muted-foreground">Correct anything that is wrong. Blank values remain unknown.</p>
+        <form className="mt-5 grid gap-x-6 gap-y-5 md:grid-cols-2" onSubmit={(event) => { event.preventDefault(); makeProfile(); }}>
+          <F id="fullName" label="Name"><input id="fullName" value={draft.fullName} onChange={(event) => manual("fullName", { ...draft, fullName: event.target.value })} /><Evidence field="fullName" profile={draft} /></F>
+          <F id="school" label="School"><input id="school" value={education.school} onChange={(event) => updateEducation({ school: event.target.value }, "school")} /><Evidence field="school" profile={draft} /></F>
+          <F id="degree" label="Degree"><input id="degree" value={education.degreeName} placeholder="e.g. Bachelor of Science" onChange={(event) => updateEducation({ degreeName: event.target.value }, "degreeName")} /><Evidence field="degreeName" profile={draft} /></F>
+          <F id="degreeLevel" label="Degree level"><select id="degreeLevel" value={education.degreeLevel ?? ""} onChange={(event) => updateEducation({ degreeLevel: (event.target.value || null) as DegreeLevel | null }, "degreeLevel")}><option value="">Unknown</option>{Object.entries(DEGREE_LABELS).map(([key, label]) => <option key={key} value={key}>{label}</option>)}</select><Evidence field="degreeLevel" profile={draft} /></F>
+          <F id="field" label="Field of study"><input id="field" value={education.field} onChange={(event) => updateEducation({ field: event.target.value }, "field")} /><Evidence field="field" profile={draft} /></F>
+          <div className="grid grid-cols-2 gap-3"><F id="gpaValue" label="GPA value"><input id="gpaValue" value={draft.gpaValue} placeholder="Unknown" onChange={(event) => manual("gpaValue", { ...draft, gpaValue: event.target.value })} /></F><F id="gpaScale" label="GPA scale"><input id="gpaScale" value={draft.gpaScale} placeholder="e.g. 4.0" onChange={(event) => manual("gpaScale", { ...draft, gpaScale: event.target.value })} /></F></div>
+          <div className="grid grid-cols-[1fr_130px] gap-3"><F id="graduationDate" label="Graduation date"><input id="graduationDate" value={draft.graduationDate ?? ""} placeholder="YYYY, YYYY-MM, or YYYY-MM-DD" onChange={(event) => manual("graduationDate", { ...draft, graduationDate: event.target.value || null, graduationYear: Number(event.target.value.slice(0, 4)) || null })} /></F><F id="graduationPrecision" label="Precision"><select id="graduationPrecision" value={draft.graduationDatePrecision ?? ""} onChange={(event) => manual("graduationDatePrecision", { ...draft, graduationDatePrecision: (event.target.value || null) as Profile["graduationDatePrecision"] })}><option value="">Unknown</option><option value="year">Year</option><option value="month">Month</option><option value="day">Day</option></select></F></div>
+          <F id="skills" label="Skills (comma separated)"><input id="skills" value={draft.skills.join(", ")} onChange={(event) => manual("skills", { ...draft, skills: list(event.target.value) })} /><Evidence field="skill" profile={draft} /></F>
+          <F id="languages" label="Languages (one per line; level optional)"><textarea id="languages" rows={3} value={draft.languageDetails.map((item) => `${item.name}${item.level ? ` — ${item.level}` : ""}`).join("\n")} onChange={(event) => { const languageDetails = event.target.value.split("\n").map((line) => line.split(/\s+[—-]\s+/, 2)).filter(([name]) => name?.trim()).map(([name, level]) => ({ name: name!.trim(), level: level?.trim() ?? "" })); manual("languages", { ...draft, languageDetails, languages: languageDetails.map((item) => item.name) }); }} /><Evidence field="language" profile={draft} /></F>
+
+          <div className="border-t border-border pt-5 md:col-span-2"><h3 className="text-xl">Your choices and constraints</h3><p className="text-sm text-muted-foreground">These are never extracted from your documents.</p></div>
+          <F id="constraints" label="Constraints (comma separated)"><input id="constraints" value={draft.constraints.join(", ")} placeholder="Optional — visa, budget, schedule" onChange={(event) => manual("constraints", { ...draft, constraints: list(event.target.value) })} /></F>
+          <F id="locations" label="Preferred locations (comma separated)"><input id="locations" value={draft.preferences.locations.join(", ")} onChange={(event) => manual("preferences", { ...draft, preferences: { ...draft.preferences, locations: list(event.target.value) } })} /></F>
+          <fieldset className="md:col-span-2"><legend className="text-sm font-semibold">Preferred categories</legend><div className="mt-2 flex flex-wrap gap-2">{(Object.keys(CATEGORY_LABELS) as Category[]).map((category) => <Button type="button" size="sm" variant={draft.preferences.categories.includes(category) ? "default" : "outline"} key={category} aria-pressed={draft.preferences.categories.includes(category)} onClick={() => manual("preferences", { ...draft, preferences: { ...draft.preferences, categories: draft.preferences.categories.includes(category) ? draft.preferences.categories.filter((item) => item !== category) : [...draft.preferences.categories, category] } })}>{CATEGORY_LABELS[category]}</Button>)}</div></fieldset>
+          <label className="flex items-center gap-2 font-normal"><input type="checkbox" className="w-auto" checked={draft.preferences.remoteOk} onChange={(event) => manual("preferences", { ...draft, preferences: { ...draft.preferences, remoteOk: event.target.checked } })} />Open to remote opportunities</label>
+          <fieldset><legend className="text-sm font-semibold">Funding needs</legend><div className="mt-2 flex flex-wrap gap-4">{(["tuition", "living", "travel"] as const).map((key) => <label key={key} className="flex items-center gap-2 font-normal capitalize"><input type="checkbox" className="w-auto" checked={draft.fundingNeeds[key]} onChange={(event) => manual("fundingNeeds", { ...draft, fundingNeeds: { ...draft.fundingNeeds, [key]: event.target.checked } })} />{key}</label>)}</div></fieldset>
+          <F id="goals" label="Goals" className="md:col-span-2"><textarea id="goals" rows={3} value={draft.goals} onChange={(event) => manual("goals", { ...draft, goals: event.target.value })} /></F>
+
+          <div className="flex flex-wrap items-center gap-3 border-t border-border pt-5 md:col-span-2">
+            <Button type="submit" disabled={!confirmation.ok || saving}>Make profile</Button>
+            <Button type="button" variant="outline" onClick={() => { setProfileDraft({ ...draft, confirmed: false, confirmedAt: null }); setMessage("Draft saved. Your confirmed profile was not replaced."); }}>Save review draft</Button>
+            {!confirmation.ok && <p className="text-sm text-warning-strong">{confirmation.reason}</p>}
+            {hasDraft && profile?.confirmed && <span className="chip chip-unknown">Confirmed profile unchanged</span>}
+          </div>
+        </form>
+      </section>
     </>
   );
 }
 
-function F({ id, label, err, children, className = "" }: { id: string; label: string; err?: string | undefined; children: ReactNode; className?: string }) {
-  return (
-    <div className={className}>
-      <label htmlFor={id}>{label}</label>
-      <div className="mt-1">{children}</div>
-      {err && <p className="field-error">{err}</p>}
-    </div>
-  );
+function Evidence({ field, profile }: { field: string; profile: Profile }) {
+  const entries = profile.fieldEvidence.filter((item) => item.field === field);
+  if (!entries.length) return null;
+  return <div className="mt-2 space-y-1">{entries.map((item, index) => <p key={`${item.sourceFile}-${index}`} className="text-xs text-muted-foreground"><span className="font-semibold text-primary">Extracted from {item.sourceFile}</span> · “{item.snippet}”</p>)}</div>;
+}
+
+function F({ id, label, children, className = "" }: { id: string; label: string; children: ReactNode; className?: string }) {
+  return <div className={className}><label htmlFor={id}>{label}</label><div className="mt-1">{children}</div></div>;
 }
