@@ -2,7 +2,7 @@
 // page. Reuses the existing agent (planner -> Firecrawl page reads -> rule extraction ->
 // evidence review), its rate limiter and its honesty rules. Adds a longer per-category
 // cache so a category only re-searches when its cache is stale and the student asks.
-import { runAgentSearch, type AgentDeps } from "./agentSearch";
+import { runAgentSearch, type AgentDeps } from "./agentSearch.server";
 import type { LiveSearchInput } from "./liveSearchMapping";
 import {
   categoryRequest,
