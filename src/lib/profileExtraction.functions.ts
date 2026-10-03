@@ -20,3 +20,27 @@ export const extractProfile = createServerFn({ method: "POST" })
       request?.headers.get("X-Lovable-AIG-Run-ID") ?? undefined,
     );
   });
+
+const webSchema = z.object({
+  url: z
+    .string()
+    .trim()
+    .url()
+    .max(500)
+    .refine((value) => /^https?:\/\//i.test(value), "Only http(s) links"),
+  label: z.enum(["linkedin", "github", "website", "web"]),
+  // The student must confirm the link is their own and agree to it being read.
+  consent: z.literal(true),
+});
+
+export const extractWebProfile = createServerFn({ method: "POST" })
+  .inputValidator((input: unknown) => webSchema.parse(input))
+  .handler(async ({ data }) => {
+    const request = getRequest();
+    const { extractWebSource } = await import("./webProfileSource.server");
+    return extractWebSource(
+      { url: data.url, label: data.label },
+      request?.signal,
+      request?.headers.get("X-Lovable-AIG-Run-ID") ?? undefined,
+    );
+  });

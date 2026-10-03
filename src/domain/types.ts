@@ -21,9 +21,32 @@ export const CATEGORY_LABELS: Record<Category, string> = {
   masters: "Master's programme",
 };
 
-export type DocumentLabel = "cv" | "transcript" | "other";
+/** Uploaded papers use cv/transcript/other; student-owned web links use the web labels. */
+export type DocumentLabel = "cv" | "transcript" | "other" | "linkedin" | "website" | "github" | "web";
 export type GraduationDatePrecision = "day" | "month" | "year";
 export type ProfileValueSource = "extracted" | "manual";
+
+export type WorkType = "internship" | "part_time" | "full_time" | "volunteer" | "research" | "other";
+export const WORK_TYPE_LABELS: Record<WorkType, string> = {
+  internship: "Internship",
+  part_time: "Part-time",
+  full_time: "Full-time",
+  volunteer: "Volunteer",
+  research: "Research",
+  other: "Other",
+};
+
+export interface WorkExperienceEntry {
+  id: string;
+  role: string;
+  organization: string;
+  type: WorkType | null;
+  location: string;
+  description: string;
+  /** Source filename/URL when extracted; empty when the student typed it. */
+  sourceFile: string;
+  snippet: string;
+}
 
 export interface EducationEntry {
   id: string;
@@ -73,6 +96,7 @@ export interface Profile {
   fieldProvenance: Record<string, ProfileValueSource>;
   sourceDocuments: SourceDocument[];
   fieldEvidence: FieldEvidence[];
+  workExperience: WorkExperienceEntry[];
 }
 
 /** Integration point: CV parser returns a DRAFT; the user must still review + confirm. */
@@ -112,6 +136,8 @@ export interface DocumentExtractionResult {
   ok: boolean;
   document: SourceDocument;
   candidates: ExtractionCandidate[];
+  /** Work/volunteer/research roles explicitly written in the source. */
+  experiences?: WorkExperienceEntry[];
   warnings: string[];
   error: string | null;
 }

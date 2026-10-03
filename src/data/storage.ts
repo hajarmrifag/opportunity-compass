@@ -69,6 +69,7 @@ export function normalizeProfile(profile: Profile | null | undefined): Profile |
     fieldProvenance: profile.fieldProvenance ?? {},
     sourceDocuments: Array.isArray(profile.sourceDocuments) ? profile.sourceDocuments : [],
     fieldEvidence: Array.isArray(profile.fieldEvidence) ? profile.fieldEvidence : [],
+    workExperience: Array.isArray(profile.workExperience) ? profile.workExperience : [],
   };
 }
 

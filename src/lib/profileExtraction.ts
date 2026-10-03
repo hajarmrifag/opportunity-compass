@@ -4,8 +4,50 @@ import type {
   FieldEvidence,
   Profile,
   ProfileValueSource,
+  WorkExperienceEntry,
 } from "@/domain/types";
 import { DEGREE_LABELS, type DegreeLevel } from "@/domain/types";
+
+const experienceKey = (item: WorkExperienceEntry) =>
+  `${item.role.trim().toLowerCase()}|${item.organization.trim().toLowerCase()}`;
+
+/** Keeps every existing (incl. student-typed) entry; adds extracted roles not already present. */
+export function mergeExperiences(
+  existing: WorkExperienceEntry[],
+  incoming: WorkExperienceEntry[],
+): WorkExperienceEntry[] {
+  const seen = new Set(existing.map(experienceKey));
+  const merged = [...existing];
+  for (const item of incoming) {
+    const key = experienceKey(item);
+    if (seen.has(key)) continue;
+    seen.add(key);
+    merged.push(item);
+  }
+  return merged;
+}
+
+/** Only http(s) public links; returns a normalised URL or null. */
+export function normalizeWebSourceUrl(raw: string): string | null {
+  const text = raw.trim();
+  if (!text) return null;
+  try {
+    const url = new URL(/^https?:\/\//i.test(text) ? text : `https://${text}`);
+    if (url.protocol !== "https:" && url.protocol !== "http:") return null;
+    if (!url.hostname.includes(".") || /^(localhost|127\.|10\.|192\.168\.)/.test(url.hostname))
+      return null;
+    return url.toString();
+  } catch {
+    return null;
+  }
+}
+
+export function webSourceLabel(url: string): "linkedin" | "github" | "website" {
+  const host = new URL(url).hostname.toLowerCase();
+  if (host.endsWith("linkedin.com")) return "linkedin";
+  if (host.endsWith("github.com")) return "github";
+  return "website";
+}
 
 export const EXTRACTABLE_FIELDS = [
   "fullName",
@@ -145,6 +187,10 @@ export function applyExtractedCandidates(
       ...base.fieldEvidence.filter((item) => !evidence.some((next) => next.field === item.field)),
       ...evidence,
     ],
+    workExperience: mergeExperiences(
+      base.workExperience ?? [],
+      results.flatMap((result) => result.experiences ?? []),
+    ),
     sourceDocuments: results.map((result) => result.document),
     source: "cv_parser",
     confirmed: false,

@@ -234,6 +234,7 @@ export const DEMO_PROFILE: Profile = {
   fieldProvenance: {},
   sourceDocuments: [],
   fieldEvidence: [],
+  workExperience: [],
 };
 
 export const EMPTY_PROFILE: Profile = {
@@ -259,4 +260,5 @@ export const EMPTY_PROFILE: Profile = {
   fieldProvenance: {},
   sourceDocuments: [],
   fieldEvidence: [],
+  workExperience: [],
 };
