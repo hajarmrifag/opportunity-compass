@@ -24,7 +24,7 @@ import {
   type TrackerEvent,
 } from "@/lib/tracker.functions";
 import { TrackerInsights } from "@/features/tracker/Insights";
-import { EmptyState, Loading, PageHeader } from "@/components/ui-bits";
+import { Loading, PageHeader } from "@/components/ui-bits";
 
 export const Route = createFileRoute("/_authenticated/tracker")({
   head: () => ({
@@ -145,7 +145,6 @@ function TrackerPage() {
 
   if (appsQuery.isLoading || chatsQuery.isLoading) return <Loading />;
 
-  const isEmpty = apps.length === 0 && chats.length === 0;
 
   return (
     <>
