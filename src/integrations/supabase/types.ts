@@ -127,6 +127,7 @@ export type Database = {
           contact_name: string
           created_at: string
           date: string | null
+          follow_up_date: string | null
           id: string
           notes: string
           outcome: string
@@ -137,6 +138,7 @@ export type Database = {
           contact_name: string
           created_at?: string
           date?: string | null
+          follow_up_date?: string | null
           id?: string
           notes?: string
           outcome?: string
@@ -147,6 +149,7 @@ export type Database = {
           contact_name?: string
           created_at?: string
           date?: string | null
+          follow_up_date?: string | null
           id?: string
           notes?: string
           outcome?: string
@@ -164,6 +167,7 @@ export type Database = {
           evidence: string | null
           gmail_message_id: string
           id: string
+          kind: string
           role: string | null
           state: string
           user_id: string
@@ -177,6 +181,7 @@ export type Database = {
           evidence?: string | null
           gmail_message_id: string
           id?: string
+          kind?: string
           role?: string | null
           state?: string
           user_id?: string
@@ -190,6 +195,7 @@ export type Database = {
           evidence?: string | null
           gmail_message_id?: string
           id?: string
+          kind?: string
           role?: string | null
           state?: string
           user_id?: string
