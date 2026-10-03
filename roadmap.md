@@ -15,9 +15,9 @@
 - [x] Repair template routing tests' setup (no skip/weakening)
 - [x] Unsaved Passport edits: label eligibility as based on last confirmed Passport
 - [x] Full tests, typecheck, prod build; record in QA doc
-- [ ] Live web opportunity search (server-side, managed Firecrawl; inactive until connector approved): NL query + filters (category incl. jobs/masters, location/remote, subject, education, funding, deadline), source URL + retrievedAt, dedupe, open/closed/unknown, save-to-tracker, bounded/cached/rate-limited/cancellable, no demo fallback, no PII sent
-- [ ] Document exact connector/Cloud permissions + cost before activation (docs/LIVE_SEARCH.md)
-- [ ] Validate real search→source→save once connected (blocked on approval)
+- [x] Live web opportunity search (server-side, managed Firecrawl; inactive until connector approved): NL query + filters (category incl. jobs/masters, location/remote, subject, education, funding, deadline), source URL + retrievedAt, dedupe, open/closed/unknown, save-to-tracker, bounded/cached/rate-limited/cancellable, no demo fallback, no PII sent
+- [x] Document exact connector/Cloud permissions + cost before activation (docs/LIVE_SEARCH.md)
+- [x] Validate real search→source→save once connected (verified 3 Oct: approved Firecrawl connection already linked; real searches returned sourced listings and honest empty state)
 
 ## Live search
 - [x] Server search + mapping + caching/rate limit/cancel
