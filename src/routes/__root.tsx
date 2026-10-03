@@ -92,7 +92,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
       {
         rel: "stylesheet",
-        href: "https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,650&family=Public+Sans:wght@400;500;600;700&display=swap",
+        href: "https://fonts.googleapis.com/css2?family=Archivo+Black&family=DM+Serif+Display:ital@0;1&family=Public+Sans:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap",
       },
     ],
   }),
@@ -123,17 +123,25 @@ function RootComponent() {
   useEffect(() => {
     const KEY = "oos-chunk-reload";
     const onErr = (msg: string) => {
-      if (!/Failed to fetch dynamically imported module|Importing a module script failed/.test(msg)) return;
+      if (!/Failed to fetch dynamically imported module|Importing a module script failed/.test(msg))
+        return;
       if (sessionStorage.getItem(KEY)) return;
       sessionStorage.setItem(KEY, "1");
       window.location.reload();
     };
-    const a = (e: Event) => { e.preventDefault(); onErr("Failed to fetch dynamically imported module"); };
+    const a = (e: Event) => {
+      e.preventDefault();
+      onErr("Failed to fetch dynamically imported module");
+    };
     const b = (e: PromiseRejectionEvent) => onErr(String(e.reason?.message ?? e.reason));
     window.addEventListener("vite:preloadError", a);
     window.addEventListener("unhandledrejection", b);
     const t = setTimeout(() => sessionStorage.removeItem(KEY), 10000);
-    return () => { window.removeEventListener("vite:preloadError", a); window.removeEventListener("unhandledrejection", b); clearTimeout(t); };
+    return () => {
+      window.removeEventListener("vite:preloadError", a);
+      window.removeEventListener("unhandledrejection", b);
+      clearTimeout(t);
+    };
   }, []);
 
   return (

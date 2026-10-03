@@ -74,31 +74,36 @@ function ComparePage() {
           </label>
         }
       />
-      <div className="overflow-x-auto pb-6">
-        <div
-          className="grid min-w-[720px] gap-4"
-          style={{ gridTemplateColumns: `repeat(${opportunities.length}, minmax(220px, 1fr))` }}
-        >
+      <div className="atlas-decision-board pb-6">
+        <div className={`atlas-compare-grid atlas-compare-columns-${opportunities.length}`}>
           {opportunities.map((opp, index) => {
             const eligibility = demoEligibilityAdapter.evaluate(profile, opp);
             const source = safeHttpUrl(opp.sourceUrl);
             return (
-              <article key={opp.id} className="card p-5">
+              <article
+                key={opp.id}
+                className="atlas-compare-column border border-border bg-card p-5"
+              >
                 <div className="mb-3 flex items-start justify-between gap-2">
-                  <SourceBadge opp={opp} />
+                  <div>
+                    <span className="atlas-result-number">0{index + 1}</span>
+                    <div className="mt-2">
+                      <SourceBadge opp={opp} />
+                    </div>
+                  </div>
                   <Button variant="ghost" size="sm" onClick={() => removeCompare(opp.id)}>
                     Remove
                   </Button>
                 </div>
-                <h2 className="text-xl">
+                <h2 className="atlas-compare-title mt-5 text-2xl leading-tight">
                   <Link to="/opportunities/$id" params={{ id: opp.id }} className="hover:underline">
                     {opp.title}
                   </Link>
                 </h2>
-                <p className="text-sm text-muted-foreground">
+                <p className="atlas-compare-provider text-sm text-muted-foreground">
                   {opp.organization || "Provider not stated"}
                 </p>
-                <dl className="mt-5 divide-y divide-border text-sm">
+                <dl className="atlas-fact-grid mt-5 divide-y divide-border text-sm">
                   <Row
                     label="Type"
                     value={opp.category}
@@ -109,7 +114,9 @@ function ComparePage() {
                     value={locations[index] ?? "Not stated"}
                     highlight={different(locations)}
                   />
-                  <div className={`py-3 ${different(deadlines) ? "bg-accent/50" : ""}`}>
+                  <div
+                    className={`atlas-fact-row py-3 ${different(deadlines) ? "bg-accent/50" : ""}`}
+                  >
                     <dt className="text-xs font-semibold uppercase text-muted-foreground">
                       Deadline
                     </dt>
@@ -129,7 +136,7 @@ function ComparePage() {
                     highlight={false}
                   />
                   {(["tuition", "living", "travel"] as const).map((key) => (
-                    <div key={key} className="py-3">
+                    <div key={key} className="atlas-fact-row py-3">
                       <dt className="text-xs font-semibold capitalize text-muted-foreground">
                         {key}
                       </dt>
@@ -178,7 +185,7 @@ function ComparePage() {
 
 function Row({ label, value, highlight }: { label: string; value: string; highlight: boolean }) {
   return (
-    <div className={`py-3 ${highlight ? "bg-accent/50" : ""}`}>
+    <div className={`atlas-fact-row py-3 ${highlight ? "bg-accent/50" : ""}`}>
       <dt className="text-xs font-semibold uppercase text-muted-foreground">{label}</dt>
       <dd className="capitalize">{value.replace("_", " ")}</dd>
     </div>

@@ -11,6 +11,8 @@ export const Route = createFileRoute("/journey")({
       { name: "description", content: "Track application statuses, notes and deadlines." },
       { property: "og:title", content: "My Journey — OpportunityOS" },
       { property: "og:description", content: "Track application statuses, notes and deadlines." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: Journey,
@@ -50,12 +52,12 @@ function Journey() {
         />
       ) : (
         <>
-          <div className="mb-4 flex flex-wrap gap-2" role="group" aria-label="Filter by status">
+          <div className="atlas-journey-path mb-8" role="group" aria-label="Filter by status">
             {(["all", ...STATUSES] as const).map((s) => (
               <button
                 key={s}
                 aria-pressed={filter === s}
-                className={`btn btn-sm ${filter === s ? "" : "btn-outline"}`}
+                className={`atlas-journey-step ${filter === s ? "atlas-journey-step-active" : ""}`}
                 onClick={() => setFilter(s)}
               >
                 {s === "all" ? "All" : STATUS_LABELS[s]} (
@@ -69,11 +71,11 @@ function Journey() {
           {list.length === 0 ? (
             <p className="text-muted-foreground">No items with this status.</p>
           ) : (
-            <ul className="space-y-4">
-              {list.map((a) => (
-                <AppRow key={a.id} app={a} />
+            <ol className="space-y-6">
+              {list.map((a, index) => (
+                <AppRow key={a.id} app={a} index={index + 1} />
               ))}
-            </ul>
+            </ol>
           )}
         </>
       )}
@@ -81,7 +83,7 @@ function Journey() {
   );
 }
 
-function AppRow({ app }: { app: Application }) {
+function AppRow({ app, index }: { app: Application; index: number }) {
   const {
     getOpportunity,
     updateApplication,
@@ -100,7 +102,8 @@ function AppRow({ app }: { app: Application }) {
   const completed = app.tasks.filter((task) => task.completed).length;
 
   return (
-    <li className="card p-5">
+    <li className="atlas-journey-card border border-border bg-card p-5 md:p-7">
+      <div className="atlas-result-number mb-4">{String(index).padStart(2, "0")}</div>
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           {opp ? (
@@ -180,7 +183,10 @@ function AppRow({ app }: { app: Application }) {
           />
         </div>
       </div>
-      <section className="mt-5 border-t border-border pt-4" aria-labelledby={`plan-${app.id}`}>
+      <section
+        className="atlas-action-plan mt-6 border-t border-border pt-5"
+        aria-labelledby={`plan-${app.id}`}
+      >
         <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3">
           <div className="min-w-0">
             <h3 id={`plan-${app.id}`} className="text-base">
@@ -209,7 +215,7 @@ function AppRow({ app }: { app: Application }) {
           {app.tasks.map((task) => (
             <li
               key={task.id}
-              className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-2 rounded-md bg-muted p-2"
+              className="atlas-task-row grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-2 border-l-4 border-primary bg-muted p-3"
             >
               <input
                 aria-label={`Mark ${task.label} complete`}
