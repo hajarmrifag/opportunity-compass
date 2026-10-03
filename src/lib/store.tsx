@@ -20,6 +20,9 @@ interface Store {
   removeApplication: (id: string) => void;
   addManualOpportunity: (opp: Opportunity) => void;
   importTracker: (plan: ImportPlanItem[]) => void;
+  /** True while the Passport form holds edits that differ from the saved profile (in-memory only). */
+  pendingProfileEdits: boolean;
+  setPendingProfileEdits: (v: boolean) => void;
   resetAll: () => void;
 }
 
@@ -40,6 +43,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   const [state, setState] = useState<PersistedState>(emptyState);
   const [ready, setReady] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [pendingProfileEdits, setPendingProfileEdits] = useState(false);
 
   useEffect(() => {
     const { state: s, error: e } = localRepository.load();
@@ -68,8 +72,10 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     applications: state.applications,
     getOpportunity: (id) => opportunities.find((o) => o.id === id),
     getApplication: (oppId) => state.applications.find((a) => a.opportunityId === oppId),
-    saveProfile: (p) => commit((s) => ({ ...s, profile: p })),
-    loadDemoProfile: () => commit((s) => ({ ...s, profile: { ...DEMO_PROFILE } })),
+    pendingProfileEdits,
+    setPendingProfileEdits,
+    saveProfile: (p) => { setPendingProfileEdits(false); commit((s) => ({ ...s, profile: p })); },
+    loadDemoProfile: () => { setPendingProfileEdits(false); commit((s) => ({ ...s, profile: { ...DEMO_PROFILE } })); },
     saveOpportunity: (oppId) => {
       const existing = state.applications.find((a) => a.opportunityId === oppId);
       if (existing) return existing;

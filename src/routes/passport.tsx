@@ -29,7 +29,7 @@ const schema = z.object({
 const list = (s: string) => s.split(",").map((x) => x.trim()).filter(Boolean).slice(0, 30);
 
 function Passport() {
-  const { ready, profile, saveProfile, loadDemoProfile } = useStore();
+  const { ready, profile, saveProfile, loadDemoProfile, setPendingProfileEdits } = useStore();
   const [p, setP] = useState<Profile>(EMPTY_PROFILE);
   const [skills, setSkills] = useState("");
   const [langs, setLangs] = useState("");
@@ -45,9 +45,11 @@ function Passport() {
     setLocs(src.preferences.locations.join(", "));
   }, [profile]);
 
-  if (!ready) return <Loading />;
-
   const build = (): Profile => ({ ...p, skills: list(skills), languages: list(langs), preferences: { ...p.preferences, locations: list(locs) } });
+  const dirty = !!profile && JSON.stringify(build()) !== JSON.stringify(profile);
+  useEffect(() => { setPendingProfileEdits(dirty); }, [dirty, setPendingProfileEdits]);
+
+  if (!ready) return <Loading />;
 
   const submit = (confirm: boolean) => {
     const next = build();
@@ -66,8 +68,6 @@ function Passport() {
     setMsg(confirm ? "Passport confirmed. Eligibility checks now use it." : "Draft saved (not confirmed).");
   };
 
-  const dirty = !!profile && JSON.stringify(build()) !== JSON.stringify(profile);
-
   const toggleCat = (c: Category) =>
     setP((x) => ({ ...x, preferences: { ...x.preferences, categories: x.preferences.categories.includes(c) ? x.preferences.categories.filter((y) => y !== c) : [...x.preferences.categories, c] } }));
 
@@ -82,7 +82,11 @@ function Passport() {
         {profile?.confirmed
           ? <span className="chip chip-met">✓ Confirmed {profile.confirmedAt ? new Date(profile.confirmedAt).toLocaleDateString() : ""}</span>
           : <span className="chip chip-unknown">Not confirmed</span>}
-        {profile?.confirmed && dirty && <span className="chip chip-unknown" role="status">Unsaved edits — confirm again to use them</span>}
+        {dirty && (
+          <span className="chip chip-unknown" role="status">
+            Unsaved edits — eligibility still uses your {profile?.confirmed ? "last confirmed" : "saved"} Passport until you {profile?.confirmed ? "confirm again" : "save and confirm"}
+          </span>
+        )}
         {p.source === "demo" && <span className="chip chip-demo">Demo profile</span>}
       </div>
       {msg && <p role="status" className="mb-4 rounded-lg bg-teal-soft p-3 text-sm">{msg}</p>}

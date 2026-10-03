@@ -25,7 +25,7 @@ const OVERALL = {
 
 function Detail() {
   const { id } = Route.useParams();
-  const { ready, getOpportunity, profile, getApplication, saveOpportunity } = useStore();
+  const { ready, getOpportunity, profile, getApplication, saveOpportunity, pendingProfileEdits } = useStore();
   if (!ready) return <Loading />;
   const opp = getOpportunity(id);
   if (!opp) return <EmptyState title="Opportunity not found" body="It may have been removed from this browser." action={<Link to="/discover" className="btn">Back to Discover</Link>} />;
@@ -62,6 +62,17 @@ function Detail() {
               <h2 id="elig" className="text-xl">Eligibility</h2>
               <span className="chip chip-muted">{result.basis}</span>
             </div>
+            {profile?.confirmed && (
+              <p className="mt-1 text-xs text-muted-foreground">
+                Checked against your Passport confirmed {profile.confirmedAt ? new Date(profile.confirmedAt).toLocaleString() : ""}.
+              </p>
+            )}
+            {pendingProfileEdits && (
+              <p role="status" className="mt-2 rounded-lg bg-warning-soft p-3 text-sm">
+                You have unsaved Passport edits. These results reflect your {profile?.confirmed ? "last confirmed" : "saved"} Passport, not your edits.{" "}
+                <Link to="/passport" className="underline">Review and confirm</Link> to update them.
+              </p>
+            )}
             <p className="mt-2 font-semibold">{o.t}</p>
             <p className="text-sm text-muted-foreground">{o.d}</p>
             {!profile?.confirmed && <Link to="/passport" className="btn btn-sm mt-3">Confirm Passport to check</Link>}
