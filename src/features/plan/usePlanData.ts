@@ -131,29 +131,69 @@ export function usePlanProgress(opportunity: OpportunityPlanRef) {
     [progress, userId, userRequirements, opportunity.id],
   );
 
+  /**
+   * Adds a step and (optionally) sets its status in one write, so nothing is overwritten.
+   * Returns the step's item key, e.g. "req:student-123".
+   */
   const addRequirement = useCallback(
-    async (kind: RequirementKind, label: string, stage: Stage = "application") => {
+    async (kind: RequirementKind, label: string, stage: Stage = "application", initialStatus?: ItemStatus): Promise<string> => {
       const local: Requirement = {
         id: `student-${Date.now()}`, opportunityId: opportunity.id, kind, label, stage, required: true,
         dueDate: null, dueRule: null, evidenceQuote: null, sourceUrl: null, source: "student_added", status: "published",
       };
+      const now = new Date().toISOString();
+      const entryFor = (key: string): ProgressEntry => ({
+        itemKey: key, status: initialStatus!, submittedAt: initialStatus === "submitted" ? now.slice(0, 10) : null, updatedAt: now,
+      });
+
       if (!userId) {
-        const next = [...userRequirements, local];
-        setUserRequirements(next);
-        return writeLocal({ progress, userRequirements: next });
+        const key = `req:${local.id}`;
+        const nextReqs = [...userRequirements, local];
+        const nextProgress = initialStatus ? [...progress.filter((p) => p.itemKey !== key), entryFor(key)] : progress;
+        setUserRequirements(nextReqs);
+        setProgress(nextProgress);
+        writeLocal({ progress: nextProgress, userRequirements: nextReqs });
+        return key;
       }
       const { data } = await db
         .from("plan_user_requirements")
         .insert({ user_id: userId, opportunity_id: opportunity.id, kind, label, stage, required: true })
         .select()
         .single();
-      setUserRequirements([...userRequirements, { ...local, id: data?.id ?? local.id }]);
+      const id = data?.id ?? local.id;
+      const key = `req:${id}`;
+      setUserRequirements([...userRequirements, { ...local, id }]);
+      if (initialStatus) {
+        const entry = entryFor(key);
+        setProgress([...progress.filter((p) => p.itemKey !== key), entry]);
+        await db.from("plan_progress").upsert(
+          { user_id: userId, opportunity_id: opportunity.id, item_key: key, status: entry.status, submitted_at: entry.submittedAt, updated_at: entry.updatedAt },
+          { onConflict: "user_id,opportunity_id,item_key" },
+        );
+      }
+      return key;
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [userId, userRequirements, progress, opportunity.id],
   );
 
-  return { progress, userRequirements, setStatus, addRequirement, signedIn: userId !== null };
+  /** Removes a step the student added (by its item key, e.g. "req:student-123") and its progress. */
+  const removeRequirement = useCallback(
+    async (itemKey: string) => {
+      const id = itemKey.replace(/^req:/, "");
+      const nextReqs = userRequirements.filter((r) => r.id !== id);
+      const nextProgress = progress.filter((p) => p.itemKey !== itemKey);
+      setUserRequirements(nextReqs);
+      setProgress(nextProgress);
+      if (!userId) return writeLocal({ progress: nextProgress, userRequirements: nextReqs });
+      await db.from("plan_user_requirements").delete().eq("id", id).eq("user_id", userId);
+      await db.from("plan_progress").delete().eq("opportunity_id", opportunity.id).eq("item_key", itemKey).eq("user_id", userId);
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [userId, userRequirements, progress, opportunity.id],
+  );
+
+  return { progress, userRequirements, setStatus, addRequirement, removeRequirement, signedIn: userId !== null };
 }
 
 /** Calls the plan-documents server function. The CV is not stored. */
@@ -225,4 +265,12 @@ export function useMultiPlanData(saved: Array<{ opportunity: OpportunityPlanRef;
   }, [key]);
 
   return { ...state, loading };
+}
+
+/** Asks the server to read application steps from the official page (quote-verified, saved for team review). */
+export async function extractRequirementsFromPage(opportunityId: string, url: string) {
+  const { data, error } = await db.functions.invoke("plan-extract-requirements", { body: { opportunity_id: opportunityId, url } });
+  if (error) throw new Error(error.message ?? "Could not read the official page");
+  if (data?.error) throw new Error(data.error);
+  return data as { saved_requirements: number; saved_notices: number };
 }
