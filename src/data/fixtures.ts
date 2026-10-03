@@ -316,7 +316,7 @@ const REPLAY_SOURCES: ReplaySourceSpec[] = [
       queryId: "q1",
       host: "fellowships.greenhorizon-trust.example",
       path: "/climate-policy/2026-cohort",
-      title: "Climate Policy Fellowship 2026 — Green Horizon Trust",
+      title: "Climate Policy Fellowship 2026, Green Horizon Trust",
     },
     outcome: "kept",
     evidence: [
@@ -396,7 +396,7 @@ const REPLAY_SOURCES: ReplaySourceSpec[] = [
       queryId: "q1",
       host: "www.northwind-institute.example",
       path: "/programmes/climate-governance-fellows",
-      title: "Climate Governance Fellows Programme — Northwind Institute",
+      title: "Climate Governance Fellows Programme, Northwind Institute",
     },
     outcome: "kept",
     evidence: [
@@ -446,7 +446,7 @@ const REPLAY_SOURCES: ReplaySourceSpec[] = [
       title: "New climate fellowship announced for graduates",
     },
     outcome: "no_candidate",
-    failureReason: "News coverage — no application details on the page",
+    failureReason: "News coverage. No application details on the page",
     evidence: [
       evidence(
         "ev-nd-1",
@@ -463,7 +463,7 @@ const REPLAY_SOURCES: ReplaySourceSpec[] = [
       queryId: "q2",
       host: "grants.aurora-foundation.example",
       path: "/early-career/climate",
-      title: "Early Career Climate Grants — Aurora Foundation",
+      title: "Early Career Climate Grants, Aurora Foundation",
     },
     outcome: "fetch_failed",
     failureReason: "Fetch blocked by the site (HTTP 403)",
@@ -474,7 +474,7 @@ const REPLAY_SOURCES: ReplaySourceSpec[] = [
       queryId: "q2",
       host: "www.meridian-education-trust.example",
       path: "/awards/climate-leaders",
-      title: "Climate Leaders Award — Meridian Education Trust",
+      title: "Climate Leaders Award, Meridian Education Trust",
     },
     outcome: "rejected",
     evidence: [
@@ -507,7 +507,7 @@ const REPLAY_SOURCES: ReplaySourceSpec[] = [
       queryId: "q3",
       host: "www.tidewater-institute.example",
       path: "/fellowships/coastal-climate-policy",
-      title: "Coastal Climate Policy Fellowship — Tidewater Field Institute",
+      title: "Coastal Climate Policy Fellowship, Tidewater Field Institute",
     },
     outcome: "kept",
     evidence: [

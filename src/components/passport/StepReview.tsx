@@ -104,7 +104,7 @@ export function StepReview({
       <p className="eyebrow">Step 3 of 5</p>
       <h2 className="mt-1 text-2xl">Review what we found</h2>
       <p className="mt-1 text-muted-foreground">
-        Check each section. Anything missing is marked “Not provided” — you can add it here or in
+        Check each section. Anything missing is marked “Not provided”. You can add it here or in
         the next step. You can change all of this later.
       </p>
 

@@ -28,12 +28,12 @@ import { EmptyState, Loading, PageHeader } from "@/components/ui-bits";
 export const Route = createFileRoute("/_authenticated/tracker")({
   head: () => ({
     meta: [
-      { title: "Tracker — OpportunityOS" },
+      { title: "Tracker · Sourced" },
       {
         name: "description",
         content: "Your career dashboard: applications, coffee chats, follow-ups and honest AI advice.",
       },
-      { property: "og:title", content: "Tracker — OpportunityOS" },
+      { property: "og:title", content: "Tracker · Sourced" },
       {
         property: "og:description",
         content: "Your career dashboard: applications, coffee chats, follow-ups and honest AI advice.",
@@ -171,7 +171,7 @@ function TrackerPage() {
     <>
       <PageHeader
         title="Tracker"
-        sub="Your career dashboard — counted from your own records, saved to your account. My Journey (browser-local) stays separate."
+        sub="Your career dashboard, counted from your own records and saved to your account. My Journey (browser-local) stays separate."
         right={
           <Link to="/resources" className="btn btn-ghost">
             Resources
@@ -252,8 +252,8 @@ function TrackerPage() {
                   Gmail updates
                 </h2>
                 <p className="text-sm text-muted-foreground">
-                  Scanning proposes status updates from your mailbox. You accept or dismiss each one —
-                  nothing changes automatically.
+                  Scanning proposes status updates from your mailbox. You accept or dismiss each one.
+                  Nothing changes automatically.
                 </p>
               </div>
               <button className="btn btn-outline" onClick={runScan}>
@@ -414,7 +414,7 @@ function SuggestionRow({
     <li className="rounded-md border border-border p-3 text-sm">
       <p>
         <span className="font-medium">{suggestion.company ?? "Unknown company"}</span>
-        {suggestion.role ? ` — ${suggestion.role}` : ""}
+        {suggestion.role ? `, ${suggestion.role}` : ""}
         {suggestion.email_type && (
           <span className="ml-2 text-xs text-muted-foreground">{suggestion.email_type}</span>
         )}
@@ -585,7 +585,7 @@ function StatusHistory({ applicationId }: { applicationId: string }) {
     <ul className="mt-2 space-y-1 text-xs text-muted-foreground">
       {events.map((e) => (
         <li key={e.id}>
-          {new Date(e.date).toLocaleString()} — {STATUS_LABEL[e.status] ?? e.status}
+          {new Date(e.date).toLocaleString()} · {STATUS_LABEL[e.status] ?? e.status}
           {e.source === "gmail" ? " (from Gmail)" : ""}
         </li>
       ))}
@@ -737,7 +737,7 @@ function CoffeeChatRow({ chat, onChanged }: { chat: CoffeeChat; onChanged: () =>
                 )
               }
             >
-              <option value="">—</option>
+              <option value="">None</option>
               {COFFEE_CHAT_OUTCOMES.map((o) => (
                 <option key={o} value={o}>
                   {OUTCOME_LABEL[o]}

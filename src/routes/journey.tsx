@@ -8,9 +8,9 @@ import { ActionPlan } from "@/components/ActionPlan";
 export const Route = createFileRoute("/journey")({
   head: () => ({
     meta: [
-      { title: "My Journey — OpportunityOS" },
+      { title: "My Journey · Sourced" },
       { name: "description", content: "Track application statuses, notes and deadlines." },
-      { property: "og:title", content: "My Journey — OpportunityOS" },
+      { property: "og:title", content: "My Journey · Sourced" },
       { property: "og:description", content: "Track application statuses, notes and deadlines." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
@@ -29,7 +29,7 @@ function Journey() {
     <>
       <PageHeader
         title="My Journey"
-        sub="Update statuses yourself — nothing is marked Submitted automatically."
+        sub="Update statuses yourself. Nothing is marked Submitted automatically."
         right={
           <div className="flex flex-wrap gap-2">
             <Link to="/tracker-io" className="btn btn-ghost">

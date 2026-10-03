@@ -49,7 +49,7 @@ export function StepConfirm({
       <p className="eyebrow">Step 5 of 5</p>
       <h2 className="mt-1 text-2xl">Your Opportunity Passport</h2>
       <p className="mt-1 text-muted-foreground">
-        This is the profile we'll use to match you with opportunities. Check it over — you can
+        This is the profile we'll use to match you with opportunities. Check it over. You can
         change any of it later.
       </p>
 
@@ -65,7 +65,7 @@ export function StepConfirm({
                 education.degreeName,
               ]
                 .filter(Boolean)
-                .join(" — ")}
+                .join(", ")}
               {education.school ? `, ${education.school}` : ""}
               {education.field ? ` (${education.field})` : ""}
             </>
@@ -117,7 +117,7 @@ export function StepConfirm({
             <ul className="grid gap-1">
               {draft.workExperience.map((entry) => (
                 <li key={entry.id}>
-                  {entry.role} — {entry.organization}
+                  {entry.role}, {entry.organization}
                   {entry.type ? ` (${WORK_TYPE_LABELS[entry.type]})` : ""}
                 </li>
               ))}
@@ -152,7 +152,7 @@ export function ProfileCreated({ name }: { name: string }) {
       </h2>
       <p className="mx-auto mt-2 max-w-md text-muted-foreground">
         Your Opportunity Passport is saved in this browser. Discover and Live search now use it to
-        explain why each opportunity fits you — relevance only, never a promise of eligibility.
+        explain why each opportunity fits you. Relevance only, never a promise of eligibility.
       </p>
       <p className="mx-auto mt-2 max-w-md text-sm text-muted-foreground">
         You can come back to this page any time to update it.

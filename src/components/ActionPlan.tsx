@@ -30,7 +30,7 @@ export function ActionPlan({ application }: { application: Application }) {
       </div>
       {application.tasks.some((task) => task.suggested) && (
         <p className="mt-2 text-xs text-muted-foreground">
-          General suggestions only — verify the provider's requirements.
+          General suggestions only. Verify the provider's requirements.
         </p>
       )}
       <ul className="mt-3 space-y-2">

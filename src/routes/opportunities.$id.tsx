@@ -21,13 +21,13 @@ import { FinancePanel } from "@/components/FinancePanel";
 export const Route = createFileRoute("/opportunities/$id")({
   head: () => ({
     meta: [
-      { title: "Opportunity Brief — OpportunityOS" },
+      { title: "Opportunity Brief · Sourced" },
       {
         name: "description",
         content:
           "A sourced opportunity brief with eligibility, action plan and affordability scenario.",
       },
-      { property: "og:title", content: "Opportunity Brief — OpportunityOS" },
+      { property: "og:title", content: "Opportunity Brief · Sourced" },
       {
         property: "og:description",
         content:
@@ -114,8 +114,8 @@ function Detail() {
           {opp.verification === "verified"
             ? "Verified record"
             : opp.isDemo
-              ? "Fictional demo record — no source facts are verified."
-              : "Retrieved source facts — not human-verified."}{" "}
+              ? "Fictional demo record. No source facts are verified."
+              : "Retrieved source facts, not human-verified."}{" "}
           Retrieved {opp.retrievedAt ? new Date(opp.retrievedAt).toLocaleString() : "Unknown"}.
         </p>
         {(timing.state === "expired" || timing.state === "invalid") && (
@@ -123,7 +123,7 @@ function Detail() {
             {timing.state === "expired"
               ? "This deadline has passed."
               : "The listed deadline is not a valid date."}{" "}
-            This is about timing only — it does not change the eligibility results below.
+            This is about timing only. It does not change the eligibility results below.
           </p>
         )}
       </header>
@@ -167,7 +167,7 @@ function Detail() {
             )}
             <p className="mt-2 font-semibold">{OVERALL_LABELS[result.overall]}</p>
             {timing.state === "expired" && (
-              <span className="chip chip-notmet mt-1">Closed — deadline passed</span>
+              <span className="chip chip-notmet mt-1">Closed. Deadline passed</span>
             )}
             <p className="text-sm text-muted-foreground">{o.d}</p>
             <p className="text-sm text-muted-foreground">
@@ -205,7 +205,7 @@ function Detail() {
               ))}
               {result.requirements.length === 0 && (
                 <li className="py-3 text-sm text-muted-foreground">
-                  No criteria listed — check with the provider.
+                  No criteria listed. Check with the provider.
                 </li>
               )}
             </ul>
@@ -228,7 +228,7 @@ function Detail() {
               </span>
             </h2>
             <p className="text-sm text-muted-foreground">
-              Separate from eligibility — it never overrides Not eligible or Closed.
+              Separate from eligibility. It never overrides Not eligible or Closed.
             </p>
             <ul className="mt-3 list-disc pl-5 text-sm">
               {result.relevance.reasons.map((r) => (
@@ -321,7 +321,7 @@ function Detail() {
               </p>
             )}
             <p className="text-xs text-muted-foreground">
-              Opening a link never marks you as Submitted — set that yourself in My Journey.
+              Opening a link never marks you as Submitted. Set that yourself in My Journey.
             </p>
           </div>
           <div className="border border-foreground bg-card p-5 text-sm">
@@ -333,10 +333,10 @@ function Detail() {
                   Open original source ↗
                 </a>
               ) : (
-                "Unknown — no source link available"
+                "Unknown. No source link available"
               )}
             </p>
-            <p>Last verified: {opp.lastVerified ?? "Never — unverified"}</p>
+            <p>Last verified: {opp.lastVerified ?? "Never. Unverified"}</p>
             {opp.isDemo && (
               <p className="mt-2 text-demo">Fictional demo listing for testing only.</p>
             )}

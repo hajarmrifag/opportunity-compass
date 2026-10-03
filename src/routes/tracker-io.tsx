@@ -20,12 +20,12 @@ import { Loading, PageHeader } from "@/components/ui-bits";
 export const Route = createFileRoute("/tracker-io")({
   head: () => ({
     meta: [
-      { title: "Import & export tracker — OpportunityOS" },
+      { title: "Import & export tracker · Sourced" },
       {
         name: "description",
         content: "Import or export your application tracker as a CSV spreadsheet.",
       },
-      { property: "og:title", content: "Import & export tracker — OpportunityOS" },
+      { property: "og:title", content: "Import & export tracker · Sourced" },
       {
         property: "og:description",
         content: "Import or export your application tracker as a CSV spreadsheet.",
@@ -244,7 +244,7 @@ function TrackerIO() {
                     value={mapping[f]}
                     onChange={(e) => setMapping({ ...mapping, [f]: Number(e.target.value) })}
                   >
-                    <option value={-1}>— not imported —</option>
+                    <option value={-1}>Not imported</option>
                     {headers.map((h, i) => (
                       <option key={i} value={i}>
                         {h || `Column ${i + 1}`}
@@ -315,10 +315,10 @@ function TrackerIO() {
                           {ACTION_LABEL[actions[i]!].t}
                         </span>
                       </td>
-                      <td className="p-2">{r.title || "—"}</td>
-                      <td className="p-2">{r.organization || "—"}</td>
+                      <td className="p-2">{r.title || "None"}</td>
+                      <td className="p-2">{r.organization || "None"}</td>
                       <td className="p-2">{r.status}</td>
-                      <td className="p-2">{r.deadline ?? "—"}</td>
+                      <td className="p-2">{r.deadline ?? "None"}</td>
                       <td className="p-2">
                         {r.errors.map((e) => (
                           <div key={e} className="text-destructive">

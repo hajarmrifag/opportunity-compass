@@ -9,7 +9,7 @@ import type { Opportunity } from "@/domain/types";
  * Idempotent: pressing again never creates a duplicate. Signed-out users get
  * a sign-in prompt; the browser-local My Journey save stays separate.
  */
-export function SaveToTrackerButton({ opp }: { opp: Opportunity }) {
+export function SaveToTrackerButton({ opp, quiet = false }: { opp: Opportunity; quiet?: boolean }) {
   const [state, setState] = useState<"loading" | "signedOut" | "ready" | "saved">("loading");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
@@ -34,10 +34,10 @@ export function SaveToTrackerButton({ opp }: { opp: Opportunity }) {
     return (
       <Link
         to="/auth"
-        className="btn btn-outline btn-sm"
+        className={quiet ? "" : "btn btn-outline btn-sm"}
         title="Sign in to save to your account Tracker"
       >
-        Save to Tracker
+        {quiet ? "Tracker" : "Save to Tracker"}
       </Link>
     );
   }
@@ -60,11 +60,11 @@ export function SaveToTrackerButton({ opp }: { opp: Opportunity }) {
   return (
     <span className="inline-flex flex-col">
       <button
-        className="btn btn-outline btn-sm"
+        className={quiet ? "" : "btn btn-outline btn-sm"}
         disabled={busy || state === "saved"}
         onClick={save}
       >
-        {state === "saved" ? "✓ In Tracker" : busy ? "Saving…" : "Save to Tracker"}
+        {state === "saved" ? "In Tracker" : busy ? "Saving…" : quiet ? "Tracker" : "Save to Tracker"}
       </button>
       {error && (
         <span role="alert" className="field-error mt-1 text-xs">

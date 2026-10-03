@@ -205,7 +205,7 @@ export function StepGaps({
 
       {nothingMissing && (
         <p className="mt-5 border border-border bg-teal-soft p-4 text-sm">
-          Your profile already covers the essentials — review or refine anything below, or continue.
+          Your profile already covers the essentials. Review or refine anything below, or continue.
         </p>
       )}
 
@@ -330,7 +330,7 @@ export function StepGaps({
                     className="flex items-center justify-between border border-border p-2 text-sm"
                   >
                     <span>
-                      {entry.degreeName || "Untitled"} — {entry.school || "No school"}
+                      {entry.degreeName || "Untitled"}, {entry.school || "No school"}
                     </span>
                     <Button
                       size="icon"
@@ -354,7 +354,7 @@ export function StepGaps({
 
         <Question
           title="Your skills"
-          why="Skills help us explain why an opportunity fits you — they're never used to decide if you're eligible."
+          why="Skills help us explain why an opportunity fits you. They're never used to decide if you're eligible."
         >
           <MultiSelect
             id="gap-skills"

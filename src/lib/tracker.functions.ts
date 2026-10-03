@@ -364,7 +364,7 @@ export const scanGmail = createServerFn({ method: "POST" })
     return {
       connected: false,
       message:
-        "Gmail connection is not set up yet. Once it is, scanning will propose status updates here for you to accept or dismiss — nothing changes automatically.",
+        "Gmail connection is not set up yet. Once it is, scanning will propose status updates here for you to accept or dismiss. Nothing changes automatically.",
       found: 0,
     };
   });
@@ -441,7 +441,7 @@ export const generateAdvice = createServerFn({ method: "POST" })
       picked = allResources.filter((r) => ids.has(r.id));
     } catch {
       advice =
-        "The AI suggestion could not be generated right now. Your numbers above are still accurate — try again in a moment.";
+        "The AI suggestion could not be generated right now. Your numbers above are still accurate. Try again in a moment.";
     }
 
     await supabase.from("advice_log").insert({

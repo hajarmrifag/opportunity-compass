@@ -110,7 +110,7 @@ function checkOne(req: Requirement, p: Profile, source: string): RequirementResu
   if (!req.label.trim() && !vals.length && req.min == null && req.max == null && !req.gpa)
     return out(
       "unknown",
-      "Requirement text is missing — this is not the same as no restriction",
+      "Requirement text is missing. This is not the same as no restriction",
       NP,
       "Check the official site for the actual wording.",
     );
@@ -122,7 +122,7 @@ function checkOne(req: Requirement, p: Profile, source: string): RequirementResu
     if (norm(p.gpaScale) !== norm(req.gpa.scale))
       return out(
         "unknown",
-        "Different GPA scale — not converted",
+        "Different GPA scale, not converted",
         sv,
         "Scales differ; ask the provider how they compare grades.",
       );
@@ -172,7 +172,7 @@ function checkOne(req: Requirement, p: Profile, source: string): RequirementResu
       return out(
         "unknown",
         p.skills.length
-          ? "Not listed in your Passport skills — confirm yourself"
+          ? "Not listed in your Passport skills. Confirm yourself"
           : "No skills listed in Passport",
         p.skills.length ? p.skills.join(", ") : NP,
       );
@@ -190,7 +190,7 @@ function checkOne(req: Requirement, p: Profile, source: string): RequirementResu
       return out(
         "unknown",
         p.languages.length
-          ? "Not listed in your Passport languages — confirm yourself"
+          ? "Not listed in your Passport languages. Confirm yourself"
           : "No languages listed in Passport",
         p.languages.length ? p.languages.join(", ") : NP,
       );
@@ -199,7 +199,7 @@ function checkOne(req: Requirement, p: Profile, source: string): RequirementResu
       // Work rights, nationality, visa, language level etc. are never inferred.
       return out(
         "unknown",
-        "Cannot be checked automatically — verify yourself",
+        "Cannot be checked automatically. Verify yourself",
         NP,
         "Confirm on the official site.",
       );
@@ -342,9 +342,9 @@ export function evaluateRules(
 
   for (const r of results) {
     if (r.importance === "preferred" && r.status !== "met")
-      notes.push(`Preferred (does not change your status): ${r.requirement.label} — ${r.reason}`);
+      notes.push(`Preferred (does not change your status): ${r.requirement.label}. ${r.reason}`);
     if (r.importance === "unclear")
-      notes.push(`Needs verification — not clear if required: ${r.requirement.label}`);
+      notes.push(`Needs verification. Not clear if required: ${r.requirement.label}`);
   }
 
   const overall: EligibilityResult["overall"] = groupStatuses.includes("not_met")
@@ -355,8 +355,8 @@ export function evaluateRules(
   if (groupStatuses.length === 0)
     notes.push(
       opp.requirements.length
-        ? "No requirement is marked as mandatory — confirm on the official site."
-        : "No requirements listed — this does not mean there are none.",
+        ? "No requirement is marked as mandatory. Confirm on the official site."
+        : "No requirements listed. This does not mean there are none.",
     );
 
   const rel = relevance(profile, opp);

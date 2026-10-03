@@ -136,7 +136,7 @@ export function StepUpload({
         <Upload className="size-8 text-primary" aria-hidden="true" />
         <p className="text-lg font-semibold">Drag and drop your documents</p>
         <p className="text-sm text-muted-foreground">
-          or <span className="font-semibold text-primary underline">browse files</span> — PDF only,
+          or <span className="font-semibold text-primary underline">browse files</span>. PDF only,
           up to 5 MB each, {MAX_DOCUMENTS} documents maximum
         </p>
         <p className="text-xs text-muted-foreground">

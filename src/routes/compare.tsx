@@ -15,12 +15,12 @@ import { safeHttpUrl } from "@/lib/validation";
 export const Route = createFileRoute("/compare")({
   head: () => ({
     meta: [
-      { title: "Compare opportunities — OpportunityOS" },
+      { title: "Compare opportunities · Sourced" },
       {
         name: "description",
         content: "Compare shortlisted opportunities using stated source facts.",
       },
-      { property: "og:title", content: "Compare opportunities — OpportunityOS" },
+      { property: "og:title", content: "Compare opportunities · Sourced" },
       {
         property: "og:description",
         content: "Compare shortlisted opportunities using stated source facts.",
@@ -136,7 +136,7 @@ function ComparePage() {
                         ? "Needs verification"
                         : eligibility.overall === "not_eligible"
                           ? "Listed criterion not met"
-                          : "Meets listed criteria — verify"
+                          : "Meets listed criteria. Verify"
                     }
                     highlight={false}
                   />
@@ -175,7 +175,7 @@ function ComparePage() {
                     </a>
                   ) : (
                     <p className="text-sm text-muted-foreground">
-                      Source unavailable — needs verification.
+                      Source unavailable. Needs verification.
                     </p>
                   )}
                 </div>

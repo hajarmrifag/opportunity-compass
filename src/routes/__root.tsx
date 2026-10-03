@@ -80,8 +80,8 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "OpportunityOS" },
-      { name: "description", content: "Discover and track student opportunities." },
+      { title: "Sourced" },
+      { name: "description", content: "Discover and track student opportunities from their source pages." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
     ],

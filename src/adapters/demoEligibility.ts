@@ -50,7 +50,7 @@ function check(req: Requirement, p: Profile): RequirementResult {
         : r("not_met", "Not listed in Passport languages");
     }
     default:
-      return r("unknown", "Cannot be checked automatically — verify yourself");
+      return r("unknown", "Cannot be checked automatically. Verify yourself");
   }
 }
 

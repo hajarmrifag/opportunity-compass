@@ -6,12 +6,12 @@ import { PageHeader } from "@/components/ui-bits";
 export const Route = createFileRoute("/auth")({
   head: () => ({
     meta: [
-      { title: "Sign in — OpportunityOS" },
+      { title: "Sign in · Sourced" },
       {
         name: "description",
         content: "Sign in to save your tracker and resources to your account.",
       },
-      { property: "og:title", content: "Sign in — OpportunityOS" },
+      { property: "og:title", content: "Sign in · Sourced" },
       {
         property: "og:description",
         content: "Sign in to save your tracker and resources to your account.",
