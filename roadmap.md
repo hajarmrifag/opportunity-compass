@@ -97,3 +97,4 @@
 - [x] Gmail scan fn returns honest "not set up" until per-user Google registration exists
 - [x] 71 tests pass, tsgo clean, build OK, browser check of /tracker (empty state) clean
 - [ ] Full data test after draft acceptance (migration not applied in draft)
+- [ ] AI feedback: clarify user's requested change

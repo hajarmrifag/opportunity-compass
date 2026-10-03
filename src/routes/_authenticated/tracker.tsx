@@ -186,7 +186,7 @@ function TrackerPage() {
                       : "border-border"
                   }`}
                 >
-                  <span className="font-medium">{c.contact_name}</span>
+                  <span className="font-medium">Follow up on {c.contact_name}</span>
                   {c.company ? ` · ${c.company}` : ""}
                   <span className="ml-2 text-xs text-muted-foreground">
                     Follow-up{" "}
@@ -481,6 +481,7 @@ function CoffeeChatSection({
   const [date, setDate] = useState("");
   const [referral, setReferral] = useState<"" | "yes" | "no">("");
   const [comment, setComment] = useState("");
+  const [followUp, setFollowUp] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
 
@@ -488,12 +489,19 @@ function CoffeeChatSection({
     if (!name.trim()) return;
     setBusy(true);
     setError("");
+    let followUpDate: string | null = null;
+    if (followUp) {
+      const base = date ? new Date(`${date}T00:00:00`) : new Date();
+      base.setDate(base.getDate() + 21);
+      followUpDate = `${base.getFullYear()}-${String(base.getMonth() + 1).padStart(2, "0")}-${String(base.getDate()).padStart(2, "0")}`;
+    }
     try {
       await saveCoffeeChat({
         data: {
           contact_name: name.trim(),
           company: company.trim(),
           date: date || null,
+          follow_up_date: followUpDate,
           outcome: "planned",
           referral: referral === "" ? null : referral === "yes",
           notes: comment.trim(),
@@ -504,6 +512,7 @@ function CoffeeChatSection({
       setDate("");
       setReferral("");
       setComment("");
+      setFollowUp(false);
       onChanged();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Could not save.");
@@ -556,6 +565,17 @@ function CoffeeChatSection({
               <option value="">Not yet</option>
               <option value="yes">Yes</option>
               <option value="no">No</option>
+            </select>
+          </div>
+          <div>
+            <label htmlFor="cc-follow">Follow up?</label>
+            <select
+              id="cc-follow"
+              value={followUp ? "yes" : "no"}
+              onChange={(e) => setFollowUp(e.target.value === "yes")}
+            >
+              <option value="no">No</option>
+              <option value="yes">Yes — remind me in 21 days</option>
             </select>
           </div>
           <div className="sm:col-span-2">
