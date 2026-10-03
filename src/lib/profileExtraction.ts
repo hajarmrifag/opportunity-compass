@@ -27,6 +27,34 @@ export function mergeExperiences(
   return merged;
 }
 
+/** New finds become suggestions only; anything already in the profile or already suggested is skipped. */
+export function suggestExperiences(
+  accepted: WorkExperienceEntry[],
+  pending: WorkExperienceEntry[],
+  incoming: WorkExperienceEntry[],
+): WorkExperienceEntry[] {
+  const taken = new Set(accepted.map(experienceKey));
+  return mergeExperiences(pending, incoming).filter((item) => !taken.has(experienceKey(item)));
+}
+
+/** Student approves a suggestion: it moves into the profile (once) and leaves the suggestion list. */
+export function acceptExperience(profile: Profile, id: string): Profile {
+  const item = profile.experienceSuggestions.find((entry) => entry.id === id);
+  if (!item) return profile;
+  return {
+    ...profile,
+    workExperience: mergeExperiences(profile.workExperience, [item]),
+    experienceSuggestions: profile.experienceSuggestions.filter((entry) => entry.id !== id),
+  };
+}
+
+export function dismissExperience(profile: Profile, id: string): Profile {
+  return {
+    ...profile,
+    experienceSuggestions: profile.experienceSuggestions.filter((entry) => entry.id !== id),
+  };
+}
+
 /** Only http(s) public links; returns a normalised URL or null. */
 export function normalizeWebSourceUrl(raw: string): string | null {
   const text = raw.trim();
@@ -187,8 +215,10 @@ export function applyExtractedCandidates(
       ...base.fieldEvidence.filter((item) => !evidence.some((next) => next.field === item.field)),
       ...evidence,
     ],
-    workExperience: mergeExperiences(
+    workExperience: base.workExperience ?? [],
+    experienceSuggestions: suggestExperiences(
       base.workExperience ?? [],
+      base.experienceSuggestions ?? [],
       results.flatMap((result) => result.experiences ?? []),
     ),
     sourceDocuments: results.map((result) => result.document),

@@ -46,6 +46,10 @@ export interface WorkExperienceEntry {
   /** Source filename/URL when extracted; empty when the student typed it. */
   sourceFile: string;
   snippet: string;
+  /** Papers, posters, projects or impact explicitly written in the source or typed by the student. */
+  outputs: string[];
+  /** What the student has done so far / progress, in their own or the source's words. */
+  progress: string;
 }
 
 export interface EducationEntry {
@@ -97,6 +101,8 @@ export interface Profile {
   sourceDocuments: SourceDocument[];
   fieldEvidence: FieldEvidence[];
   workExperience: WorkExperienceEntry[];
+  /** Roles found in documents/links awaiting the student's approval; never used for matching. */
+  experienceSuggestions: WorkExperienceEntry[];
 }
 
 /** Integration point: CV parser returns a DRAFT; the user must still review + confirm. */

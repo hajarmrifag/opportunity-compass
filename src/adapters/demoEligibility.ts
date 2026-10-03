@@ -66,6 +66,13 @@ export const demoEligibilityAdapter: EligibilityAdapter = {
     if (profile.field && tags.includes(norm(profile.field))) reasons.push(`Related to your field (${profile.field})`);
     const skillHits = profile.skills.filter((s) => tags.includes(norm(s)));
     if (skillHits.length) reasons.push(`Uses your skills: ${skillHits.join(", ")}`);
+    const roles = profile.workExperience ?? [];
+    const hasResearch = roles.some((r) => r.type === "research" || /research|lab\b|thesis/i.test(`${r.role} ${r.organization}`));
+    const hasVolunteer = roles.some((r) => r.type === "volunteer" || /volunteer/i.test(r.role));
+    if (hasResearch && (opp.category === "research" || opp.category === "fellowship" || tags.includes("research")))
+      reasons.push("You listed research experience");
+    if (hasVolunteer && tags.some((t) => /volunteer|community|social|impact/.test(t)))
+      reasons.push("You listed volunteer experience");
     if (profile.preferences.remoteOk && opp.mode === "remote") reasons.push("Remote, which you accept");
     const needs = profile.fundingNeeds;
     if ((needs.tuition && opp.funding.tuition.status === "covered") || (needs.living && opp.funding.living.status === "covered"))

@@ -38,6 +38,15 @@ export const emptyState = (): PersistedState => ({
   profileDraft: null,
 });
 
+function normalizeExperiences(value: unknown): Profile["workExperience"] {
+  if (!Array.isArray(value)) return [];
+  return value.map((item) => ({
+    ...item,
+    outputs: Array.isArray(item?.outputs) ? item.outputs : [],
+    progress: typeof item?.progress === "string" ? item.progress : "",
+  }));
+}
+
 export function normalizeProfile(profile: Profile | null | undefined): Profile | null {
   if (!profile) return null;
   const legacy = profile as Profile & { graduationYear?: number | null };
@@ -69,7 +78,8 @@ export function normalizeProfile(profile: Profile | null | undefined): Profile |
     fieldProvenance: profile.fieldProvenance ?? {},
     sourceDocuments: Array.isArray(profile.sourceDocuments) ? profile.sourceDocuments : [],
     fieldEvidence: Array.isArray(profile.fieldEvidence) ? profile.fieldEvidence : [],
-    workExperience: Array.isArray(profile.workExperience) ? profile.workExperience : [],
+    workExperience: normalizeExperiences(profile.workExperience),
+    experienceSuggestions: normalizeExperiences(profile.experienceSuggestions),
   };
 }
 
