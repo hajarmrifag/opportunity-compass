@@ -34,4 +34,4 @@
 
 - Shared motion uses scoped CSS and the cmdk CommandCenter in AppShell; research trails render only returned agent stages — keeps presentation independent of teammate data contracts.
 
-- Tracker charts derive only from account-backed records and refresh through foreground Query polling every 15 seconds; unaccepted email suggestions never alter chart totals — avoids invented outcomes and preserves explicit status control.
+- Tracker Insights shows only the AI feedback button — no status charts; account-backed queries still refresh through foreground polling every 15 seconds, and status changes stay user-initiated.
