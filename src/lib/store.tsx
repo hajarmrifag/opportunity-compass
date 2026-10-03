@@ -18,12 +18,19 @@ interface Store {
   updateApplication: (id: string, patch: Partial<Pick<Application, "status" | "notes" | "deadline">>) => void;
   removeApplication: (id: string) => void;
   addManualOpportunity: (opp: Opportunity) => void;
+  importTracker: (plan: ImportPlanItem[]) => void;
   resetAll: () => void;
 }
 
+/** One confirmed CSV import row, already validated. Applied in a single atomic commit. */
+export type ImportPlanItem =
+  | { kind: "create"; opp: Opportunity; status: ApplicationStatus; notes: string; deadline: string | null }
+  | { kind: "track"; oppId: string; status: ApplicationStatus; notes: string; deadline: string | null }
+  | { kind: "update"; appId: string; status: ApplicationStatus; notes: string; deadline: string | null };
+
 const Ctx = createContext<Store | null>(null);
 const now = () => new Date().toISOString();
-const uid = () => Math.random().toString(36).slice(2, 10) + Date.now().toString(36);
+export const uid = () => Math.random().toString(36).slice(2, 10) + Date.now().toString(36);
 
 export function StoreProvider({ children }: { children: ReactNode }) {
   const [state, setState] = useState<PersistedState>(emptyState);
