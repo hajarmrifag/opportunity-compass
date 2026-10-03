@@ -11,4 +11,4 @@
 - [x] Typecheck, unit tests, browser tests (core + mobile); final report
 - [x] Fix off-by-one days-left (calendar-day diff in local tz, no hardcoded today); test it
 - [x] Dashboard: deadline list window = 14-day count; record in QA
-- [ ] Fix 'useStore outside StoreProvider' blank screen (HMR context identity); verify reload + direct routes
+- [x] Fix 'useStore outside StoreProvider' blank screen (HMR context identity); verify reload + direct routes

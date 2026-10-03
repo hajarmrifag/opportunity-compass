@@ -35,6 +35,8 @@ Environments: dev preview, Chromium (Playwright) at 1280×1800 and 390×844, tim
 - **Found:** 20 Oct showed "18 days left" on 3 Oct HKT (calendar difference 17). **Cause:** compared against 23:59:59 of the deadline using `ceil` on elapsed ms. **Fix:** `deadlineState` now compares local-midnight dates with `round` (DST-safe). No hardcoded "today"; the tests inject `now`. **Retested:** PASS.
 - **Found:** Dashboard "Approaching deadlines" listed 20 Oct while the "≤14 days" count was 0. **Fix:** one constant `DEADLINE_WINDOW_DAYS = 14` drives the heading ("Deadlines in the next 14 days"), the list filter, the stat and the "closing soon" chip. **Retested:** PASS (list and count both 0 when nothing is within 14 days).
 
+- **Found (preview):** RUNTIME_ERROR "useStore must be used inside StoreProvider" from AppShell, blank screen. **Cause:** after a live code reload the store module was re-evaluated and created a new context object, so the mounted provider and the reloaded consumers no longer matched. Provider placement in `__root.tsx` was already correct. **Fix:** the context is created once and reused across reloads (`globalThis` cache in `src/lib/store.tsx`). **Retested:** PASS. A forced live reload while on My Journey kept rendering. Direct loads of `/`, `/discover`, `/opportunities/demo-nordlys-exchange`, `/opportunities/nope` ("not found" state), `/journey`, `/passport`, `/add`, `/tracker-io` and `/bogus` (404) all rendered; client navigation and full refresh worked; 0 page errors.
+
 ## Other fixes this round
 - Expired / invalid deadlines show a timing notice that explicitly does not change eligibility.
 - Apply/source links render only for absolute http(s) URLs.
