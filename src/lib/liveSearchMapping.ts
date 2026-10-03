@@ -56,7 +56,8 @@ export const cacheKey = (i: LiveSearchInput) => JSON.stringify(liveSearchInput.p
 export const EXTRACTION_PROMPT =
   "Extract facts about the single opportunity described on THIS page only. Use only text present on the page. " +
   "If a fact is not explicitly stated, use null (or 'unknown' for coverage). Never guess dates, funding or requirements. " +
-  "Set is_opportunity_listing=false for news, lists of many programmes, blogs, or search pages. Dates must be YYYY-MM-DD.";
+  "An official page for ONE specific degree programme (e.g. one university's MSc page or its admissions page), job, internship, fellowship or scholarship counts as a listing (is_opportunity_listing=true). " +
+  "Set is_opportunity_listing=false for news, directories or rankings of many programmes, blogs, forums, Q&A sites, social media posts, or search pages. Dates must be YYYY-MM-DD.";
 
 const cov = { type: "string", enum: ["covered", "partial", "not_covered", "unknown"] } as const;
 export const EXTRACTION_SCHEMA = {
