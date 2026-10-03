@@ -133,3 +133,76 @@ describe("live search server", () => {
     expect(await runLiveSearch({ ...base, query: "one more" })).toMatchObject({ ok: false, error: { code: "rate_limited" } });
   });
 });
+
+describe("live search cancellation & timeout (regression: AbortError at liveSearch.server.ts:42)", () => {
+  const okResponse = () => new Response(JSON.stringify({ data: { web: [hit()] } }));
+  // Fetch that hangs until its signal aborts, then rejects like real fetch does.
+  const hangingFetch = () => vi.spyOn(globalThis, "fetch").mockImplementation((_u, init) => new Promise((_res, rej) => {
+    const s = (init as RequestInit).signal!;
+    s.addEventListener("abort", () => rej(new DOMException("The operation was aborted.", "AbortError")));
+  }));
+  const unhandled: unknown[] = [];
+  const onUnhandled = (r: unknown) => unhandled.push(r);
+  beforeEach(() => {
+    vi.unstubAllEnvs(); vi.restoreAllMocks(); vi.resetModules(); unhandled.length = 0;
+    vi.stubEnv("FIRECRAWL_API_KEY", "lovc_test"); vi.stubEnv("LOVABLE_API_KEY", "k");
+    process.removeListener("unhandledRejection", onUnhandled); process.on("unhandledRejection", onUnhandled);
+  });
+
+  it("user cancellation resolves to a typed 'cancelled' result instead of throwing", async () => {
+    hangingFetch();
+    const { runLiveSearch } = await import("@/lib/liveSearch.server");
+    const ac = new AbortController();
+    const p = runLiveSearch(base, ac.signal);
+    ac.abort();
+    await expect(p).resolves.toMatchObject({ ok: false, error: { code: "cancelled" } });
+  });
+
+  it("already-aborted request (navigated away before start) never calls the provider", async () => {
+    const f = vi.spyOn(globalThis, "fetch");
+    const { runLiveSearch } = await import("@/lib/liveSearch.server");
+    const ac = new AbortController(); ac.abort();
+    await expect(runLiveSearch(base, ac.signal)).resolves.toMatchObject({ ok: false, error: { code: "cancelled" } });
+    expect(f).not.toHaveBeenCalled();
+  });
+
+  it("navigating away mid-search, then a later search succeeds and the cancelled one was not cached", async () => {
+    const f = hangingFetch();
+    const { runLiveSearch } = await import("@/lib/liveSearch.server");
+    const ac = new AbortController();
+    const p = runLiveSearch(base, ac.signal);
+    await new Promise((r) => setTimeout(r, 5));
+    ac.abort();
+    expect(await p).toMatchObject({ error: { code: "cancelled" } });
+    f.mockImplementation(async () => okResponse());
+    const r = await runLiveSearch(base, new AbortController().signal);
+    expect(r).toMatchObject({ ok: true, cached: false });
+    if (r.ok) expect(r.results).toHaveLength(1);
+    await new Promise((r) => setTimeout(r, 10));
+    expect(unhandled).toEqual([]);
+  });
+
+  it("upstream timeout returns 'timeout' (not 'cancelled'), then a subsequent search succeeds", async () => {
+    const f = hangingFetch();
+    const { runLiveSearch } = await import("@/lib/liveSearch.server");
+    expect(await runLiveSearch(base, undefined, { timeoutMs: 20 })).toMatchObject({ ok: false, error: { code: "timeout" } });
+    f.mockImplementation(async () => okResponse());
+    expect(await runLiveSearch(base, undefined, { timeoutMs: 1000 })).toMatchObject({ ok: true });
+  });
+
+  it("abort while reading the response body is also handled", async () => {
+    vi.spyOn(globalThis, "fetch").mockImplementation(async () => {
+      const r = okResponse();
+      vi.spyOn(r, "json").mockRejectedValue(new DOMException("aborted", "AbortError"));
+      return r;
+    });
+    const { runLiveSearch } = await import("@/lib/liveSearch.server");
+    await expect(runLiveSearch(base)).resolves.toMatchObject({ ok: false, error: { code: "cancelled" } });
+  });
+
+  it("non-abort network failure is still a provider_error", async () => {
+    vi.spyOn(globalThis, "fetch").mockRejectedValue(new TypeError("network down"));
+    const { runLiveSearch } = await import("@/lib/liveSearch.server");
+    await expect(runLiveSearch(base)).resolves.toMatchObject({ ok: false, error: { code: "provider_error" } });
+  });
+});

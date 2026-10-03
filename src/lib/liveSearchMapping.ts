@@ -25,7 +25,9 @@ export type LiveSearchError =
   | { code: "not_configured"; message: string }
   | { code: "rate_limited"; message: string }
   | { code: "bad_input"; message: string }
-  | { code: "provider_error"; message: string; status?: number };
+  | { code: "provider_error"; message: string; status?: number }
+  | { code: "cancelled"; message: string }
+  | { code: "timeout"; message: string };
 
 export interface LiveSearchResponse {
   ok: true;

@@ -36,10 +36,14 @@ function LiveSearchPage() {
   const [error, setError] = useState("");
   const [resp, setResp] = useState<LiveSearchResponse | null>(null);
   const abortRef = useRef<AbortController | null>(null);
+  const lastInput = useRef<LiveSearchInput | null>(null);
+  const mounted = useRef(true);
 
   useEffect(() => {
     status$().then((r) => setConfigured(r.configured)).catch(() => setConfigured(false));
-    return () => abortRef.current?.abort();
+    mounted.current = true;
+    // Navigating away cancels the in-flight search; its result is ignored, never thrown.
+    return () => { mounted.current = false; abortRef.current?.abort(); };
   }, [status$]);
 
   useEffect(() => {
@@ -55,13 +59,21 @@ function LiveSearchPage() {
     abortRef.current?.abort();
     const ac = new AbortController();
     abortRef.current = ac;
+    lastInput.current = parsed.data;
     setStatus("loading"); setError(""); setResp(null);
+    const stale = () => !mounted.current || abortRef.current !== ac;
     try {
       const r = await search({ data: parsed.data, signal: ac.signal });
-      if (!r.ok) { setError(r.error.message); setStatus("error"); return; }
+      if (stale()) return;
+      if (ac.signal.aborted) { setStatus("cancelled"); return; }
+      if (!r.ok) {
+        if (r.error.code === "cancelled") { setStatus("cancelled"); return; }
+        setError(r.error.message); setStatus("error"); return;
+      }
       setResp(r); setStatus("done");
     } catch (err) {
-      if (ac.signal.aborted) { setStatus("cancelled"); return; }
+      if (stale()) return;
+      if (ac.signal.aborted || (err instanceof Error && err.name === "AbortError")) { setStatus("cancelled"); return; }
       setError(err instanceof Error && err.message ? err.message : "Search failed."); setStatus("error");
     }
   };
@@ -107,8 +119,16 @@ function LiveSearchPage() {
 
       <div aria-live="polite">
         {status === "loading" && <p className="text-sm text-muted-foreground" role="status">Searching and reading source pages… this can take up to a minute.</p>}
-        {status === "cancelled" && <p className="text-sm text-muted-foreground">Search cancelled.</p>}
-        {status === "error" && <p role="alert" className="rounded-lg border border-destructive/40 bg-destructive/10 p-3 text-sm">{error}</p>}
+        {status === "cancelled" && (
+          <p className="flex flex-wrap items-center gap-3 text-sm text-muted-foreground">Search cancelled.
+            {lastInput.current && <button type="button" className="btn btn-outline btn-sm" onClick={() => lastInput.current && void run(lastInput.current)}>Search again</button>}</p>
+        )}
+        {status === "error" && (
+          <div role="alert" className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-destructive/40 bg-destructive/10 p-3 text-sm">
+            <span>{error}</span>
+            {lastInput.current && configured !== false && <button type="button" className="btn btn-outline btn-sm" onClick={() => lastInput.current && void run(lastInput.current)}>Retry</button>}
+          </div>
+        )}
         {status === "done" && resp && (
           <>
             <p className="mb-3 text-sm text-muted-foreground">
