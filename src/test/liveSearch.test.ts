@@ -82,7 +82,7 @@ describe("live search server", () => {
   });
   it("maps provider data, caches, rate-limits and surfaces provider errors", async () => {
     vi.stubEnv("FIRECRAWL_API_KEY", "lovc_test"); vi.stubEnv("LOVABLE_API_KEY", "k");
-    const f = vi.spyOn(globalThis, "fetch").mockResolvedValue(new Response(JSON.stringify({ data: { web: [hit(), hit({ is_opportunity_listing: false }, "https://news.example/x")] } })));
+    const f = vi.spyOn(globalThis, "fetch").mockImplementation(async () => new Response(JSON.stringify({ data: { web: [hit(), hit({ is_opportunity_listing: false }, "https://news.example/x")] } })));
     const { runLiveSearch } = await import("@/lib/liveSearch.server");
     const r1 = await runLiveSearch(base);
     expect(r1).toMatchObject({ ok: true, cached: false, dropped: 1 });
@@ -91,7 +91,8 @@ describe("live search server", () => {
     expect(sent.limit).toBeLessThanOrEqual(8);
     expect((await runLiveSearch(base)) ).toMatchObject({ ok: true, cached: true });
     expect(f).toHaveBeenCalledTimes(1);
-    f.mockResolvedValue(new Response("no credits", { status: 402 }));
+    f.mockImplementation(async () => new Response("no credits", { status: 402 }));
+    vi.spyOn(console, "error").mockImplementation(() => undefined);
     expect(await runLiveSearch({ ...base, query: "other one" })).toMatchObject({ ok: false, error: { code: "provider_error", status: 402 } });
     for (let i = 0; i < 6; i++) await runLiveSearch({ ...base, query: `q${i}x` });
     expect(await runLiveSearch({ ...base, query: "one more" })).toMatchObject({ ok: false, error: { code: "rate_limited" } });
