@@ -158,7 +158,7 @@ function LiveResult({ opp }: { opp: Opportunity }) {
         <div className="mt-4 grid gap-4 md:grid-cols-2">
           <div>
             <h4 className="font-semibold">Requirements found on page</h4>
-            <p className="text-xs text-muted-foreground">{elig.basis} · {profile?.confirmed ? "vs your confirmed Passport" : "confirm your Passport to check"}</p>
+            <p className="text-xs text-muted-foreground">Checked by the simple rule-based matcher (not AI) · {profile?.confirmed ? "vs your confirmed Passport" : "confirm your Passport to check"}</p>
             {elig.requirements.length === 0
               ? <p className="mt-2 text-sm text-muted-foreground">No requirements stated on the page. Eligibility unknown.</p>
               : <ul className="mt-2 divide-y divide-border text-sm">{elig.requirements.map((r) => (
