@@ -8,16 +8,19 @@ export interface CvBullet {
 
 export interface CvEntry {
   id: string;
-  heading: string; // e.g. "English Tutor" or "The Hong Kong Polytechnic University"
-  subheading?: string; // e.g. "Self-employed" or "BBA, Digital Finance and Investment"
+  heading: string; // organisation or university, shown in bold, e.g. "The Hong Kong Polytechnic University"
+  subheading?: string; // role or degree, shown on the next line, e.g. "Analyst" or "BBA, Digital Finance and Investment"
   location?: string;
   dates?: string;
   bullets: CvBullet[];
 }
 
+export type SectionKind = "education" | "skills" | "experience" | "leadership" | "projects" | "other";
+
 export interface CvSection {
   id: string;
-  title: string; // e.g. "Education", "Experience"
+  title: string; // shown in capitals, e.g. "EDUCATION", "WORK EXPERIENCE"
+  kind?: SectionKind;
   entries: CvEntry[];
 }
 
@@ -58,8 +61,8 @@ export interface ChatMessage {
 
 /** Answers from the guided builder for students without a CV. */
 export interface BuilderEntry {
-  title: string; // role, degree or project name
-  organisation: string;
+  title: string; // role, degree or project name (shown in italics under the organisation)
+  organisation: string; // organisation or university (shown in bold, dates on the right)
   location?: string;
   dates?: string;
   description: string; // one point per line, in the student's words
