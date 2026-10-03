@@ -26,6 +26,7 @@ import { Route as AuthenticatedCoffeeChatsRouteImport } from './routes/_authenti
 import { Route as AuthenticatedResourcesRouteImport } from './routes/_authenticated/resources'
 import { Route as AuthenticatedTrackerRouteImport } from './routes/_authenticated/tracker'
 import { Route as OpportunitiesIdRouteImport } from './routes/opportunities.$id'
+import { Route as OauthGoogle_mailReturnRouteImport } from './routes/oauth/google_mail/return'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -112,6 +113,11 @@ const OpportunitiesIdRoute = OpportunitiesIdRouteImport.update({
   path: '/opportunities/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
+const OauthGoogle_mailReturnRoute = OauthGoogle_mailReturnRouteImport.update({
+  id: '/oauth/google_mail/return',
+  path: '/oauth/google_mail/return',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -130,6 +136,7 @@ export interface FileRoutesByFullPath {
   '/resources': typeof AuthenticatedResourcesRoute
   '/tracker': typeof AuthenticatedTrackerRoute
   '/opportunities/$id': typeof OpportunitiesIdRoute
+  '/oauth/google_mail/return': typeof OauthGoogle_mailReturnRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -148,6 +155,7 @@ export interface FileRoutesByTo {
   '/resources': typeof AuthenticatedResourcesRoute
   '/tracker': typeof AuthenticatedTrackerRoute
   '/opportunities/$id': typeof OpportunitiesIdRoute
+  '/oauth/google_mail/return': typeof OauthGoogle_mailReturnRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -168,6 +176,7 @@ export interface FileRoutesById {
   '/_authenticated/resources': typeof AuthenticatedResourcesRoute
   '/_authenticated/tracker': typeof AuthenticatedTrackerRoute
   '/opportunities/$id': typeof OpportunitiesIdRoute
+  '/oauth/google_mail/return': typeof OauthGoogle_mailReturnRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -188,6 +197,7 @@ export interface FileRouteTypes {
     | '/resources'
     | '/tracker'
     | '/opportunities/$id'
+    | '/oauth/google_mail/return'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -206,6 +216,7 @@ export interface FileRouteTypes {
     | '/resources'
     | '/tracker'
     | '/opportunities/$id'
+    | '/oauth/google_mail/return'
   id:
     | '__root__'
     | '/'
@@ -225,6 +236,7 @@ export interface FileRouteTypes {
     | '/_authenticated/resources'
     | '/_authenticated/tracker'
     | '/opportunities/$id'
+    | '/oauth/google_mail/return'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -242,6 +254,7 @@ export interface RootRouteChildren {
   SearchRoute: typeof SearchRoute
   TrackerIoRoute: typeof TrackerIoRoute
   OpportunitiesIdRoute: typeof OpportunitiesIdRoute
+  OauthGoogle_mailReturnRoute: typeof OauthGoogle_mailReturnRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -365,6 +378,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof OpportunitiesIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/oauth/google_mail/return': {
+      id: '/oauth/google_mail/return'
+      path: '/oauth/google_mail/return'
+      fullPath: '/oauth/google_mail/return'
+      preLoaderRoute: typeof OauthGoogle_mailReturnRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -398,6 +418,7 @@ const rootRouteChildren: RootRouteChildren = {
   SearchRoute: SearchRoute,
   TrackerIoRoute: TrackerIoRoute,
   OpportunitiesIdRoute: OpportunitiesIdRoute,
+  OauthGoogle_mailReturnRoute: OauthGoogle_mailReturnRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

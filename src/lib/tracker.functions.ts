@@ -28,6 +28,9 @@ export interface TrackerApplication {
   source: TrackerSource;
   applied_date: string | null;
   notes: string;
+  /** Added by the career-dashboard migration; absent until it is applied. */
+  next_action?: string;
+  next_action_date?: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -195,6 +198,12 @@ export const updateTrackerApplication = createServerFn({ method: "POST" })
         notes: z.string().max(5000).optional(),
         source: z.enum(TRACKER_SOURCES).optional(),
         applied_date: z.string().nullable().optional(),
+        next_action: z.string().max(300).optional(),
+        next_action_date: z
+          .string()
+          .regex(/^\d{4}-\d{2}-\d{2}$/)
+          .nullable()
+          .optional(),
       })
       .parse(data),
   )
@@ -218,6 +227,18 @@ export const removeTrackerApplication = createServerFn({ method: "POST" })
       .eq("id", data.id);
     if (error) throw new Error(error.message);
     return { ok: true };
+  });
+
+/** Every status event for the signed-in user (RLS scopes to own rows); feeds the charts. */
+export const listAllTrackerEvents = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }): Promise<TrackerEvent[]> => {
+    const { data, error } = await (context.supabase as AnyClient)
+      .from("application_events")
+      .select("id, application_id, status, date, source")
+      .order("date", { ascending: true });
+    if (error) throw new Error(error.message);
+    return (data ?? []) as TrackerEvent[];
   });
 
 export const listTrackerEvents = createServerFn({ method: "GET" })
@@ -311,10 +332,20 @@ export interface CoffeeChat {
   company: string;
   date: string | null;
   follow_up_date: string | null;
+  follow_up_done?: boolean;
+  /** Added by the referral migration; absent until it is applied. */
+  referral?: boolean;
   notes: string;
   outcome: "" | CoffeeChatOutcome;
   referral: boolean | null;
   created_at: string;
+}
+
+/** Default follow-up: 21 days after the chat date (local calendar days). */
+export function defaultFollowUpDate(chatDate: string): string {
+  const [y = 1970, m = 1, d = 1] = chatDate.split("-").map(Number);
+  const dt = new Date(y, m - 1, d + 21);
+  return `${dt.getFullYear()}-${String(dt.getMonth() + 1).padStart(2, "0")}-${String(dt.getDate()).padStart(2, "0")}`;
 }
 
 export const listCoffeeChats = createServerFn({ method: "GET" })
@@ -328,6 +359,18 @@ export const listCoffeeChats = createServerFn({ method: "GET" })
     return (data ?? []) as CoffeeChat[];
   });
 
+export const setCoffeeChatFollowUpDone = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((data) => z.object({ id: z.string().uuid(), done: z.boolean() }).parse(data))
+  .handler(async ({ context, data }) => {
+    const { error } = await (context.supabase as AnyClient)
+      .from("coffee_chats")
+      .update({ follow_up_done: data.done })
+      .eq("id", data.id);
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  });
+
 export const saveCoffeeChat = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((data) =>
@@ -338,6 +381,7 @@ export const saveCoffeeChat = createServerFn({ method: "POST" })
         company: z.string().max(200).default(""),
         date: z.string().nullable().optional(),
         follow_up_date: z.string().nullable().optional(),
+        referral: z.boolean().optional(),
         notes: z.string().max(5000).default(""),
         outcome: z.enum(["", ...COFFEE_CHAT_OUTCOMES]).default(""),
         referral: z.boolean().nullable().optional(),
@@ -398,9 +442,7 @@ export const listEmailSuggestions = createServerFn({ method: "GET" })
 export const updateEmailSuggestion = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((data) =>
-    z
-      .object({ id: z.string().uuid(), state: z.enum(["accepted", "dismissed"]) })
-      .parse(data),
+    z.object({ id: z.string().uuid(), state: z.enum(["accepted", "dismissed"]) }).parse(data),
   )
   .handler(async ({ context, data }) => {
     const { error } = await (context.supabase as AnyClient)
@@ -428,6 +470,41 @@ export const scanGmail = createServerFn({ method: "POST" })
 
 // --- AI advice: counts computed from the database, suggestions from resources ---
 
+// Pure helper (shared with tests): compresses coffee chats, including the
+// referral flag and the student's comments, into what the AI may see.
+export function summarizeChatsForAdvice(
+  chats: Pick<CoffeeChat, "contact_name" | "company" | "outcome" | "date" | "referral" | "notes">[],
+): {
+  outcomeCounts: Record<string, number>;
+  referralYes: number;
+  referralNo: number;
+  summaries: {
+    contact: string;
+    company: string;
+    outcome: string;
+    referral: string;
+    comment: string;
+  }[];
+} {
+  const outcomeCounts: Record<string, number> = {};
+  let referralYes = 0;
+  let referralNo = 0;
+  const summaries = chats.slice(0, 20).map((c) => {
+    const outcome = c.outcome || "planned";
+    outcomeCounts[outcome] = (outcomeCounts[outcome] ?? 0) + 1;
+    if (c.referral) referralYes += 1;
+    else referralNo += 1;
+    return {
+      contact: c.contact_name,
+      company: c.company,
+      outcome,
+      referral: c.referral ? "yes" : "no",
+      comment: c.notes.slice(0, 200),
+    };
+  });
+  return { outcomeCounts, referralYes, referralNo, summaries };
+}
+
 export interface AdviceResult {
   advice: string;
   resources: Resource[];
@@ -439,25 +516,20 @@ export const generateAdvice = createServerFn({ method: "POST" })
     const supabase = context.supabase as AnyClient;
     const [{ data: apps }, { data: chats }, { data: resources }] = await Promise.all([
       supabase.from("applications").select("status"),
-      supabase.from("coffee_chats").select("outcome, date"),
+      supabase.from("coffee_chats").select("contact_name, company, outcome, date, referral, notes"),
       supabase.from("resources").select("*"),
     ]);
+    const chatSummary = summarizeChatsForAdvice(
+      (chats ?? []) as Parameters<typeof summarizeChatsForAdvice>[0],
+    );
     const stats = {
-      applications: (apps ?? []).reduce(
-        (acc: Record<string, number>, a: { status: string }) => {
-          acc[a.status] = (acc[a.status] ?? 0) + 1;
-          return acc;
-        },
-        {},
-      ),
-      coffeeChats: (chats ?? []).reduce(
-        (acc: Record<string, number>, c: { outcome: string }) => {
-          const key = c.outcome || "planned";
-          acc[key] = (acc[key] ?? 0) + 1;
-          return acc;
-        },
-        {},
-      ),
+      applications: (apps ?? []).reduce((acc: Record<string, number>, a: { status: string }) => {
+        acc[a.status] = (acc[a.status] ?? 0) + 1;
+        return acc;
+      }, {}),
+      coffeeChats: chatSummary.outcomeCounts,
+      coffeeChatReferrals: { yes: chatSummary.referralYes, no: chatSummary.referralNo },
+      chatDetails: chatSummary.summaries,
     };
     const allResources = (resources ?? []) as Resource[];
 
@@ -480,7 +552,7 @@ export const generateAdvice = createServerFn({ method: "POST" })
     const resourceList = allResources
       .map((r) => `- id:${r.id} | ${r.title} | tag:${r.tag} | ${r.notes}`)
       .join("\n");
-    const prompt = `You are advising a student on their internship search. These are their real numbers, counted from their own records (never invent others): ${JSON.stringify(stats)}. Write 3-5 short, honest, encouraging sentences: what the numbers say, one concrete next step for applications, and one for coffee chats. Then, from this curated resource list, pick up to 3 that genuinely fit the situation (e.g. a course when many applications stall before interview, a coffee-chat workshop when chats are ghosted). Return ONLY JSON: {"advice":"...","resourceIds":["..."]}. If none fit, use an empty array. Resources:\n${resourceList || "(none)"}`;
+    const prompt = `You are advising a student on their internship search. These are their real numbers, counted from their own records (never invent others): ${JSON.stringify(stats)}. The coffee chat entries include each chat's outcome, referral yes/no and the student's comments — use them to spot problems (e.g. several chats that produced no referral, chats ghosted after follow-up, or a comment that shows something went wrong) and name the problem gently if you see one. Write 3-5 short, honest, encouraging sentences: what the numbers say, one concrete next step for applications, and one for coffee chats. Then, from this curated resource list, pick up to 3 that genuinely fit the situation (e.g. a course when many applications stall before interview, a coffee-chat workshop when chats are ghosted). Return ONLY JSON: {"advice":"...","resourceIds":["..."]}. If none fit, use an empty array. Resources:\n${resourceList || "(none)"}`;
 
     let advice = "";
     let picked: Resource[] = [];

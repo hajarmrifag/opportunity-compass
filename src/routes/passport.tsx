@@ -21,6 +21,7 @@ import {
   canConfirmProfile,
   extractionConflicts,
   webSourceLabel,
+  normalizeEmail,
 } from "@/lib/profileExtraction";
 import { useStore } from "@/lib/store";
 
@@ -478,7 +479,52 @@ function Passport() {
     </F>
   );
 
-  const canContinue = step === 1 ? !extracting : step < 4;
+  const emailOk = Boolean(normalizeEmail(draft.email)) || draft.emailTrackingOptOut === true;
+  const emailGate = (
+    <div className="grid gap-3">
+      <F id="rev-email" label="Email (used for your Tracker inbox)">
+        <input
+          id="rev-email"
+          type="email"
+          autoComplete="email"
+          aria-invalid={Boolean(draft.email?.trim()) && !normalizeEmail(draft.email)}
+          value={draft.email ?? ""}
+          placeholder={draft.email ? undefined : "Not in your documents — type it here"}
+          onChange={(event) => manual("email", { ...draft, email: event.target.value })}
+        />
+      </F>
+      {Boolean(draft.email?.trim()) && !normalizeEmail(draft.email) && (
+        <p className="text-sm text-destructive" role="alert">
+          That email doesn't look right — it should look like name@example.com, with no spaces.
+          Fix it, or tick the box below to continue without one.
+        </p>
+      )}
+      <label className="flex items-start gap-2 text-sm" htmlFor="rev-email-optout">
+        <input
+          id="rev-email-optout"
+          type="checkbox"
+          className="mt-1 shrink-0"
+          checked={draft.emailTrackingOptOut ?? false}
+          onChange={(event) =>
+            persistDraft({ ...draft, emailTrackingOptOut: event.target.checked })
+          }
+        />
+        <span className="min-w-0 flex-1">
+          I don't need my email tracked and won't connect my inbox. You can make your profile
+          without an email.
+        </span>
+      </label>
+      {!emailOk && (
+        <p className="text-sm text-destructive" role="alert">
+          {draft.email?.trim()
+            ? "That email doesn't look right. Fix it, or tick the box to continue."
+            : "Email missing. Add your email, or tick the box to continue."}
+        </p>
+      )}
+    </div>
+  );
+
+  const canContinue = step === 1 ? !extracting : step === 2 ? emailOk : step < 4;
 
   return (
     <div className="mx-auto max-w-[760px] pb-24">
@@ -550,6 +596,7 @@ function Passport() {
             onChooseConflict={chooseConflict}
             educationEditor={educationEditor}
             detailsEditor={detailsEditor}
+            emailGate={emailGate}
             skillsEditor={skillsEditor}
             preferencesEditor={preferencesEditor}
             experienceEditor={<ExperienceEditor profile={draft} onChange={persistDraft} />}
@@ -569,6 +616,8 @@ function Passport() {
           <StepConfirm
             draft={draft}
             saving={saving}
+            emailOk={emailOk}
+            emailGate={emailGate}
             onEditStep={(target) => setStep(target)}
             onCreate={confirm}
             onSaveLater={() => persistDraft(draft)}
@@ -605,8 +654,8 @@ function Passport() {
                 Extract details <ArrowRight />
               </Button>
             )}
-            {step > 0 && step < 4 && canContinue && (
-              <Button onClick={() => setStep(step + 1)}>
+            {step > 0 && step < 4 && (step === 1 ? canContinue : true) && (
+              <Button disabled={!canContinue} onClick={() => setStep(step + 1)}>
                 Continue <ArrowRight />
               </Button>
             )}

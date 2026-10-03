@@ -106,9 +106,26 @@
 - [x] Gmail scan fn returns honest "not set up" until per-user Google registration exists
 - [x] 71 tests pass, tsgo clean, build OK, browser check of /tracker (empty state) clean
 - [ ] Full data test after draft acceptance (migration not applied in draft)
+<<<<<<< roadmap.md
 - [ ] AI feedback: clarify user's requested change
 
 ## Exact cinema replay import
 - [x] Copy requested research and search source files from e7dd172
 - [x] Add only replay fixtures and merge cinema/evidence styles
 - [x] Verify recorded replay completion (6 pages, 3 kept, 3 rejected), stop control, source evidence, mobile layout, and homepage preservation; exact-file checks, 100 tests, and build passed
+=======
+
+## Coffee chat referral + AI problem spotting (3 Oct)
+- [x] Staged additive migration: coffee_chats.referral (yes/no flag); comments stay in existing notes column
+- [x] Coffee chat form and rows: referral Yes/No select + editable comments; AI advice sees outcomes, referral counts and comments (bounded) to flag problems
+- [x] Tests for advice chat summary; types, format, build re-checked
+
+## Gmail inbox connection (3 Oct)
+- [x] Registered user's Google OAuth client as Gmail App User Connector (linked to project, offline access on)
+- [x] Staged migration 0006: app_user_connections (encrypted per-user connection keys, service-role only)
+- [x] Connect/disconnect Gmail popup flow, OAuth return route, per-user status, Passport email match/mismatch warning
+- [x] Real inbox scan: read-only Gmail search (60d, application keywords) → AI classifies → pending email_suggestions, dedupe by message id, never auto-applies
+- [x] 101 tests, tsgo clean, build OK
+- [ ] BLOCKED (draft acceptance): app_user_connections table does not exist until accepted — connecting Gmail saves the key only then; scan works after
+- [ ] Outlook (microsoft_outlook) connector: awaiting user's Microsoft app credentials
+>>>>>>> /tmp/m/roadmap.md.d

@@ -200,6 +200,8 @@ export const DEMO_OPPORTUNITIES: Opportunity[] = [
 
 export const DEMO_PROFILE: Profile = {
   fullName: "Maya (fictional demo)",
+  email: "",
+  emailTrackingOptOut: true,
   degreeLevel: "bachelor",
   field: "Computer Science",
   graduationYear: 2027,
@@ -242,6 +244,8 @@ export const DEMO_PROFILE: Profile = {
 
 export const EMPTY_PROFILE: Profile = {
   fullName: "",
+  email: "",
+  emailTrackingOptOut: false,
   degreeLevel: null,
   field: "",
   graduationYear: null,
