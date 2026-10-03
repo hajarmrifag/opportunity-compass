@@ -224,6 +224,19 @@ function Passport() {
 
   const hasSource = documents.some((document) => document.state !== "error");
 
+  // Resume at the review step when a saved profile or draft already has content.
+  const resumed = useRef(false);
+  useEffect(() => {
+    if (!ready || resumed.current) return;
+    resumed.current = true;
+    const hasContent =
+      draft.fullName.trim().length > 0 ||
+      draft.education.some((entry) => entry.degreeName || entry.school || entry.field) ||
+      draft.skills.length > 0;
+    if (hasContent) setStep(2);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [ready]);
+
   if (!ready) return null;
 
   if (created) {
