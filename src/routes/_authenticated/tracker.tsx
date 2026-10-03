@@ -356,25 +356,6 @@ function TrackerRow({ app, onChanged }: { app: TrackerApplication; onChanged: ()
   const [showHistory, setShowHistory] = useState(false);
   const dirty = notes !== app.notes;
 
-  const [comment, setComment] = useState(chat.notes);
-  const [aiNote, setAiNote] = useState(false);
-  const patch = (changes: Partial<CoffeeChat>) =>
-    run(() =>
-      saveCoffeeChat({
-        data: {
-          id: chat.id,
-          contact_name: chat.contact_name,
-          company: chat.company,
-          date: chat.date,
-          follow_up_date: chat.follow_up_date,
-          notes: chat.notes,
-          outcome: chat.outcome,
-          referral: chat.referral ?? null,
-          ...changes,
-        } as never,
-      }),
-    );
-
   const run = async (fn: () => Promise<unknown>) => {
     setBusy(true);
     setError("");
@@ -652,6 +633,25 @@ function CoffeeChatRow({ chat, onChanged }: { chat: CoffeeChat; onChanged: () =>
   const [error, setError] = useState("");
   const today = todayIso();
   const overdue = chat.follow_up_date && chat.follow_up_date < today;
+
+  const [comment, setComment] = useState(chat.notes);
+  const [aiNote, setAiNote] = useState(false);
+  const patch = (changes: Partial<CoffeeChat>) =>
+    run(() =>
+      saveCoffeeChat({
+        data: {
+          id: chat.id,
+          contact_name: chat.contact_name,
+          company: chat.company,
+          date: chat.date,
+          follow_up_date: chat.follow_up_date,
+          notes: chat.notes,
+          outcome: chat.outcome,
+          referral: chat.referral ?? null,
+          ...changes,
+        } as never,
+      }),
+    );
 
   const run = async (fn: () => Promise<unknown>) => {
     setBusy(true);
