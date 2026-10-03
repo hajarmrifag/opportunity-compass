@@ -20,9 +20,10 @@ interface Store {
   removeApplication: (id: string) => void;
   addManualOpportunity: (opp: Opportunity) => void;
   importTracker: (plan: ImportPlanItem[]) => void;
-  /** True while the Passport form holds edits that differ from the saved profile (in-memory only). */
+  /** Unsaved Passport edits (in-memory only, never used for eligibility). null = no pending edits. */
+  profileDraft: Profile | null;
+  setProfileDraft: (p: Profile | null) => void;
   pendingProfileEdits: boolean;
-  setPendingProfileEdits: (v: boolean) => void;
   resetAll: () => void;
 }
 
@@ -43,7 +44,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   const [state, setState] = useState<PersistedState>(emptyState);
   const [ready, setReady] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [pendingProfileEdits, setPendingProfileEdits] = useState(false);
+  const [profileDraft, setProfileDraft] = useState<Profile | null>(null);
 
   useEffect(() => {
     const { state: s, error: e } = localRepository.load();
@@ -72,10 +73,11 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     applications: state.applications,
     getOpportunity: (id) => opportunities.find((o) => o.id === id),
     getApplication: (oppId) => state.applications.find((a) => a.opportunityId === oppId),
-    pendingProfileEdits,
-    setPendingProfileEdits,
-    saveProfile: (p) => { setPendingProfileEdits(false); commit((s) => ({ ...s, profile: p })); },
-    loadDemoProfile: () => { setPendingProfileEdits(false); commit((s) => ({ ...s, profile: { ...DEMO_PROFILE } })); },
+    profileDraft,
+    setProfileDraft,
+    pendingProfileEdits: profileDraft !== null,
+    saveProfile: (p) => { setProfileDraft(null); commit((s) => ({ ...s, profile: p })); },
+    loadDemoProfile: () => { setProfileDraft(null); commit((s) => ({ ...s, profile: { ...DEMO_PROFILE } })); },
     saveOpportunity: (oppId) => {
       const existing = state.applications.find((a) => a.opportunityId === oppId);
       if (existing) return existing;

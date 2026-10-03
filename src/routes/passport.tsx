@@ -29,7 +29,7 @@ const schema = z.object({
 const list = (s: string) => s.split(",").map((x) => x.trim()).filter(Boolean).slice(0, 30);
 
 function Passport() {
-  const { ready, profile, saveProfile, loadDemoProfile, setPendingProfileEdits } = useStore();
+  const { ready, profile, saveProfile, loadDemoProfile, profileDraft, setProfileDraft } = useStore();
   const [p, setP] = useState<Profile>(EMPTY_PROFILE);
   const [skills, setSkills] = useState("");
   const [langs, setLangs] = useState("");
@@ -38,7 +38,8 @@ function Passport() {
   const [msg, setMsg] = useState("");
 
   useEffect(() => {
-    const src = profile ?? EMPTY_PROFILE;
+    // Restore unsaved edits if the user navigated away; otherwise show the saved Passport.
+    const src = profileDraft ?? profile ?? EMPTY_PROFILE;
     setP(src);
     setSkills(src.skills.join(", "));
     setLangs(src.languages.join(", "));
@@ -47,7 +48,13 @@ function Passport() {
 
   const build = (): Profile => ({ ...p, skills: list(skills), languages: list(langs), preferences: { ...p.preferences, locations: list(locs) } });
   const dirty = !!profile && JSON.stringify(build()) !== JSON.stringify(profile);
-  useEffect(() => { setPendingProfileEdits(dirty); }, [dirty, setPendingProfileEdits]);
+  const [hydrated, setHydrated] = useState(false);
+  useEffect(() => { if (ready) setHydrated(true); }, [ready]);
+  const draftJson = dirty ? JSON.stringify(build()) : "";
+  useEffect(() => {
+    if (!hydrated) return;
+    setProfileDraft(draftJson ? (JSON.parse(draftJson) as Profile) : null);
+  }, [draftJson, hydrated, setProfileDraft]);
 
   if (!ready) return <Loading />;
 
