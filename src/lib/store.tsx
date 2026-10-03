@@ -29,7 +29,10 @@ export type ImportPlanItem =
   | { kind: "track"; oppId: string; status: ApplicationStatus; notes: string; deadline: string | null }
   | { kind: "update"; appId: string; status: ApplicationStatus; notes: string; deadline: string | null };
 
-const Ctx = createContext<Store | null>(null);
+// Keep one context object across hot reloads: when this module is re-evaluated, a fresh
+// createContext() would make consumers and the already-mounted provider disagree.
+const g = globalThis as typeof globalThis & { __opportunityOsStoreCtx?: ReturnType<typeof createContext<Store | null>> };
+const Ctx = (g.__opportunityOsStoreCtx ??= createContext<Store | null>(null));
 const now = () => new Date().toISOString();
 export const uid = () => Math.random().toString(36).slice(2, 10) + Date.now().toString(36);
 
