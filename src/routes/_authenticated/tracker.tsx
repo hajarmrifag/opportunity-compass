@@ -141,7 +141,6 @@ function TrackerPage() {
 
   if (appsQuery.isLoading || chatsQuery.isLoading) return <Loading />;
 
-
   return (
     <>
       <PageHeader
@@ -176,89 +175,90 @@ function TrackerPage() {
       </div>
 
       <>
-          {/* 2. Due today */}
-          <section className="card mt-6 p-5" aria-labelledby="due-today">
-            <h2 id="due-today" className="text-lg font-semibold">
-              Follow-ups this week
-            </h2>
-            {dueToday.length === 0 ? (
-              <p className="mt-1 text-sm text-muted-foreground">
-                No follow-ups in the next 7 days. Set a follow-up date on a coffee chat and it appears here.
-              </p>
-            ) : (
-              <ul className="mt-2 space-y-2">
-                {dueToday.map((c) => (
-                  <li
-                    key={c.id}
-                    className={`rounded-md border p-3 text-sm ${
-                      c.follow_up_date && c.follow_up_date < today
-                        ? "border-destructive/50"
-                        : "border-border"
-                    }`}
-                  >
-                    <span className="font-medium">{c.contact_name}</span>
-                    {c.company ? ` · ${c.company}` : ""}
-                    <span className="ml-2 text-xs text-muted-foreground">
-                      Follow-up{" "}
-                      {c.follow_up_date === today
-                        ? "due today"
-                        : (c.follow_up_date ?? "") < today
-                          ? `overdue since ${c.follow_up_date}`
-                          : `due ${c.follow_up_date}`}
-                    </span>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </section>
-
-          {/* 3. Results from email — no manual scan button */}
-          <section className="card mt-6 p-5" aria-labelledby="gmail-scan">
-            <h2 id="gmail-scan" className="text-lg font-semibold">
-              Results from email
-            </h2>
-            <p className="text-sm text-muted-foreground">
-              Assessments, interviews, offers and rejections found in your email appear here.
+        {/* 2. Due today */}
+        <section className="card mt-6 p-5" aria-labelledby="due-today">
+          <h2 id="due-today" className="text-lg font-semibold">
+            Follow-ups this week
+          </h2>
+          {dueToday.length === 0 ? (
+            <p className="mt-1 text-sm text-muted-foreground">
+              No follow-ups in the next 7 days. Set a follow-up date on a coffee chat and it appears
+              here.
             </p>
-            <p className="mt-2 text-xs text-muted-foreground" role="status">
-              {lastEmailUpdate
-                ? `Last updated ${new Date(lastEmailUpdate).toLocaleString()}`
-                : "Last updated: never — Gmail isn't connected yet, so no email results are available."}
-            </p>
-            {suggestions.length > 0 && (
-              <ul className="mt-3 space-y-2">
-                {suggestions.map((s) => (
-                  <SuggestionRow key={s.id} suggestion={s} onChanged={refresh} />
-                ))}
-              </ul>
-            )}
-          </section>
+          ) : (
+            <ul className="mt-2 space-y-2">
+              {dueToday.map((c) => (
+                <li
+                  key={c.id}
+                  className={`rounded-md border p-3 text-sm ${
+                    c.follow_up_date && c.follow_up_date < today
+                      ? "border-destructive/50"
+                      : "border-border"
+                  }`}
+                >
+                  <span className="font-medium">{c.contact_name}</span>
+                  {c.company ? ` · ${c.company}` : ""}
+                  <span className="ml-2 text-xs text-muted-foreground">
+                    Follow-up{" "}
+                    {c.follow_up_date === today
+                      ? "due today"
+                      : (c.follow_up_date ?? "") < today
+                        ? `overdue since ${c.follow_up_date}`
+                        : `due ${c.follow_up_date}`}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          )}
+        </section>
 
-          {/* 5. Applications */}
-          <section className="mt-8" aria-labelledby="apps-heading">
-            <h2 id="apps-heading" className="text-lg font-semibold">
-              Applications
-            </h2>
-            <div className="mb-4 mt-2 max-w-md">
-              <label htmlFor="tracker-search">Search company, role or notes</label>
-              <input
-                id="tracker-search"
-                type="search"
-                value={search}
-                placeholder="e.g. Google, internship, referral…"
-                onChange={(e) => setSearch(e.target.value)}
-              />
-            </div>
-            {filtered.length === 0 ? (
-              <p className="text-muted-foreground">No items match “{search}”.</p>
-            ) : (
-              <ul className="space-y-4">
-                {filtered.map((a) => (
-                  <TrackerRow key={a.id} app={a} onChanged={refresh} />
-                ))}
-              </ul>
-            )}
-          </section>
+        {/* 3. Results from email — no manual scan button */}
+        <section className="card mt-6 p-5" aria-labelledby="gmail-scan">
+          <h2 id="gmail-scan" className="text-lg font-semibold">
+            Results from email
+          </h2>
+          <p className="text-sm text-muted-foreground">
+            Assessments, interviews, offers and rejections found in your email appear here.
+          </p>
+          <p className="mt-2 text-xs text-muted-foreground" role="status">
+            {lastEmailUpdate
+              ? `Last updated ${new Date(lastEmailUpdate).toLocaleString()}`
+              : "Last updated: never — Gmail isn't connected yet, so no email results are available."}
+          </p>
+          {suggestions.length > 0 && (
+            <ul className="mt-3 space-y-2">
+              {suggestions.map((s) => (
+                <SuggestionRow key={s.id} suggestion={s} onChanged={refresh} />
+              ))}
+            </ul>
+          )}
+        </section>
+
+        {/* 5. Applications */}
+        <section className="mt-8" aria-labelledby="apps-heading">
+          <h2 id="apps-heading" className="text-lg font-semibold">
+            Applications
+          </h2>
+          <div className="mb-4 mt-2 max-w-md">
+            <label htmlFor="tracker-search">Search company, role or notes</label>
+            <input
+              id="tracker-search"
+              type="search"
+              value={search}
+              placeholder="e.g. Google, internship, referral…"
+              onChange={(e) => setSearch(e.target.value)}
+            />
+          </div>
+          {filtered.length === 0 ? (
+            <p className="text-muted-foreground">No items match “{search}”.</p>
+          ) : (
+            <ul className="space-y-4">
+              {filtered.map((a) => (
+                <TrackerRow key={a.id} app={a} onChanged={refresh} />
+              ))}
+            </ul>
+          )}
+        </section>
       </>
 
       {/* Coffee chats — always available, even before anything is tracked */}
