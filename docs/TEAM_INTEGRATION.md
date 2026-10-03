@@ -161,3 +161,9 @@ EligibilityResult for the opportunity above + confirmed Maya profile (actual out
 7. Duplicate key for opportunities = normalized `title|organization` (`oppKey`). Saving is idempotent per `opportunityId`.
 8. Fixtures keep `isDemo: true`, `verification: "demo_unverified"`, null `sourceUrl`/`applyUrl`/`lastVerified` (enforced by a test).
 9. Run `bunx vitest run src/test/core.test.ts` before merging.
+
+## Live search (verified-data / matching teammates)
+- `src/lib/liveSearchMapping.ts` (pure): `liveSearchInput`, `buildQuery`, `EXTRACTION_SCHEMA`, `mapHit(hit, retrievedAt) → Opportunity | null`, `dedupe`, `applyFilters`.
+- `src/lib/liveSearch.server.ts`: `runLiveSearch(input, signal?) → LiveSearchResponse`. To swap providers, replace this file and return the same contract.
+- Live items use `verification: "web_retrieved"`, `isDemo: false`, `retrievedAt` set. A verified-data teammate may upgrade them to `"verified"` only after human review.
+- See docs/LIVE_SEARCH.md for activation and cost.

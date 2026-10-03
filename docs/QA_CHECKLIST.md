@@ -61,3 +61,14 @@ Known harmless test-only warning: React logs `href=""` for the stylesheet link, 
 4. CSV import caps at 1 MB / 500 rows. Imported "submitted" statuses are accepted because they are user-provided data.
 5. Mobile nav has 4 tabs. Add and Import/Export are reached from the header and from My Journey.
 6. Full screen-reader audit (NVDA/VoiceOver) not yet performed.
+
+## Live search (code built, connector not linked)
+| Check | Command / method | Result |
+|---|---|---|
+| Type check | `tsgo --noEmit` | exit 0 |
+| Full tests | `bunx vitest run` | **28 passed** (core 16, liveSearch 10, app-routing 2) |
+| Production build | `bun run build` | exit 0; no `FIRECRAWL_API_KEY`/gateway URL in `dist/client` |
+| `/search` not connected (desktop 1280, mobile 390) | Playwright | banner shown, Search disabled, 0 demo results, 0 browser→Firecrawl requests, no overflow, no page errors |
+| Mapping honesty | unit tests | source URL + retrievedAt kept; off-site apply URL dropped; unstated funding = unknown; invalid date = null; unknown requirement never passes; filters exclude unknowns; dedupe |
+| Server | unit tests (mocked fetch) | not configured → no network call; cache; 402 surfaced; rate limit after 6 |
+| **Unresolved** | — | Real search → source → save NOT validated: needs Firecrawl connector approval |

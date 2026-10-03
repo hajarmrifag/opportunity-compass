@@ -18,3 +18,9 @@
 - [ ] Live web opportunity search (server-side, managed Firecrawl; inactive until connector approved): NL query + filters (category incl. jobs/masters, location/remote, subject, education, funding, deadline), source URL + retrievedAt, dedupe, open/closed/unknown, save-to-tracker, bounded/cached/rate-limited/cancellable, no demo fallback, no PII sent
 - [ ] Document exact connector/Cloud permissions + cost before activation (docs/LIVE_SEARCH.md)
 - [ ] Validate real search→source→save once connected (blocked on approval)
+
+## Live search
+- [x] Server search + mapping + caching/rate limit/cancel
+- [x] /search UI with filters, save to tracker
+- [x] Tests (28 pass), build, docs/LIVE_SEARCH.md
+- [ ] Real search validation — blocked: Firecrawl connector approval

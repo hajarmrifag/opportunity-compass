@@ -20,3 +20,4 @@
 - Date-only deadlines are compared as local calendar days via `deadlineState` in `src/lib/validation.ts`; `DEADLINE_WINDOW_DAYS` is the single "approaching" window — keeps UI counts consistent.
 - URLs render only through `safeHttpUrl`; CSV output goes through `src/lib/csv.ts` (`escapeCell`) for quoting and formula-injection protection.
 - CSV import applies only after preview + explicit confirm, as one atomic `importTracker` commit — prevents partial or surprise writes.
+- Live search runs only server-side via `src/lib/liveSearch.server.ts`; listings come from retrieved page text (`verification: "web_retrieved"`), never model memory, with no demo fallback — honesty + no client secrets.
