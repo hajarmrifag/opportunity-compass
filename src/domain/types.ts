@@ -22,11 +22,13 @@ export const CATEGORY_LABELS: Record<Category, string> = {
 };
 
 /** Uploaded papers use cv/transcript/other; student-owned web links use the web labels. */
-export type DocumentLabel = "cv" | "transcript" | "other" | "linkedin" | "website" | "github" | "web";
+export type DocumentLabel =
+  "cv" | "transcript" | "other" | "linkedin" | "website" | "github" | "web";
 export type GraduationDatePrecision = "day" | "month" | "year";
 export type ProfileValueSource = "extracted" | "manual";
 
-export type WorkType = "internship" | "part_time" | "full_time" | "volunteer" | "research" | "other";
+export type WorkType =
+  "internship" | "part_time" | "full_time" | "volunteer" | "research" | "other";
 export const WORK_TYPE_LABELS: Record<WorkType, string> = {
   internship: "Internship",
   part_time: "Part-time",

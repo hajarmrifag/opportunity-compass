@@ -231,7 +231,8 @@ export function applyExtractedCandidates(
         base.graduationDatePrecision ?? "",
       ) as Profile["graduationDatePrecision"]) || null,
     graduationYear:
-      Number(value("graduationDate", base.graduationDate ?? "").slice(0, 4)) || base.graduationYear,
+      Number(value("graduationDate", base.graduationDate ?? "").match(/\b(19|20)\d{2}\b/)?.[0]) ||
+      base.graduationYear,
     skills,
     languages,
     languageDetails: languages.map((name) => ({

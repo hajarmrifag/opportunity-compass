@@ -45,8 +45,7 @@ export function ExtractionSummary({
     const education = draft.education.filter(
       (entry) => entry.degreeName || entry.school || entry.field,
     );
-    const experience =
-      draft.workExperience.length + (draft.experienceSuggestions?.length ?? 0);
+    const experience = draft.workExperience.length + (draft.experienceSuggestions?.length ?? 0);
     const skills = draft.skills.length;
     const languages = draft.languages.length;
     const missing: string[] = [];
