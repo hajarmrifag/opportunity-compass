@@ -170,3 +170,14 @@ $ bun run build      -> exit 0
 - Formatting: `prettier --write` applied only to files changed by the abort/timeout repair (search.tsx, liveSearch.server.ts, liveSearchMapping.ts, liveSearch.functions.ts, journey.tsx, liveSearch.test.ts); `prettier --check` now passes on all of them. No other files touched.
 - Re-run after formatting: `bunx vitest run` 3 files, 39 tests passed; `tsgo --noEmit` clean; `bun run build` success.
 - No publishing, no new connections.
+
+## Passport five-step wizard — 3 Oct 2026
+- Rebuilt /passport as a guided wizard: Upload sources → Extract details → Review information → Fill gaps → Confirm profile, with progress indicator, Back/Continue, auto-saved draft, "Saved" status, sticky action bar, and a success screen after creation.
+- Step 1: drag-and-drop up to 3 PDFs (5 MB each) with rename/remove/label per file, paste-text panel, collapsed web-link option with consent-gated Read link (verified disabled until URL valid + consent ticked).
+- Step 2: rotating status messages during extraction, then an honest summary of what was found/missing; unreadable documents reported plainly ("1 document could not be read").
+- Step 3: review cards by topic with Edit-only controls, "Not provided" for gaps, and "From your document" / "Added by you" labels; document conflicts resolved with explicit choices.
+- Step 4: gap questions with why-it-helps notes, searchable multi-selects (curated lists + free text), category chips, structured graduation date, add-language rows, add-education flow, conditional follow-ups (remote hides locations; funding reveals tuition/living/travel; Master's shows preferred field).
+- Step 5: read-only profile preview with Edit links back to steps, "Create my profile" + "Save and finish later"; confirmation blocked with a clear reason when education is missing (verified).
+- Browser-verified: full manual journey (review → gaps → confirm → create) succeeds; after refresh the wizard resumes at Review with saved data visible; mobile viewport renders with bottom nav; no page errors.
+- Checks: tsgo clean, 45/45 tests pass, prettier applied to changed files, build OK.
+- Note: AI document reading could not be exercised in this run (no AI available); the failure path is handled and shown honestly.
