@@ -270,8 +270,7 @@ function TrackerPage() {
               </ul>
             )}
           </section>
-        </>
-      )}
+      </>
 
       {/* Coffee chats — always available, even before anything is tracked */}
       <CoffeeChatSection chats={chats} onChanged={refresh} />
