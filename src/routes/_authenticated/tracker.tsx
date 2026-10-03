@@ -134,6 +134,17 @@ function TrackerPage() {
     );
   }, [apps, search]);
 
+  // The same search also matches coffee chats (person, company, comment).
+  const filteredChats = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    if (!q) return [];
+    return chats.filter((c) =>
+      [c.contact_name, c.company ?? "", c.comment ?? ""].some((field) =>
+        field.toLowerCase().includes(q),
+      ),
+    );
+  }, [chats, search]);
+
   const lastEmailUpdate = suggestions.reduce<string | null>(
     (latest, x) => (!latest || x.created_at > latest ? x.created_at : latest),
     null,
