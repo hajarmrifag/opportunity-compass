@@ -144,6 +144,8 @@ export interface DocumentExtractionResult {
   candidates: ExtractionCandidate[];
   /** Work/volunteer/research roles explicitly written in the source. */
   experiences?: WorkExperienceEntry[];
+  /** Every school/degree explicitly written, in document order (CVs often list several). */
+  education?: EducationEntry[];
   warnings: string[];
   error: string | null;
 }

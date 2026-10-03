@@ -113,14 +113,22 @@ export interface ExtractionConflict {
   candidates: ExtractionCandidate[];
 }
 
+/**
+ * A conflict is only when DIFFERENT documents disagree on a field. One CV listing two schools
+ * (e.g. a main degree and an exchange) is several education records, not a conflict; the first
+ * value per document is that document's main answer.
+ */
 export function extractionConflicts(results: DocumentExtractionResult[]): ExtractionConflict[] {
   const grouped = new Map<string, ExtractionCandidate[]>();
   const list = Array.isArray(results) ? results : [];
-  for (const candidate of list.flatMap((result) =>
-    Array.isArray(result?.candidates) ? result.candidates : [],
-  )) {
-    if (candidate.field === "skill" || candidate.field === "language") continue;
-    grouped.set(candidate.field, [...(grouped.get(candidate.field) ?? []), candidate]);
+  for (const result of list) {
+    const seen = new Set<string>();
+    for (const candidate of Array.isArray(result?.candidates) ? result.candidates : []) {
+      if (candidate.field === "skill" || candidate.field === "language") continue;
+      if (seen.has(candidate.field)) continue;
+      seen.add(candidate.field);
+      grouped.set(candidate.field, [...(grouped.get(candidate.field) ?? []), candidate]);
+    }
   }
   return [...grouped.entries()]
     .filter(
@@ -129,6 +137,9 @@ export function extractionConflicts(results: DocumentExtractionResult[]): Extrac
     )
     .map(([field, candidates]) => ({ field, candidates }));
 }
+
+const educationKey = (item: { school: string; degreeName: string }) =>
+  `${item.school.trim().toLowerCase()}|${item.degreeName.trim().toLowerCase()}`;
 
 const degreeFrom = (value: string): DegreeLevel | null => {
   const normalized = value.toLowerCase();
@@ -184,21 +195,33 @@ export function applyExtractedCandidates(
   const languages = [
     ...new Set([...base.languages, ...(byField.get("language") ?? []).map((item) => item.value)]),
   ];
+  const primary = {
+    ...firstEducation,
+    degreeLevel: degree ? degreeFrom(degree.value) : firstEducation.degreeLevel,
+    degreeName: value("degreeName", firstEducation.degreeName),
+    school: value("school", firstEducation.school),
+    field: value("field", firstEducation.field),
+  };
+  const educationList = [primary, ...base.education.slice(1)];
+  const taken = new Set(educationList.map(educationKey));
+  const takenSchools = new Set(
+    educationList.map((item) => item.school.trim().toLowerCase()).filter(Boolean),
+  );
+  for (const result of Array.isArray(results) ? results : []) {
+    for (const item of Array.isArray(result?.education) ? result.education : []) {
+      const school = item.school.trim().toLowerCase();
+      if (taken.has(educationKey(item)) || (school && takenSchools.has(school))) continue;
+      taken.add(educationKey(item));
+      if (school) takenSchools.add(school);
+      educationList.push({ ...item });
+    }
+  }
   return {
     ...base,
     fullName: value("fullName", base.fullName),
     degreeLevel: degree ? degreeFrom(degree.value) : base.degreeLevel,
     field: value("field", base.field),
-    education: [
-      {
-        ...firstEducation,
-        degreeLevel: degree ? degreeFrom(degree.value) : firstEducation.degreeLevel,
-        degreeName: value("degreeName", firstEducation.degreeName),
-        school: value("school", firstEducation.school),
-        field: value("field", firstEducation.field),
-      },
-      ...base.education.slice(1),
-    ],
+    education: educationList,
     gpaValue: value("gpaValue", base.gpaValue),
     gpaScale: value("gpaScale", base.gpaScale),
     graduationDate: value("graduationDate", base.graduationDate ?? "") || null,
@@ -224,9 +247,9 @@ export function applyExtractedCandidates(
     experienceSuggestions: suggestExperiences(
       base.workExperience ?? [],
       base.experienceSuggestions ?? [],
-      results.flatMap((result) => result.experiences ?? []),
+      (Array.isArray(results) ? results : []).flatMap((result) => result?.experiences ?? []),
     ),
-    sourceDocuments: results.map((result) => result.document),
+    sourceDocuments: (Array.isArray(results) ? results : []).map((result) => result.document),
     source: "cv_parser",
     confirmed: false,
     confirmedAt: null,
