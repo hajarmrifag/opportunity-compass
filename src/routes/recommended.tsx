@@ -18,13 +18,13 @@ import { Button } from "@/components/ui/button";
 export const Route = createFileRoute("/recommended")({
   head: () => ({
     meta: [
-      { title: "Recommended for you — OpportunityOS" },
+      { title: "Recommended for you — Source" },
       {
         name: "description",
         content:
           "Curated live searches per goal, built from your confirmed Passport. Every listing is read from the real web and labelled unverified.",
       },
-      { property: "og:title", content: "Recommended for you — OpportunityOS" },
+      { property: "og:title", content: "Recommended for you — Source" },
       {
         property: "og:description",
         content:

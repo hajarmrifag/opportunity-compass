@@ -8,9 +8,9 @@ import { ActionPlan } from "@/components/ActionPlan";
 export const Route = createFileRoute("/journey")({
   head: () => ({
     meta: [
-      { title: "My Journey — OpportunityOS" },
+      { title: "My Journey — Source" },
       { name: "description", content: "Track application statuses, notes and deadlines." },
-      { property: "og:title", content: "My Journey — OpportunityOS" },
+      { property: "og:title", content: "My Journey — Source" },
       { property: "og:description", content: "Track application statuses, notes and deadlines." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },

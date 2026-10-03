@@ -27,13 +27,13 @@ import { Loading, PageHeader } from "@/components/ui-bits";
 export const Route = createFileRoute("/_authenticated/tracker")({
   head: () => ({
     meta: [
-      { title: "Tracker — OpportunityOS" },
+      { title: "Tracker — Source" },
       {
         name: "description",
         content:
           "Your career dashboard: applications, coffee chats, follow-ups and honest AI advice.",
       },
-      { property: "og:title", content: "Tracker — OpportunityOS" },
+      { property: "og:title", content: "Tracker — Source" },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
       {

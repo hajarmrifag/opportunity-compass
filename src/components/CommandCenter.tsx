@@ -71,7 +71,7 @@ export function CommandCenter() {
           if (!next) setQuery("");
         }}
       >
-        <DialogTitle className="sr-only">OpportunityOS command center</DialogTitle>
+        <DialogTitle className="sr-only">Source command center</DialogTitle>
         <DialogDescription className="sr-only">
           Find a page or search for an opportunity.
         </DialogDescription>

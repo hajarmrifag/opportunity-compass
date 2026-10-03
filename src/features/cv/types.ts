@@ -1,4 +1,4 @@
-// OpportunityOS – CV studio types.
+// Source – CV studio types.
 // A CV is structured so it can be edited change by change and exported to Word or PDF.
 
 export interface CvBullet {

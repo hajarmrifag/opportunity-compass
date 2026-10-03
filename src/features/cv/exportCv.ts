@@ -82,7 +82,7 @@ export function buildDocx(cv: CvDocument): Document {
   }
 
   return new Document({
-    creator: "OpportunityOS",
+    creator: "Source",
     title: `${cv.name} CV`,
     styles: { default: { document: { run: { font: FONT } } } },
     sections: [

@@ -8,9 +8,9 @@ import { safeHttpUrl } from "@/lib/validation";
 export const Route = createFileRoute("/_authenticated/resources")({
   head: () => ({
     meta: [
-      { title: "Resources — OpportunityOS" },
+      { title: "Resources — Source" },
       { name: "description", content: "A shared, curated library of career resources." },
-      { property: "og:title", content: "Resources — OpportunityOS" },
+      { property: "og:title", content: "Resources — Source" },
       { property: "og:description", content: "A shared, curated library of career resources." },
     ],
   }),

@@ -29,13 +29,13 @@ export const Route = createFileRoute("/search")({
     typeof s["q"] === "string" && s["q"] ? { q: s["q"].slice(0, 200) } : {},
   head: () => ({
     meta: [
-      { title: "Live search — OpportunityOS" },
+      { title: "Live search — Source" },
       {
         name: "description",
         content:
           "Search the web for internships, fellowships, master's programmes and jobs, with original sources.",
       },
-      { property: "og:title", content: "Live search — OpportunityOS" },
+      { property: "og:title", content: "Live search — Source" },
       {
         property: "og:description",
         content:

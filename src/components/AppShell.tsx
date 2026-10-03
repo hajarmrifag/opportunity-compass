@@ -35,7 +35,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         Skip to content
       </a>
       <aside className="atlas-rail hidden shrink-0 flex-col border-r border-border bg-sidebar md:flex md:sticky md:top-0 md:h-screen">
-        <Link to="/" className="atlas-mark" aria-label="OpportunityOS home">
+        <Link to="/" className="atlas-mark" aria-label="Source home">
           O<span>OS</span>
         </Link>
         <nav aria-label="Main" className="flex w-full flex-col gap-1">

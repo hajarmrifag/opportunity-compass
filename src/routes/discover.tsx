@@ -8,12 +8,12 @@ import { OpportunityCard } from "@/components/OpportunityCard";
 export const Route = createFileRoute("/discover")({
   head: () => ({
     meta: [
-      { title: "Discover — OpportunityOS" },
+      { title: "Discover — Source" },
       {
         name: "description",
         content: "Search internships, scholarships, research, exchanges and fellowships.",
       },
-      { property: "og:title", content: "Discover — OpportunityOS" },
+      { property: "og:title", content: "Discover — Source" },
       {
         property: "og:description",
         content: "Search internships, scholarships, research, exchanges and fellowships.",
