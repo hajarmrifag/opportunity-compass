@@ -121,7 +121,9 @@ function Passport() {
     setWebBusy(true);
     setWebError("");
     try {
-      const result = await runWebExtraction({ data: { url: normalizedUrl, consent: true } });
+      const result = await runWebExtraction({
+        data: { url: normalizedUrl, label: webSourceLabel(normalizedUrl), consent: true },
+      });
       if (result.error) return setWebError(result.error);
       const nextResults = [...results, result];
       setResults(nextResults);
