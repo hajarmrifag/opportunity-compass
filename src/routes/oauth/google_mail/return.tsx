@@ -17,11 +17,34 @@ function OAuthReturn() {
       type: "appUserConnectorOAuthComplete" | "appUserConnectorOAuthFailed",
       code?: string,
     ) => {
-      window.opener?.postMessage(
-        { type, connectorId: "google_mail", code: code ?? null },
-        window.location.origin,
-      );
-      window.close();
+      const payload = { type, connectorId: "google_mail", code: code ?? null };
+      try {
+        window.opener?.postMessage(payload, window.location.origin);
+      } catch {
+        /* opener unreachable */
+      }
+      const channel =
+        typeof BroadcastChannel !== "undefined" ? new BroadcastChannel("gmail-oauth") : null;
+      let acked = false;
+      if (channel) {
+        channel.onmessage = (e) => {
+          if (e.data?.type === "ack") {
+            acked = true;
+            window.close();
+          }
+        };
+        channel.postMessage(payload);
+      }
+      if (window.opener) window.close();
+      // If nothing picked it up, finish here on the Tracker instead of hanging.
+      window.setTimeout(() => {
+        if (acked) return;
+        if (type === "appUserConnectorOAuthComplete" && code) {
+          window.location.replace(`/tracker?gmail_code=${encodeURIComponent(code)}`);
+        } else if (type === "appUserConnectorOAuthComplete") {
+          window.location.replace("/tracker");
+        }
+      }, 2000);
     };
     if (params.get("success") !== "true") {
       setMessage(params.get("error") ?? "The Gmail connection did not complete.");
