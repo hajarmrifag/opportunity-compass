@@ -29,3 +29,4 @@
 
 - Opportunity Atlas presentation changes stay within shared shell, route markup, presentational components, and global styles; Passport behavior and all data/integration boundaries remain untouched — protects concurrent profile extraction work.
 - The research agent (`src/lib/agentSearch*.ts`) may only propose queries and keep/reject rule-extracted candidates; facts come from Firecrawl page extraction, all model output is schema-validated and bounded (3 queries/8 pages/1 refinement) — model cannot invent listings.
+- Affordability scenarios are user-owned browser-local assumptions calculated only by the pure `calculateAffordability` seam; they never overwrite sourced funding facts or application status — keeps finance review modular and honest.

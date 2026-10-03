@@ -847,6 +847,13 @@
 .atlas-detail-actions {
   box-shadow: 7px 7px 0 var(--foreground);
 }
+.atlas-finance-panel {
+  background: color-mix(in oklab, var(--acid) 8%, transparent);
+  padding-inline: clamp(1rem, 3vw, 2.5rem);
+}
+.atlas-finance-row {
+  border-left: 4px solid var(--primary);
+}
 
 @media (max-width: 900px) {
   .atlas-cover-grid {
@@ -1005,6 +1012,9 @@
   }
   .atlas-detail-hero::after {
     display: none;
+  }
+  .atlas-finance-panel {
+    margin-inline: -1rem;
   }
 }
 

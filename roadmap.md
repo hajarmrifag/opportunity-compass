@@ -59,3 +59,10 @@
 - [x] Add visible navigation labels and refine shared typography, spacing, borders, cards and empty states
 - [x] Align comparison facts and verify desktop, 390px mobile, keyboard workflows, formatting, tests, types and build
 - [x] Final visual QA: complete desktop nav labels, restrained secondary headings, neutral Passport icon and broad category descriptions
+
+## Opportunity Brief
+
+- [x] Add one sourced Brief reached from live search, comparison and My Journey
+- [x] Reuse the editable action plan without changing status behavior
+- [x] Add typed local affordability scenarios and pure transparent calculations
+- [ ] Verify required numeric cases, existing regressions, desktop/mobile/keyboard and refresh persistence

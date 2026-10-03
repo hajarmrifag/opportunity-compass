@@ -85,11 +85,7 @@ function Journey() {
 }
 
 function AppRow({ app, index }: { app: Application; index: number }) {
-  const {
-    getOpportunity,
-    updateApplication,
-    removeApplication,
-  } = useStore();
+  const { getOpportunity, updateApplication, removeApplication } = useStore();
   const opp = getOpportunity(app.opportunityId);
   const [notes, setNotes] = useState(app.notes);
   const [savedMsg, setSavedMsg] = useState("");
@@ -113,7 +109,11 @@ function AppRow({ app, index }: { app: Application; index: number }) {
                 {opp.title}
               </Link>
               <div className="mt-2">
-                <Link to="/opportunities/$id" params={{ id: opp.id }} className="btn btn-outline btn-sm">
+                <Link
+                  to="/opportunities/$id"
+                  params={{ id: opp.id }}
+                  className="btn btn-outline btn-sm"
+                >
                   View opportunity brief
                 </Link>
               </div>
@@ -182,7 +182,9 @@ function AppRow({ app, index }: { app: Application; index: number }) {
           />
         </div>
       </div>
-      <div className="mt-6 border-t border-border pt-5"><ActionPlan application={app} /></div>
+      <div className="mt-6 border-t border-border pt-5">
+        <ActionPlan application={app} />
+      </div>
       <div className="mt-3 flex justify-between text-xs text-muted-foreground">
         <span>Updated {new Date(app.updatedAt).toLocaleString()}</span>
         <button

@@ -593,7 +593,9 @@ function LiveResult({ opp, index }: { opp: Opportunity; index: number }) {
           to="/opportunities/$id"
           params={{ id: opp.id }}
           className="btn btn-ghost btn-sm"
-          onClick={() => { if (!getOpportunity(opp.id)) addManualOpportunity(opp); }}
+          onClick={() => {
+            if (!getOpportunity(opp.id)) addManualOpportunity(opp);
+          }}
         >
           View brief
         </Link>

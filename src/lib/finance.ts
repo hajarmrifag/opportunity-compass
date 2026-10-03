@@ -77,7 +77,10 @@ export function calculateAffordability(scenario: FinanceScenario): Affordability
     }, 0);
     const upfrontCosts = costs.reduce((sum, item) => {
       const amount = knownAmount(item);
-      return sum + (amount !== null && ["upfront", "refundable_deposit"].includes(item.timing) ? amount : 0);
+      return (
+        sum +
+        (amount !== null && ["upfront", "refundable_deposit"].includes(item.timing) ? amount : 0)
+      );
     }, 0);
     const baseConfirmedSupport = effectiveSupports(costs, supports, "confirmed");
     const conditionalSupport = effectiveSupports(costs, supports, "conditional");

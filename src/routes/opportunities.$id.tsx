@@ -22,12 +22,14 @@ export const Route = createFileRoute("/opportunities/$id")({
       { title: "Opportunity Brief — OpportunityOS" },
       {
         name: "description",
-        content: "A sourced opportunity brief with eligibility, action plan and affordability scenario.",
+        content:
+          "A sourced opportunity brief with eligibility, action plan and affordability scenario.",
       },
       { property: "og:title", content: "Opportunity Brief — OpportunityOS" },
       {
         property: "og:description",
-        content: "A sourced opportunity brief with eligibility, action plan and affordability scenario.",
+        content:
+          "A sourced opportunity brief with eligibility, action plan and affordability scenario.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
@@ -77,7 +79,10 @@ function Detail() {
 
   return (
     <>
-      <Link to={app ? "/journey" : "/search"} className="text-sm text-muted-foreground hover:underline">
+      <Link
+        to={app ? "/journey" : "/search"}
+        className="text-sm text-muted-foreground hover:underline"
+      >
         ← {app ? "My Journey" : "Live search"}
       </Link>
       <header className="atlas-detail-hero mt-3 mb-8 border-b border-border pb-8">
@@ -222,14 +227,22 @@ function Detail() {
           </section>
 
           {app ? (
-            <section className="border-t border-border pt-6" aria-label="Editable application action plan">
+            <section
+              className="border-t border-border pt-6"
+              aria-label="Editable application action plan"
+            >
               <ActionPlan application={app} />
             </section>
           ) : (
             <section className="border-t border-border pt-6">
               <h2 className="text-xl">Action plan</h2>
-              <p className="mt-2 text-sm text-muted-foreground">Save this opportunity to create and edit an action plan. Saving starts at Saved and never marks it Submitted.</p>
-              <button className="btn btn-sm mt-3" onClick={() => saveOpportunity(opp.id)}>Save to start a plan</button>
+              <p className="mt-2 text-sm text-muted-foreground">
+                Save this opportunity to create and edit an action plan. Saving starts at Saved and
+                never marks it Submitted.
+              </p>
+              <button className="btn btn-sm mt-3" onClick={() => saveOpportunity(opp.id)}>
+                Save to start a plan
+              </button>
             </section>
           )}
         </div>
