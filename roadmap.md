@@ -37,7 +37,6 @@
 - [x] Hajar feature ownership documentation
 - [x] Regression, accessibility, mobile, browser, formatting, type and production checks
 
-<<<<<<< /tmp/main
 ## Student profile creation
 
 - [x] Expand Passport fields and migrate existing browser data without loss
@@ -45,7 +44,7 @@
 - [x] Add private AI extraction with evidence and honest per-file failures
 - [x] Add conflict review, gap filling and separate confirmed/draft behavior
 - [x] Add regression tests and verify upload-to-confirmation in browser
-=======
+
 ## Opportunity Atlas redesign
 
 - [x] Replace the conservative shell with a compact icon rail and exhibition-style mobile navigation
@@ -60,4 +59,3 @@
 - [x] Add visible navigation labels and refine shared typography, spacing, borders, cards and empty states
 - [x] Align comparison facts and verify desktop, 390px mobile, keyboard workflows, formatting, tests, types and build
 - [x] Final visual QA: complete desktop nav labels, restrained secondary headings, neutral Passport icon and broad category descriptions
->>>>>>> /tmp/draft
