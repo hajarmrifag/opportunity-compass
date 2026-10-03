@@ -65,15 +65,18 @@ const splitPoints = (description: string) =>
     .filter(Boolean);
 
 /** Organisation in bold with dates on the right; role or degree on the next line. */
-function entryFrom(e: BuilderEntry): CvEntry {
+function entryFrom(e: BuilderEntry, kind?: SectionKind): CvEntry {
   const org = e.organisation.trim();
   const title = e.title.trim();
+  // Projects lead with the project name; everything else leads with the organisation.
+  const [heading, sub] = kind === "projects" ? [title || org, title ? org : ""] : [org || title, org ? title : ""];
   return {
     id: newId("e"),
-    heading: org || title,
-    subheading: org ? title || undefined : undefined,
+    heading,
+    subheading: sub || undefined,
     location: e.location?.trim() || undefined,
     dates: e.dates?.trim() || undefined,
+    link: e.link?.trim() || undefined,
     bullets: splitPoints(e.description).map((t) => ({ id: newId("b"), text: t })),
   };
 }
@@ -86,7 +89,7 @@ export function buildFromAnswers(a: BuilderAnswers): CvDocument {
   const sections: CvSection[] = [];
   const add = (title: string, kind: SectionKind, entries: BuilderEntry[]) => {
     const filled = entries.filter((e) => e.title.trim() || e.organisation.trim() || e.description.trim());
-    if (filled.length) sections.push({ id: newId("s"), title, kind, entries: filled.map(entryFrom) });
+    if (filled.length) sections.push({ id: newId("s"), title, kind, entries: filled.map((e) => entryFrom(e, kind)) });
   };
   add("Education", "education", a.education);
 
@@ -94,9 +97,11 @@ export function buildFromAnswers(a: BuilderAnswers): CvDocument {
   const skills: CvEntry[] = [];
   const line = (label: string, value?: string) =>
     value && value.trim() ? skills.push({ id: newId("e"), heading: label, bullets: [{ id: newId("b"), text: value.trim() }] }) : null;
-  line("Languages", a.languages);
-  line("Technical skills", a.skills);
-  line("Awards", a.awards);
+  const joined = (list: string[] | undefined, text: string | undefined) =>
+    list && list.length ? list.map((x) => x.trim()).filter(Boolean).join(", ") : text;
+  line("Languages", joined(a.languagesList, a.languages));
+  line("Technical skills", joined(a.skillsList, a.skills));
+  line("Awards", joined(a.awardsList, a.awards));
   if (skills.length) sections.push({ id: newId("s"), title: "Skills", kind: "skills", entries: skills });
 
   add("Work experience", "experience", a.experience);
@@ -115,6 +120,17 @@ export function buildFromAnswers(a: BuilderAnswers): CvDocument {
   };
 }
 
+/** "https://github.com/me/x/" → "github.com/me/x" for display. */
+export const displayLink = (url: string) => url.trim().replace(/^https?:\/\//i, "").replace(/^www\./i, "").replace(/\/$/, "");
+
+/** Adds https:// when missing, so the link opens. Returns null for anything that does not look like a web address. */
+export function hrefFor(url: string | undefined): string | null {
+  if (!url) return null;
+  const u = url.trim();
+  if (!/^[\w.-]+\.[a-z]{2,}(\/|$)|^https?:\/\//i.test(u)) return null;
+  return /^https?:\/\//i.test(u) ? u : `https://${u}`;
+}
+
 /** True when an entry should be shown as a labelled line, e.g. "Languages: English (Fluent)". */
 export const isLabelLine = (sectionKindValue: SectionKind | undefined, e: CvEntry) =>
   sectionKindValue === "skills" && !!e.heading && !e.subheading && !e.dates && e.bullets.length === 1;
@@ -127,7 +143,7 @@ export function factsFromCv(doc: CvDocument, source: Fact["source"] = "cv"): Fac
   if (doc.summary) push(doc.summary);
   for (const s of doc.sections) {
     for (const e of s.entries) {
-      push([e.heading, e.subheading, e.location, e.dates].filter(Boolean).join(", "));
+      push([e.heading, e.subheading, e.location, e.dates, e.link].filter(Boolean).join(", "));
       e.bullets.forEach((b) => push(b.text));
     }
   }
@@ -148,7 +164,7 @@ export function flattenCv(doc: CvDocument): string {
         out.push(`${e.heading}: ${e.bullets[0].text}`);
         continue;
       }
-      const head = [e.heading, e.location].filter(Boolean).join(", ");
+      const head = [e.heading, e.location].filter(Boolean).join(", ") + (e.link ? ` (${displayLink(e.link)})` : "");
       if (head || e.dates) out.push([head, e.dates].filter(Boolean).join("    "));
       if (e.subheading) out.push(e.subheading);
       e.bullets.forEach((b) => out.push(`• ${b.text}`));

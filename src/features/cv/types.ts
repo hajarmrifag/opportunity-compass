@@ -1,4 +1,4 @@
-// Source – CV studio types.
+// OpportunityOS – CV studio types.
 // A CV is structured so it can be edited change by change and exported to Word or PDF.
 
 export interface CvBullet {
@@ -12,6 +12,8 @@ export interface CvEntry {
   subheading?: string; // role or degree, shown on the next line, e.g. "Analyst" or "BBA, Digital Finance and Investment"
   location?: string;
   dates?: string;
+  /** Optional proof, e.g. a GitHub repository, portfolio page or post. Shown next to the heading and clickable in files. */
+  link?: string;
   bullets: CvBullet[];
 }
 
@@ -65,6 +67,7 @@ export interface BuilderEntry {
   organisation: string; // organisation or university (shown in bold, dates on the right)
   location?: string;
   dates?: string;
+  link?: string; // optional, e.g. github.com/you/project
   description: string; // one point per line, in the student's words
 }
 
@@ -81,4 +84,10 @@ export interface BuilderAnswers {
   skills?: string;
   languages?: string;
   awards?: string;
+  /** Added one by one in the builder, e.g. ["Excel", "Python"]. Preferred over the comma-separated strings. */
+  skillsList?: string[];
+  /** e.g. ["English (Fluent)", "Mandarin (Native)"] */
+  languagesList?: string[];
+  /** e.g. ["Entrance Scholarship (2025)"] */
+  awardsList?: string[];
 }

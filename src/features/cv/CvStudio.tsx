@@ -4,7 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { CvBuilderForm } from "./CvBuilderForm";
 import { analyzeOffer, chatAboutCv, parseCv, type OfferAnalysis } from "./cvApi";
-import { acceptStudentFacts, applyChange, buildFromAnswers, checkChange, cvFromPlainText, factsFromCv, flattenCv, isLabelLine, sectionKind } from "./cvModel";
+import { acceptStudentFacts, applyChange, buildFromAnswers, checkChange, cvFromPlainText, displayLink, factsFromCv, flattenCv, hrefFor, isLabelLine, sectionKind } from "./cvModel";
 import { contactLines, cvFileName, cvToDocxBlob, cvToPdfBlob, cvToTextBlob, downloadBlob, needsUnicodeFont } from "./exportCv";
 import { CvReadError, readCvFile } from "./readCvFile";
 import type { BuilderAnswers, ChatMessage, CheckedChange, CvDocument, Fact } from "./types";
@@ -426,7 +426,17 @@ function CvPage({ doc, changed }: { doc: CvDocument; changed: string[] }) {
                 <div key={e.id} className="mt-1">
                   {(e.heading || e.dates) && (
                     <p className="flex justify-between gap-4">
-                      <span className="font-bold">{[e.heading, e.location].filter(Boolean).join(", ")}</span>
+                      <span>
+                        <span className="font-bold">{[e.heading, e.location].filter(Boolean).join(", ")}</span>
+                        {e.link &&
+                          (hrefFor(e.link) ? (
+                            <a className="ml-1 text-[#1F4E79] underline" href={hrefFor(e.link)!} target="_blank" rel="noreferrer">
+                              ({displayLink(e.link)})
+                            </a>
+                          ) : (
+                            <span className="ml-1">({e.link})</span>
+                          ))}
+                      </span>
                       {e.dates && <span className="whitespace-nowrap">{e.dates}</span>}
                     </p>
                   )}

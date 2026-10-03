@@ -2,9 +2,9 @@
 // centred name and contact line, UPPERCASE section headings with a rule,
 // organisation in bold with dates on the right, role in italics, compact bullets, Times New Roman.
 // Requires the npm packages "docx" and "jspdf".
-import { AlignmentType, BorderStyle, Document, Packer, Paragraph, Tab, TabStopType, TextRun } from "docx";
+import { AlignmentType, BorderStyle, Document, ExternalHyperlink, Packer, Paragraph, Tab, TabStopType, TextRun } from "docx";
 import { jsPDF } from "jspdf";
-import { flattenCv, isLabelLine, sectionKind } from "./cvModel";
+import { displayLink, flattenCv, hrefFor, isLabelLine, sectionKind } from "./cvModel";
 import type { CvDocument, CvEntry } from "./types";
 
 const FONT = "Times New Roman";
@@ -24,6 +24,20 @@ const headLine = (e: CvEntry) => [e.heading, e.location].filter(Boolean).join(",
 const italicRole = (kind: string) => kind !== "education";
 
 // ---------- Word ----------
+
+/** " (github.com/me/x)" with the address clickable. */
+function linkRuns(link: string | undefined, halfPoints: number): Array<TextRun | ExternalHyperlink> {
+  const href = hrefFor(link);
+  if (!link || !href) return link ? [new TextRun({ text: ` (${link})`, size: halfPoints, font: FONT })] : [];
+  return [
+    new TextRun({ text: " (", size: halfPoints, font: FONT }),
+    new ExternalHyperlink({
+      link: href,
+      children: [new TextRun({ text: displayLink(link), size: halfPoints, font: FONT, color: "1F4E79", underline: {} })],
+    }),
+    new TextRun({ text: ")", size: halfPoints, font: FONT }),
+  ];
+}
 
 export function buildDocx(cv: CvDocument): Document {
   const size = (pt: number) => pt * 2; // docx uses half-points
@@ -50,7 +64,7 @@ export function buildDocx(cv: CvDocument): Document {
           new Paragraph({
             children: [
               new TextRun({ text: `${e.heading}: `, bold: true, size: size(10.5), font: FONT }),
-              new TextRun({ text: e.bullets[0]?.text ?? "", size: size(10.5), font: FONT }),
+              new TextRun({ text: e.bullets[0].text, size: size(10.5), font: FONT }),
             ],
           }),
         );
@@ -64,6 +78,7 @@ export function buildDocx(cv: CvDocument): Document {
             tabStops: [{ type: TabStopType.RIGHT, position: TEXT_WIDTH_TWIPS }],
             children: [
               new TextRun({ text: head, bold: true, size: size(10.5), font: FONT }),
+              ...linkRuns(e.link, size(10.5)),
               ...(e.dates ? [new TextRun({ children: [new Tab(), e.dates], size: size(10.5), font: FONT })] : []),
             ],
           }),
@@ -82,7 +97,7 @@ export function buildDocx(cv: CvDocument): Document {
   }
 
   return new Document({
-    creator: "Source",
+    creator: "OpportunityOS",
     title: `${cv.name} CV`,
     styles: { default: { document: { run: { font: FONT } } } },
     sections: [
@@ -170,7 +185,7 @@ export function buildPdf(cv: CvDocument): jsPDF {
         ensure(lh);
         pdf.text(label, margin, y);
         font("normal", body);
-        const lines = pdf.splitTextToSize(e.bullets[0]?.text ?? "", width - lw) as string[];
+        const lines = pdf.splitTextToSize(e.bullets[0].text, width - lw) as string[];
         lines.forEach((l, i) => {
           if (i > 0) ensure(lh);
           pdf.text(l, margin + lw, y);
@@ -186,6 +201,19 @@ export function buildPdf(cv: CvDocument): jsPDF {
         font("bold", body);
         const headLines = pdf.splitTextToSize(head, width - datesW - 12) as string[];
         pdf.text(headLines[0] ?? "", margin, y);
+        const href = hrefFor(e.link);
+        if (e.link && headLines.length === 1) {
+          const x = margin + pdf.getTextWidth(headLines[0] ?? "") + 4;
+          font("normal", body);
+          const shown = `(${displayLink(e.link)})`;
+          if (x + pdf.getTextWidth(shown) < margin + width - datesW - 8) {
+            if (href) {
+              pdf.setTextColor(31, 78, 121);
+              pdf.textWithLink(shown, x, y, { url: href });
+              pdf.setTextColor(0, 0, 0);
+            } else pdf.text(shown, x, y);
+          }
+        }
         if (e.dates) {
           font("normal", body);
           pdf.text(e.dates, margin + width, y, { align: "right" });
