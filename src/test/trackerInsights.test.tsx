@@ -1,5 +1,6 @@
 import { cleanup, render, screen } from "@testing-library/react";
-import { afterEach, describe, expect, it } from "vitest";
+import userEvent from "@testing-library/user-event";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { TrackerInsights } from "@/features/tracker/Insights";
 import type { TrackerApplication } from "@/lib/tracker.functions";
 
@@ -18,34 +19,38 @@ const app: TrackerApplication = {
   updated_at: "2026-10-03T12:00:00Z",
 };
 
-describe("Tracker live charts", () => {
-  it("shows zero, not sample outcomes, for empty records", () => {
+describe("Tracker insights", () => {
+  it("renders only the AI feedback button, no chart", () => {
     render(
       <TrackerInsights
-        apps={[]}
+        apps={[app]}
         chats={[]}
-        suggestionsCount={0}
-        onAdvice={async () => ({ advice: "", resources: [] })}
+        onAdvice={async () => ({ advice: "Keep going.", resources: [] })}
       />,
     );
-    expect(screen.getByRole("img")).toHaveAccessibleName(/0 tracked applications/);
-    expect(screen.getByText("No rejections recorded.")).toBeInTheDocument();
-    expect(screen.queryByText(/Sample data/)).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /AI feedback/i })).toBeInTheDocument();
+    expect(screen.queryByRole("img")).not.toBeInTheDocument();
+    expect(screen.queryByText(/Application outcomes/i)).not.toBeInTheDocument();
   });
 
-  it("updates the chart and rejected list when current records change", () => {
-    const props = {
-      chats: [],
-      suggestionsCount: 2,
-      onAdvice: async () => ({ advice: "", resources: [] }),
-    };
-    const { rerender } = render(<TrackerInsights {...props} apps={[app]} />);
-    expect(screen.getByRole("img")).toHaveAccessibleName(/Submitted: 1/);
-    expect(screen.queryByText(app.role)).not.toBeInTheDocument();
-    rerender(<TrackerInsights {...props} apps={[{ ...app, status: "rejected" }]} />);
-    expect(screen.getByRole("img")).toHaveAccessibleName(/Rejected: 1/);
-    expect(screen.getByText(app.role)).toBeInTheDocument();
-    expect(screen.getByText(app.company)).toBeInTheDocument();
-    expect(screen.getByText(/2 pending email suggestions are excluded/)).toBeInTheDocument();
+  it("shows AI feedback after the button is used", async () => {
+    const user = userEvent.setup();
+    const onAdvice = vi.fn(async () => ({ advice: "Keep going.", resources: [] }));
+    render(<TrackerInsights apps={[app]} chats={[]} onAdvice={onAdvice} />);
+    await user.click(screen.getByRole("button", { name: /AI feedback/i }));
+    expect(onAdvice).toHaveBeenCalledTimes(1);
+    expect(await screen.findByText("Keep going.")).toBeInTheDocument();
+  });
+
+  it("falls back to the labelled preview when AI feedback fails", async () => {
+    const user = userEvent.setup();
+    render(
+      <TrackerInsights apps={[app]} chats={[]} onAdvice={async () => Promise.reject(new Error())} />,
+    );
+    await user.click(screen.getByRole("button", { name: /AI feedback/i }));
+    expect(
+      await screen.findByText(/Preview — AI feedback isn't connected yet/i),
+    ).toBeInTheDocument();
+```
   });
 });
