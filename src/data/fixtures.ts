@@ -159,6 +159,27 @@ export const DEMO_PROFILE: Profile = {
   confirmed: false,
   confirmedAt: null,
   source: "demo",
+  education: [
+    {
+      id: "demo-education",
+      degreeLevel: "bachelor",
+      degreeName: "Bachelor's degree",
+      school: "",
+      field: "Computer Science",
+    },
+  ],
+  gpaValue: "",
+  gpaScale: "",
+  graduationDate: "2027",
+  graduationDatePrecision: "year",
+  languageDetails: [
+    { name: "English", level: "" },
+    { name: "Spanish", level: "" },
+  ],
+  constraints: [],
+  fieldProvenance: {},
+  sourceDocuments: [],
+  fieldEvidence: [],
 };
 
 export const EMPTY_PROFILE: Profile = {
@@ -174,4 +195,14 @@ export const EMPTY_PROFILE: Profile = {
   confirmed: false,
   confirmedAt: null,
   source: "manual",
+  education: [],
+  gpaValue: "",
+  gpaScale: "",
+  graduationDate: null,
+  graduationDatePrecision: null,
+  languageDetails: [],
+  constraints: [],
+  fieldProvenance: {},
+  sourceDocuments: [],
+  fieldEvidence: [],
 };

@@ -36,3 +36,11 @@
 - [x] Persistent per-application action plans with explicit status isolation
 - [x] Hajar feature ownership documentation
 - [x] Regression, accessibility, mobile, browser, formatting, type and production checks
+
+## Student profile creation
+
+- [ ] Expand Passport fields and migrate existing browser data without loss
+- [ ] Add validated PDF and pasted-text document intake
+- [ ] Add private AI extraction with evidence and honest per-file failures
+- [ ] Add conflict review, gap filling and separate confirmed/draft behavior
+- [ ] Add regression tests and verify upload-to-confirmation in browser
