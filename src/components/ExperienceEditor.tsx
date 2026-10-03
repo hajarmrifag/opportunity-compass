@@ -85,7 +85,7 @@ export function ExperienceEditor({
             size="sm"
             onClick={() => setEditing(blank("research"))}
           >
-            <Plus /> Research
+            <Plus /> Add research
           </Button>
           <Button
             type="button"
@@ -93,10 +93,10 @@ export function ExperienceEditor({
             size="sm"
             onClick={() => setEditing(blank("volunteer"))}
           >
-            <Plus /> Volunteer
+            <Plus /> Add volunteer
           </Button>
           <Button type="button" variant="outline" size="sm" onClick={() => setEditing(blank(null))}>
-            <Plus /> Other role
+            <Plus /> Add other role
           </Button>
         </div>
       </div>
