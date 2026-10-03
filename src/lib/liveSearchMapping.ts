@@ -168,7 +168,7 @@ export function mapHit(hit: RawSearchHit, retrievedAt: string): Opportunity | nu
     mode,
     summary: clip(d.summary, 600) || clip(hit.description, 600) || "No summary on source page.",
     deadline: d.deadline && isValidIsoDate(d.deadline) ? d.deadline : null,
-    tags: [category, ...(d.fields_of_study ?? []), ...(d.skills ?? [])].filter((x): x is string => !!x).map((x) => x.toLowerCase()).slice(0, 20),
+    tags: [...(category ? [category] : ["category-unknown"]), ...(d.fields_of_study ?? []), ...(d.skills ?? [])].map((x) => x.toLowerCase()).slice(0, 20),
     requirements: reqs,
     funding: {
       tuition: covItem(d.tuition, d.funding_note ?? undefined),
@@ -183,7 +183,6 @@ export function mapHit(hit: RawSearchHit, retrievedAt: string): Opportunity | nu
     verification: "web_retrieved",
     isDemo: false,
     retrievedAt,
-    ...(category ? {} : { tags: ["category-unknown"] }),
   };
 }
 
