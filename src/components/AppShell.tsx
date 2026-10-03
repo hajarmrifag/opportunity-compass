@@ -5,38 +5,42 @@ import {
   Compass,
   FilePlus2,
   FolderSearch2,
-  Map,
   Orbit,
   Route as RouteIcon,
   Search,
-  Sparkles,
   UserRound,
 } from "lucide-react";
 import { useStore } from "@/lib/store";
 import { CompareTray } from "./CompareTray";
 import { CommandCenter } from "./CommandCenter";
+import { Button } from "./ui/button";
+import { AmbientField } from "./motion/AmbientField";
+import { VibeCursor } from "./motion/VibeCursor";
 
 const NAV = [
   { to: "/", label: "Home", mobileLabel: "Home", icon: Orbit },
-  { to: "/search", label: "Live search", mobileLabel: "Live", icon: Search },
-  { to: "/recommended", label: "Recommended", mobileLabel: "Picks", icon: Sparkles },
-  { to: "/discover", label: "Demo listings", mobileLabel: "Demo", icon: Compass },
-  { to: "/journey", label: "My Journey", mobileLabel: "Journey", icon: RouteIcon },
+  { to: "/search", label: "Search", mobileLabel: "Search", icon: Search },
+  { to: "/discover", label: "Browse", mobileLabel: "Browse", icon: Compass },
+  { to: "/journey", label: "Journey", mobileLabel: "Journey", icon: RouteIcon },
   { to: "/tracker", label: "Tracker", mobileLabel: "Tracker", icon: FolderSearch2 },
   { to: "/passport", label: "Passport", mobileLabel: "Passport", icon: UserRound },
 ] as const;
 
 export function AppShell({ children }: { children: ReactNode }) {
   const { error, dismissError, applications } = useStore();
-  const pathname = useRouterState({ select: (state) => state.location.pathname });
+  const location = useRouterState({ select: (state) => state.location });
+  const pathname = location.pathname;
+  const cinema = pathname === "/search" && "demo" in location.search && location.search.demo === true;
+  const campaign = pathname === "/" || cinema;
   return (
-    <div className="atlas-shell min-h-screen md:flex">
+    <div className={`atlas-shell min-h-screen md:flex${campaign ? " atlas-campaign-shell" : ""}${cinema ? " atlas-cinema" : ""}`}>
+      {campaign && <><AmbientField /><VibeCursor /></>}
       <a href="#main" className="skip-link">
         Skip to content
       </a>
       <aside className="atlas-rail hidden shrink-0 flex-col border-r border-border bg-sidebar md:flex md:sticky md:top-0 md:h-screen">
-        <Link to="/" className="atlas-mark" aria-label="Source home">
-          S<span>rc</span>
+        <Link to="/" className="atlas-mark atlas-sourced-mark" aria-label="Sourced home">
+          Sourc<em>ed</em>
         </Link>
         <nav aria-label="Main" className="flex w-full flex-col gap-1">
           {NAV.map((n) => (
@@ -75,8 +79,8 @@ export function AppShell({ children }: { children: ReactNode }) {
       <CommandCenter />
       <div className="flex min-w-0 flex-1 flex-col pb-20 md:pb-0">
         <header className="atlas-mobile-header flex items-center justify-between border-b border-border bg-sidebar px-4 py-3 md:hidden">
-          <Link to="/" className="font-display text-xl font-black">
-            Source
+          <Link to="/" className="atlas-sourced-mark font-display text-xl font-black" aria-label="Sourced home">
+            Sourc<em>ed</em>
           </Link>
           <Link to="/add" className="btn btn-outline btn-sm">
             Add <ArrowUpRight aria-hidden className="size-3" />
@@ -88,14 +92,14 @@ export function AppShell({ children }: { children: ReactNode }) {
             className="m-4 flex items-start justify-between gap-3 rounded-lg border border-destructive/40 bg-destructive/10 p-3 text-sm"
           >
             <span>{error}</span>
-            <button className="btn btn-ghost btn-sm" onClick={dismissError}>
+            <Button variant="ghost" size="sm" onClick={dismissError}>
               Dismiss
-            </button>
+            </Button>
           </div>
         )}
         <main
           id="main"
-          className="mx-auto w-full max-w-[1500px] flex-1 overflow-hidden px-4 py-7 md:px-8 md:py-8 xl:px-12"
+          className={campaign ? "atlas-campaign-main min-w-0 w-full flex-1" : "mx-auto w-full max-w-[1500px] flex-1 overflow-hidden px-4 py-7 md:px-8 md:py-8 xl:px-12"}
         >
           <div key={pathname} className="atlas-route-enter">
             {children}
