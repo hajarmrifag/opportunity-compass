@@ -251,3 +251,40 @@ export interface ActionTask {
   suggested: boolean;
   createdAt: string;
 }
+
+/** User-owned affordability assumptions. These never overwrite sourced opportunity facts. */
+export type FinanceComponent = "tuition" | "living" | "travel" | "other";
+export type MoneyPeriod = "one_time" | "monthly" | "yearly" | "programme";
+export type FinanceTiming = "upfront" | "ongoing" | "later_reimbursement" | "refundable_deposit";
+export type FinanceKnowledge = "known" | "estimated" | "unknown";
+export type FinanceSource = "user_estimate" | "source_url";
+
+export interface FinanceAmountBase {
+  id: string;
+  label: string;
+  amount: number | null;
+  currency: string;
+  period: MoneyPeriod;
+  component: FinanceComponent;
+  timing: FinanceTiming;
+  knowledge: FinanceKnowledge;
+  source: FinanceSource;
+  sourceUrl: string | null;
+}
+
+export interface FinanceCost extends FinanceAmountBase {
+  required: boolean;
+}
+
+export interface FinanceSupport extends FinanceAmountBase {
+  kind: "waiver" | "cash" | "reimbursement";
+  award: "confirmed" | "conditional";
+  applicable: boolean;
+}
+
+export interface FinanceScenario {
+  opportunityId: string;
+  costs: FinanceCost[];
+  supports: FinanceSupport[];
+  updatedAt: string;
+}
