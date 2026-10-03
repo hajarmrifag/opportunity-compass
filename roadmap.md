@@ -82,3 +82,10 @@
 - [x] Merge six presentation source files; retain Tracker and all teammate contracts
 - [x] Automatic build passed; 71 regressions and formatter passed; desktop/mobile shortcuts, Tracker, route/card motion and reduced motion verified
 - [ ] Separate TypeScript invocation is unavailable under the managed validation workflow; live research visuals await a configured search service (no integration changes requested)
+
+## Tracker career dashboard (approved 3 Oct)
+- [x] Staged migration: 'assessment' status, coffee_chats.follow_up_date + outcome check, email_suggestions.kind
+- [x] Summary cards, due-today panel, status chart, AI advice (resources-based, logged), coffee chat outcomes, suggestion review, status history
+- [x] Gmail scan fn returns honest "not set up" until per-user Google registration exists
+- [x] 71 tests pass, tsgo clean, build OK, browser check of /tracker (empty state) clean
+- [ ] Full data test after draft acceptance (migration not applied in draft)
