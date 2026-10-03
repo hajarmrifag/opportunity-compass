@@ -26,7 +26,7 @@ function Journey() {
     <>
       <PageHeader title="My Journey" sub="Update statuses yourself — nothing is marked Submitted automatically." right={<div className="flex flex-wrap gap-2"><Link to="/tracker-io" className="btn btn-ghost">Import / export</Link><Link to="/add" className="btn btn-outline">+ Add opportunity</Link></div>} />
       {applications.length === 0 ? (
-        <EmptyState title="Your journey starts here" body="Save an opportunity from Discover, or add one you found elsewhere." action={<Link to="/discover" className="btn">Go to Discover</Link>} />
+        <EmptyState title="Your journey starts here" body="Find real opportunities with Live search, or add one you found elsewhere." action={<Link to="/search" className="btn">Go to Live search</Link>} />
       ) : (
         <>
           <div className="mb-4 flex flex-wrap gap-2" role="group" aria-label="Filter by status">
