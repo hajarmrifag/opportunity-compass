@@ -51,6 +51,5 @@ describe("Tracker insights", () => {
     expect(
       await screen.findByText(/Preview — AI feedback isn't connected yet/i),
     ).toBeInTheDocument();
-```
   });
 });
