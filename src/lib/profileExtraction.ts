@@ -101,7 +101,7 @@ export function applyExtractedCandidates(
   const degree = selected("degreeLevel");
   if (degree) {
     evidence.push({ ...degree });
-    provenance.degreeLevel = "extracted";
+    provenance["degreeLevel"] = "extracted";
   }
   const skills = [
     ...new Set([...base.skills, ...(byField.get("skill") ?? []).map((item) => item.value)]),

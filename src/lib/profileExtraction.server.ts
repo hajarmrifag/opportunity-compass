@@ -74,7 +74,7 @@ export async function extractProfileDocument(
     const result = streamText({
       model: provider.responses("openai/gpt-6-astra"),
       messages: [{ role: "user", content }],
-      abortSignal: signal,
+      ...(signal ? { abortSignal: signal } : {}),
       output: Output.object({ schema: outputSchema }),
       providerOptions: {
         openai: {

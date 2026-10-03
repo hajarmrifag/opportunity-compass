@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useMemo, useRef, useState, type ChangeEvent, type ReactNode } from "react";
+import { useEffect, useMemo, useRef, useState, type ChangeEvent, type ReactNode } from "react";
 import { FileText, LockKeyhole, Plus, Trash2, Upload, WandSparkles } from "lucide-react";
 import { useServerFn } from "@tanstack/react-start";
 import { useStore } from "@/lib/store";
@@ -87,6 +87,11 @@ function Passport() {
   const [message, setMessage] = useState("");
   const [saving, setSaving] = useState(false);
 
+  useEffect(() => {
+    if (!ready) return;
+    setDraft(profileDraft ?? profile ?? EMPTY_PROFILE);
+  }, [ready, profile, profileDraft]);
+
   const conflicts = useMemo(() => extractionConflicts(results), [results]);
   const unresolved = conflicts.filter((item) => !choices[item.field]).length;
   const confirmation = canConfirmProfile(draft, unresolved);
@@ -165,7 +170,7 @@ function Passport() {
     for (const document of documents) {
       setDocuments((current) =>
         current.map((item) =>
-          item.id === document.id ? { ...item, state: "extracting", error: undefined } : item,
+          item.id === document.id ? { ...item, state: "extracting" } : item,
         ),
       );
       try {
@@ -185,7 +190,7 @@ function Passport() {
         setDocuments((current) =>
           current.map((item) =>
             item.id === document.id
-              ? { ...item, state: result.ok ? "done" : "error", error: result.error ?? undefined }
+              ? { ...item, state: result.ok ? "done" : "error", ...(result.error ? { error: result.error } : {}) }
               : item,
           ),
         );
@@ -202,7 +207,7 @@ function Passport() {
         setDocuments((current) =>
           current.map((item) =>
             item.id === document.id
-              ? { ...item, state: "error", error: result.error ?? undefined }
+              ? { ...item, state: "error", ...(result.error ? { error: result.error } : {}) }
               : item,
           ),
         );
