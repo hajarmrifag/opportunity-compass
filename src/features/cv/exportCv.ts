@@ -50,7 +50,7 @@ export function buildDocx(cv: CvDocument): Document {
           new Paragraph({
             children: [
               new TextRun({ text: `${e.heading}: `, bold: true, size: size(10.5), font: FONT }),
-              new TextRun({ text: e.bullets[0]?.text ?? "", size: size(10.5), font: FONT }),
+              new TextRun({ text: e.bullets[0].text, size: size(10.5), font: FONT }),
             ],
           }),
         );
@@ -170,7 +170,7 @@ export function buildPdf(cv: CvDocument): jsPDF {
         ensure(lh);
         pdf.text(label, margin, y);
         font("normal", body);
-        const lines = pdf.splitTextToSize(e.bullets[0]?.text ?? "", width - lw) as string[];
+        const lines = pdf.splitTextToSize(e.bullets[0].text, width - lw) as string[];
         lines.forEach((l, i) => {
           if (i > 0) ensure(lh);
           pdf.text(l, margin + lw, y);
