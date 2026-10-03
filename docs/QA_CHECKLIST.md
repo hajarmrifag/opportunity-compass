@@ -8,6 +8,15 @@
 - 390×844 mobile dashboard and first-tab Skip to content keyboard focus verified visually and interactively.
 - Browser run used a fresh context and a clearly labelled `TEST — email mentor` task; no real Passport was loaded or changed.
 
+# Opportunity Brief verification — 3 Oct 2026
+
+- The Brief opens from listing cards and retains explicit demo/unverified provenance, unknown values, separate eligibility, and sourced funding facts.
+- A saved item exposes the shared action plan; four general suggestions were added without changing its `Saved` application status.
+- A clearly labelled private scenario (`TEST tuition` HKD 80,000 and confirmed waiver HKD 60,000) calculated an HKD 20,000 gap and survived refresh.
+- Seven finance unit cases pass: equal coverage, multi-cost subtotal/gap, later reimbursement/upfront need, unknown required cost, conditional award, capped duplicate waivers, and incompatible currency/period groups.
+- Browser checks passed at 1280×1800 and 390×844 with no horizontal overflow, first-Tab focus, no page errors, and no status inference.
+- Full regression suite: 61 tests passed; TypeScript and production build passed. Main, Lovable Cloud, connections, and real Passport data were untouched.
+
 # Student profile creation verification — 3 Oct 2026
 
 - A clearly labelled fictional pasted CV completed the real server-side extraction path. It extracted Test University, Bachelor of Science, Computer Science, 2027, Python, SQL and English, with source snippets beside the corresponding fields.

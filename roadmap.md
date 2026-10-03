@@ -65,4 +65,4 @@
 - [x] Add one sourced Brief reached from live search, comparison and My Journey
 - [x] Reuse the editable action plan without changing status behavior
 - [x] Add typed local affordability scenarios and pure transparent calculations
-- [ ] Verify required numeric cases, existing regressions, desktop/mobile/keyboard and refresh persistence
+- [x] Verify required numeric cases, existing regressions, desktop/mobile/keyboard and refresh persistence
