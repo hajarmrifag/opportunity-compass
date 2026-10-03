@@ -98,3 +98,22 @@ Browser end-to-end (Playwright, 1280 px, real search):
 Gates after these changes: `tsgo --noEmit` exit 0 · `bunx vitest run` → 3 files, **28 passed** · `bun run build` exit 0 · no `lovc_`/gateway string in `dist/client`.
 
 Known limitations: extraction quality depends on each page (some fields "unknown"; scholarship *guide* pages can still be classified as listings — they are labelled unverified and filtered out when a category is selected); rate limit/cache are per server instance; job-board mirrors (Indeed/ZipRecruiter) may appear as sources.
+
+## Fix: aggregate / multi-listing pages (independent HK test, 3 Oct 2026 ~07:30 UTC)
+**Found (team):** query "software engineering internships Hong Kong" returned `intrack.hk/internships/stem` as one Hang Seng listing with a mismatched Summer Associate summary, and `hk.indeed.com/q-software-intern-jobs.html` as a Goldman Sachs listing. Citadel's official page was correct, and saving created exactly one tracker item.
+**Cause:** the extractor was asked for "the single opportunity on this page", so on board/category pages it stitched facts from different entries into one.
+**Fix (`src/lib/liveSearchMapping.ts`):**
+1. `isAggregateUrl` rejects search-query parameters (`q`, `keywords`, …), search/category paths (`/q-…-jobs.html`, `-jobs`, `/search`, `/results`, trailing `/jobs`, `/internships`, …), and job-board/aggregator hosts (Indeed, LinkedIn, ZipRecruiter, JobsDB, intrack.hk, …) unless the URL is a specific detail page (`/viewjob`, `/jobs/view/<id>`, `/job/<slug>`, numeric job ids).
+2. The extractor now must return `page_type`. Only `single_opportunity_detail` is accepted; `listings_on_page > 1` is rejected. The prompt forbids combining fields from different entries.
+3. The rules run after extraction, so a confident single-listing answer from the model can't override them. Rejected pages are counted as "skipped". The app does not yet follow links from board pages to fetch the original detail page; such pages are dropped instead.
+
+**Regression tests (`src/test/liveSearch.test.ts`, 5 new):** the observed intrack.hk and Indeed URLs with the stitched Hang Seng / Goldman content → rejected; 6 other search/category URL patterns → rejected; model-flagged multi-listing / missing page_type → rejected; job-board detail pages, Citadel, Greenhouse and NOAA → kept; UChicago and UC Irvine master's programme pages → kept as `masters`.
+
+**Results:**
+```
+$ tsgo --noEmit      -> exit 0
+$ bunx vitest run    -> 3 files, 33 passed (core 16, liveSearch 15, app-routing 2)
+$ bun run build      -> exit 0
+```
+**Live re-run (real Firecrawl):** "software engineering internships Hong Kong" → 2 listings, 6 skipped: citadelsecurities.com/careers/details/software-engineer-intern-asia/ and janestreet.com/join-jane-street/position/8617298002/. No intrack.hk or Indeed result. "MSc data science scholarship" (Master's) → UChicago, UC Irvine and Miami programme pages kept.
+**Trade-off:** fewer results, because board pages are skipped rather than resolved. A detail-URL resolver (follow the board link, then extract the detail page) is a possible later step and would cost extra Firecrawl credits.
