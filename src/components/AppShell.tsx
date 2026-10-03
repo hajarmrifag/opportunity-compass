@@ -9,6 +9,7 @@ import {
   Orbit,
   Route as RouteIcon,
   Search,
+  Sparkles,
   UserRound,
 } from "lucide-react";
 import { useStore } from "@/lib/store";
@@ -18,6 +19,7 @@ import { CommandCenter } from "./CommandCenter";
 const NAV = [
   { to: "/", label: "Home", mobileLabel: "Home", icon: Orbit },
   { to: "/search", label: "Live search", mobileLabel: "Live", icon: Search },
+  { to: "/recommended", label: "Recommended", mobileLabel: "Picks", icon: Sparkles },
   { to: "/discover", label: "Demo listings", mobileLabel: "Demo", icon: Compass },
   { to: "/journey", label: "My Journey", mobileLabel: "Journey", icon: RouteIcon },
   { to: "/tracker", label: "Tracker", mobileLabel: "Tracker", icon: FolderSearch2 },
@@ -102,7 +104,7 @@ export function AppShell({ children }: { children: ReactNode }) {
       </div>
       <nav
         aria-label="Main mobile"
-        className="atlas-mobile-nav fixed inset-x-0 bottom-0 z-20 grid grid-cols-5 border-t border-border bg-sidebar md:hidden"
+        className="atlas-mobile-nav fixed inset-x-0 bottom-0 z-20 grid grid-cols-6 border-t border-border bg-sidebar md:hidden"
       >
         {NAV.map((n) => (
           <Link

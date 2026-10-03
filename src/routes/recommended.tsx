@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { ArrowRight, IdCard, RefreshCw, Sparkles, X } from "lucide-react";
 import { useStore } from "@/lib/store";
 import { getRecommended } from "@/lib/recommended.functions";
@@ -44,11 +44,19 @@ type SectionState =
   | { status: "error"; message: string };
 
 function RecommendedPage() {
-  const { ready, profile } = useStore();
+  const { ready, profile, getOpportunity, addManualOpportunity } = useStore();
   const [sections, setSections] = useState<Record<string, SectionState>>({});
   // One in-flight request per category; abort on re-press (acts as cancel) or unmount.
   const controllers = useRef(new Map<string, AbortController>());
   const mounted = useRef(true);
+  useEffect(() => {
+    mounted.current = true;
+    const map = controllers.current;
+    return () => {
+      mounted.current = false;
+      map.forEach((ac) => ac.abort());
+    };
+  }, []);
 
   if (!ready) return <Loading />;
 
@@ -64,6 +72,11 @@ function RecommendedPage() {
       const result = await getRecommended({ data: { category, hints } });
       if (!mounted.current || ac.signal.aborted) return;
       if (result.ok) {
+        // Make listings known to the store so Save, Compare and the detail page work
+        // (same pattern as Live search; guarded so refreshes never duplicate).
+        for (const opp of result.search.results) {
+          if (!getOpportunity(opp.id)) addManualOpportunity(opp);
+        }
         setSections((s) => ({ ...s, [category]: { status: "done", result } }));
       } else {
         setSections((s) => ({
