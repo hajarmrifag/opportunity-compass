@@ -35,13 +35,13 @@ const STEPS = [
 export const Route = createFileRoute("/passport")({
   head: () => ({
     meta: [
-      { title: "Opportunity Passport — OpportunityOS" },
+      { title: "Opportunity Passport — Source" },
       {
         name: "description",
         content:
           "Build your student profile step by step: upload documents, review what we find, fill the gaps, and confirm. Saved privately in your browser.",
       },
-      { property: "og:title", content: "Opportunity Passport — OpportunityOS" },
+      { property: "og:title", content: "Opportunity Passport — Source" },
       {
         property: "og:description",
         content:

@@ -21,19 +21,19 @@ import {
   type TrackerEvent,
 } from "@/lib/tracker.functions";
 import { TrackerInsights } from "@/features/tracker/Insights";
-import { todayIso } from "@/features/tracker/CoffeeChatRow";
+import { CoffeeChatRow, todayIso } from "@/features/tracker/CoffeeChatRow";
 import { Loading, PageHeader } from "@/components/ui-bits";
 
 export const Route = createFileRoute("/_authenticated/tracker")({
   head: () => ({
     meta: [
-      { title: "Tracker — OpportunityOS" },
+      { title: "Tracker — Source" },
       {
         name: "description",
         content:
           "Your career dashboard: applications, coffee chats, follow-ups and honest AI advice.",
       },
-      { property: "og:title", content: "Tracker — OpportunityOS" },
+      { property: "og:title", content: "Tracker — Source" },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
       {
@@ -133,6 +133,17 @@ function TrackerPage() {
       [a.company, a.role, a.notes].some((field) => field.toLowerCase().includes(q)),
     );
   }, [apps, search]);
+
+  // The same search also matches coffee chats (person, company, comment).
+  const filteredChats = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    if (!q) return [];
+    return chats.filter((c) =>
+      [c.contact_name, c.company ?? "", c.notes ?? ""].some((field) =>
+        field.toLowerCase().includes(q),
+      ),
+    );
+  }, [chats, search]);
 
   const lastEmailUpdate = suggestions.reduce<string | null>(
     (latest, x) => (!latest || x.created_at > latest ? x.created_at : latest),
@@ -249,14 +260,28 @@ function TrackerPage() {
               onChange={(e) => setSearch(e.target.value)}
             />
           </div>
-          {filtered.length === 0 ? (
+          {filtered.length === 0 && filteredChats.length === 0 ? (
             <p className="text-muted-foreground">No items match “{search}”.</p>
           ) : (
-            <ul className="space-y-4">
-              {filtered.map((a) => (
-                <TrackerRow key={a.id} app={a} onChanged={refresh} />
-              ))}
-            </ul>
+            <>
+              <ul className="space-y-4">
+                {filtered.map((a) => (
+                  <TrackerRow key={a.id} app={a} onChanged={refresh} />
+                ))}
+              </ul>
+              {filteredChats.length > 0 && (
+                <>
+                  <h3 className="mt-6 text-sm font-semibold text-muted-foreground">
+                    Matching coffee chats
+                  </h3>
+                  <ul className="mt-2 space-y-4">
+                    {filteredChats.map((c) => (
+                      <CoffeeChatRow key={c.id} chat={c} onChanged={refresh} />
+                    ))}
+                  </ul>
+                </>
+              )}
+            </>
           )}
         </section>
       </>

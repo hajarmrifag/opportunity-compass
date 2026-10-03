@@ -15,12 +15,12 @@ import { safeHttpUrl } from "@/lib/validation";
 export const Route = createFileRoute("/compare")({
   head: () => ({
     meta: [
-      { title: "Compare opportunities — OpportunityOS" },
+      { title: "Compare opportunities — Source" },
       {
         name: "description",
         content: "Compare shortlisted opportunities using stated source facts.",
       },
-      { property: "og:title", content: "Compare opportunities — OpportunityOS" },
+      { property: "og:title", content: "Compare opportunities — Source" },
       {
         property: "og:description",
         content: "Compare shortlisted opportunities using stated source facts.",

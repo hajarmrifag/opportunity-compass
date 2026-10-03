@@ -21,13 +21,13 @@ import { FinancePanel } from "@/components/FinancePanel";
 export const Route = createFileRoute("/opportunities/$id")({
   head: () => ({
     meta: [
-      { title: "Opportunity Brief — OpportunityOS" },
+      { title: "Opportunity Brief — Source" },
       {
         name: "description",
         content:
           "A sourced opportunity brief with eligibility, action plan and affordability scenario.",
       },
-      { property: "og:title", content: "Opportunity Brief — OpportunityOS" },
+      { property: "og:title", content: "Opportunity Brief — Source" },
       {
         property: "og:description",
         content:

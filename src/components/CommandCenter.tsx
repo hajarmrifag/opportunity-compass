@@ -14,7 +14,7 @@ import {
 import { DialogDescription, DialogTitle } from "@/components/ui/dialog";
 
 const destinations = [
-  { label: "Opportunity Atlas", to: "/" },
+  { label: "Source", to: "/" },
   { label: "Live search", to: "/search" },
   { label: "Demo listings", to: "/discover" },
   { label: "My Journey", to: "/journey" },
@@ -71,7 +71,7 @@ export function CommandCenter() {
           if (!next) setQuery("");
         }}
       >
-        <DialogTitle className="sr-only">OpportunityOS command center</DialogTitle>
+        <DialogTitle className="sr-only">Source command center</DialogTitle>
         <DialogDescription className="sr-only">
           Find a page or search for an opportunity.
         </DialogDescription>

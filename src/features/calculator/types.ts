@@ -1,4 +1,4 @@
-// OpportunityOS – Trip Cost & Funding Calculator
+// Source – Trip Cost & Funding Calculator
 // Shared types. All amounts are stored in their ORIGINAL currency and converted only for display/calculation.
 
 export type Status = "published" | "estimated" | "unknown" | "ai_extracted";

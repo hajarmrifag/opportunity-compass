@@ -1,4 +1,4 @@
-// OpportunityOS – Application Plan (checklist + document help)
+// Source – Application Plan (checklist + document help)
 // Requirements come only from the official page (quote-verified), the team, or the student.
 
 export type RequirementKind =

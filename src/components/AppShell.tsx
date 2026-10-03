@@ -35,8 +35,8 @@ export function AppShell({ children }: { children: ReactNode }) {
         Skip to content
       </a>
       <aside className="atlas-rail hidden shrink-0 flex-col border-r border-border bg-sidebar md:flex md:sticky md:top-0 md:h-screen">
-        <Link to="/" className="atlas-mark" aria-label="OpportunityOS home">
-          O<span>OS</span>
+        <Link to="/" className="atlas-mark" aria-label="Source home">
+          S<span>rc</span>
         </Link>
         <nav aria-label="Main" className="flex w-full flex-col gap-1">
           {NAV.map((n) => (
@@ -76,7 +76,7 @@ export function AppShell({ children }: { children: ReactNode }) {
       <div className="flex min-w-0 flex-1 flex-col pb-20 md:pb-0">
         <header className="atlas-mobile-header flex items-center justify-between border-b border-border bg-sidebar px-4 py-3 md:hidden">
           <Link to="/" className="font-display text-xl font-black">
-            Opportunity<span className="text-primary">OS</span>
+            Source
           </Link>
           <Link to="/add" className="btn btn-outline btn-sm">
             Add <ArrowUpRight aria-hidden className="size-3" />

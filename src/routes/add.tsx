@@ -9,9 +9,9 @@ import { isValidIsoDate, oppKey } from "@/lib/validation";
 export const Route = createFileRoute("/add")({
   head: () => ({
     meta: [
-      { title: "Add opportunity — OpportunityOS" },
+      { title: "Add opportunity — Source" },
       { name: "description", content: "Track an opportunity you found elsewhere." },
-      { property: "og:title", content: "Add opportunity — OpportunityOS" },
+      { property: "og:title", content: "Add opportunity — Source" },
       { property: "og:description", content: "Track an opportunity you found elsewhere." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },

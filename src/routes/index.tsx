@@ -19,15 +19,15 @@ import { DeadlineText, EmptyState, Loading } from "@/components/ui-bits";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Opportunity Atlas — OpportunityOS" },
+      { title: "Source — Find your next opportunity" },
       {
         name: "description",
-        content: "Search, compare and map your next student opportunity with OpportunityOS.",
+        content: "Search, compare and map your next student opportunity with Source.",
       },
-      { property: "og:title", content: "Opportunity Atlas — OpportunityOS" },
+      { property: "og:title", content: "Source — Find your next opportunity" },
       {
         property: "og:description",
-        content: "Search, compare and map your next student opportunity with OpportunityOS.",
+        content: "Search, compare and map your next student opportunity with Source.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
@@ -134,7 +134,7 @@ function Dashboard() {
     <div className="atlas-dashboard">
       <header className="atlas-cover-grid">
         <section className="atlas-cover-copy" aria-labelledby="dashboard-title">
-          <p className="atlas-kicker">OpportunityOS</p>
+          <p className="atlas-kicker">Source</p>
           <h1 id="dashboard-title" className="atlas-cover-title">
             Your next
             <br />
