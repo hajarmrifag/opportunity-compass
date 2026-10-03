@@ -40,7 +40,7 @@ function Discover() {
 
   return (
     <>
-      <PageHeader title="Discover" sub="Demo opportunities are fictional and unverified." />
+      <PageHeader title="Demo listings" sub="Fictional, unverified examples for testing. Use Live search for real opportunities." />
       <div className="card mb-6 grid gap-3 p-4 md:grid-cols-[1fr_auto]">
         <div>
           <label htmlFor="q">Search</label>

@@ -14,6 +14,7 @@ import { Route as AddRouteImport } from './routes/add'
 import { Route as DiscoverRouteImport } from './routes/discover'
 import { Route as JourneyRouteImport } from './routes/journey'
 import { Route as PassportRouteImport } from './routes/passport'
+import { Route as SearchRouteImport } from './routes/search'
 import { Route as TrackerIoRouteImport } from './routes/tracker-io'
 import { Route as OpportunitiesIdRouteImport } from './routes/opportunities.$id'
 
@@ -42,6 +43,11 @@ const PassportRoute = PassportRouteImport.update({
   path: '/passport',
   getParentRoute: () => rootRouteImport,
 } as any)
+const SearchRoute = SearchRouteImport.update({
+  id: '/search',
+  path: '/search',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const TrackerIoRoute = TrackerIoRouteImport.update({
   id: '/tracker-io',
   path: '/tracker-io',
@@ -59,6 +65,7 @@ export interface FileRoutesByFullPath {
   '/discover': typeof DiscoverRoute
   '/journey': typeof JourneyRoute
   '/passport': typeof PassportRoute
+  '/search': typeof SearchRoute
   '/tracker-io': typeof TrackerIoRoute
   '/opportunities/$id': typeof OpportunitiesIdRoute
 }
@@ -68,6 +75,7 @@ export interface FileRoutesByTo {
   '/discover': typeof DiscoverRoute
   '/journey': typeof JourneyRoute
   '/passport': typeof PassportRoute
+  '/search': typeof SearchRoute
   '/tracker-io': typeof TrackerIoRoute
   '/opportunities/$id': typeof OpportunitiesIdRoute
 }
@@ -78,6 +86,7 @@ export interface FileRoutesById {
   '/discover': typeof DiscoverRoute
   '/journey': typeof JourneyRoute
   '/passport': typeof PassportRoute
+  '/search': typeof SearchRoute
   '/tracker-io': typeof TrackerIoRoute
   '/opportunities/$id': typeof OpportunitiesIdRoute
 }
@@ -89,6 +98,7 @@ export interface FileRouteTypes {
     | '/discover'
     | '/journey'
     | '/passport'
+    | '/search'
     | '/tracker-io'
     | '/opportunities/$id'
   fileRoutesByTo: FileRoutesByTo
@@ -98,6 +108,7 @@ export interface FileRouteTypes {
     | '/discover'
     | '/journey'
     | '/passport'
+    | '/search'
     | '/tracker-io'
     | '/opportunities/$id'
   id:
@@ -107,6 +118,7 @@ export interface FileRouteTypes {
     | '/discover'
     | '/journey'
     | '/passport'
+    | '/search'
     | '/tracker-io'
     | '/opportunities/$id'
   fileRoutesById: FileRoutesById
@@ -117,6 +129,7 @@ export interface RootRouteChildren {
   DiscoverRoute: typeof DiscoverRoute
   JourneyRoute: typeof JourneyRoute
   PassportRoute: typeof PassportRoute
+  SearchRoute: typeof SearchRoute
   TrackerIoRoute: typeof TrackerIoRoute
   OpportunitiesIdRoute: typeof OpportunitiesIdRoute
 }
@@ -158,6 +171,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PassportRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/search': {
+      id: '/search'
+      path: '/search'
+      fullPath: '/search'
+      preLoaderRoute: typeof SearchRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/tracker-io': {
       id: '/tracker-io'
       path: '/tracker-io'
@@ -181,6 +201,7 @@ const rootRouteChildren: RootRouteChildren = {
   DiscoverRoute: DiscoverRoute,
   JourneyRoute: JourneyRoute,
   PassportRoute: PassportRoute,
+  SearchRoute: SearchRoute,
   TrackerIoRoute: TrackerIoRoute,
   OpportunitiesIdRoute: OpportunitiesIdRoute,
 }

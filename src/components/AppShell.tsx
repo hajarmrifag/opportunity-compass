@@ -4,7 +4,8 @@ import { useStore } from "@/lib/store";
 
 const NAV = [
   { to: "/", label: "Dashboard" },
-  { to: "/discover", label: "Discover" },
+  { to: "/search", label: "Live search" },
+  { to: "/discover", label: "Demo listings" },
   { to: "/journey", label: "My Journey" },
   { to: "/passport", label: "Passport" },
 ] as const;
@@ -41,7 +42,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         )}
         <main id="main" className="mx-auto w-full max-w-6xl flex-1 px-4 py-6 md:px-8 md:py-10">{children}</main>
       </div>
-      <nav aria-label="Main mobile" className="fixed inset-x-0 bottom-0 z-20 grid grid-cols-4 border-t border-border bg-sidebar md:hidden">
+      <nav aria-label="Main mobile" className="fixed inset-x-0 bottom-0 z-20 grid grid-cols-5 border-t border-border bg-sidebar md:hidden">
         {NAV.map((n) => (
           <Link key={n.to} to={n.to} className="mobile-nav-link" activeProps={{ className: "mobile-nav-active" }} activeOptions={{ exact: n.to === "/" }}>
             {n.label}
