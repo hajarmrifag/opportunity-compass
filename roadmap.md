@@ -80,4 +80,5 @@
 ## Draft motion handoff
 
 - [x] Merge six presentation source files; retain Tracker and all teammate contracts
-- [ ] Verify TypeScript, automatic build, regression tests and command/motion preview
+- [x] Automatic build passed; 71 regressions and formatter passed; desktop/mobile shortcuts, Tracker, route/card motion and reduced motion verified
+- [ ] Separate TypeScript invocation is unavailable under the managed validation workflow; live research visuals await a configured search service (no integration changes requested)
