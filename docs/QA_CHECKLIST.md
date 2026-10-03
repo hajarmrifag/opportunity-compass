@@ -1,3 +1,13 @@
+# Hajar product experience verification — 3 Oct 2026
+
+- 42 automated tests pass, including v1→v2 non-destructive migration, comparison identity/limit, guided-search mapping, cancellation and timeout regressions.
+- Type check and production build pass; preview build is healthy.
+- Real Firecrawl search completed from the dashboard using an explicit query and goal selection; no page or unhandled-rejection errors occurred.
+- Browser journey verified: labelled demo comparison (2 items) → save → general and custom tasks → completion → refresh persistence; application status remained `saved` throughout.
+- Comparison shows demo provenance, source unavailable, Needs verification, Not stated and Unknown rather than invented facts.
+- 390×844 mobile dashboard and first-tab Skip to content keyboard focus verified visually and interactively.
+- Browser run used a fresh context and a clearly labelled `TEST — email mentor` task; no real Passport was loaded or changed.
+
 # QA checklist — milestone 1 (draft, 3 Oct 2026)
 
 Environments: dev preview, Chromium (Playwright) at 1280×1800 and 390×844, timezone Asia/Hong_Kong. Unit tests are also run with TZ = Asia/Hong_Kong, America/Los_Angeles, UTC, Pacific/Kiritimati.

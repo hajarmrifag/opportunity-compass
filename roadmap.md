@@ -30,9 +30,9 @@
 
 ## Hajar product experience
 
-- [ ] Premium responsive visual system and purposeful dashboard workspace
-- [ ] Guided live search with editable summary and active filter controls
-- [ ] Persistent three-item comparison shortlist, tray and comparison view
-- [ ] Persistent per-application action plans with explicit status isolation
-- [ ] Hajar feature ownership documentation
-- [ ] Regression, accessibility, mobile, browser, formatting, type and production checks
+- [x] Premium responsive visual system and purposeful dashboard workspace
+- [x] Guided live search with editable summary and active filter controls
+- [x] Persistent three-item comparison shortlist, tray and comparison view
+- [x] Persistent per-application action plans with explicit status isolation
+- [x] Hajar feature ownership documentation
+- [x] Regression, accessibility, mobile, browser, formatting, type and production checks
