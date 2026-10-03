@@ -39,10 +39,13 @@ function sse(obj: unknown) {
 }
 
 function mockFetch(s: {
-  model: (body: { model?: string }) => Response | Promise<Response>;
-  search: (body: { query?: string }) => Response | Promise<Response>;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  model: (body: any) => Response | Promise<Response>;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  search: (body: any) => Response | Promise<Response>;
 }) {
-  const calls = { model: [] as { model?: string }[], search: [] as { query?: string }[] };
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const calls = { model: [] as any[], search: [] as any[] };
   const f = (async (url: string, init: RequestInit) => {
     const body = JSON.parse(String(init.body));
     if (init.signal?.aborted) throw Object.assign(new Error("aborted"), { name: "AbortError" });

@@ -104,9 +104,8 @@ function RecommendedPage() {
   return (
     <div className="flex flex-col gap-8">
       <PageHeader
-        kicker="Curated for you"
         title="Recommended"
-        deck="One focused live search per goal, built only from your confirmed Passport's degree level, field, skills and languages. Nothing personal leaves this browser. Searches run only when you press a button, and every listing is read from the real web and stays labelled unverified."
+        sub="One focused live search per goal, built only from your confirmed Passport's degree level, field, skills and languages. Nothing personal leaves this browser. Searches run only when you press a button, and every listing is read from the real web and stays labelled unverified."
       />
 
       {!profile?.confirmed && (
