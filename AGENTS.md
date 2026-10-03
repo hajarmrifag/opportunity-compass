@@ -33,3 +33,5 @@
 - The finance teammate's pure calculator lives in `src/features/calculator/` (no DB access); `reviewedData.ts` feeds it only reviewed, non-demo rows and otherwise the Brief uses the local `calculateAffordability` — eligibility never counts as an award.
 
 - Shared motion uses scoped CSS and the cmdk CommandCenter in AppShell; research trails render only returned agent stages — keeps presentation independent of teammate data contracts.
+
+- Tracker charts derive only from account-backed records and refresh through foreground Query polling every 15 seconds; unaccepted email suggestions never alter chart totals — avoids invented outcomes and preserves explicit status control.

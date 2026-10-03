@@ -32,12 +32,16 @@ export const Route = createFileRoute("/_authenticated/tracker")({
       { title: "Tracker — OpportunityOS" },
       {
         name: "description",
-        content: "Your career dashboard: applications, coffee chats, follow-ups and honest AI advice.",
+        content:
+          "Your career dashboard: applications, coffee chats, follow-ups and honest AI advice.",
       },
       { property: "og:title", content: "Tracker — OpportunityOS" },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
       {
         property: "og:description",
-        content: "Your career dashboard: applications, coffee chats, follow-ups and honest AI advice.",
+        content:
+          "Your career dashboard: applications, coffee chats, follow-ups and honest AI advice.",
       },
     ],
   }),
@@ -80,14 +84,17 @@ function TrackerPage() {
   const appsQuery = useQuery({
     queryKey: ["tracker-applications"],
     queryFn: () => listTrackerApplications(),
+    refetchInterval: 15_000,
   });
   const chatsQuery = useQuery({
     queryKey: ["coffee-chats"],
     queryFn: () => listCoffeeChats(),
+    refetchInterval: 15_000,
   });
   const suggestionsQuery = useQuery({
     queryKey: ["email-suggestions"],
     queryFn: () => listEmailSuggestions(),
+    refetchInterval: 15_000,
   });
   const [search, setSearch] = useState("");
   const [scanMessage, setScanMessage] = useState("");
@@ -113,8 +120,7 @@ function TrackerPage() {
       interviews: byStatus("interview"),
       offers: byStatus("offer"),
       rejections: byStatus("rejected"),
-      chatsThisMonth: chats.filter((c) => c.date && c.date >= monthStart && c.date <= today)
-        .length,
+      chatsThisMonth: chats.filter((c) => c.date && c.date >= monthStart && c.date <= today).length,
       followUpsDue: chats.filter((c) => c.follow_up_date && c.follow_up_date <= today).length,
     };
   }, [apps, chats, monthStart, today]);
@@ -167,7 +173,11 @@ function TrackerPage() {
         <StatCard label="Offers" value={counts.offers} />
         <StatCard label="Rejections" value={counts.rejections} />
         <StatCard label="Coffee chats this month" value={counts.chatsThisMonth} />
-        <StatCard label="Follow-ups due" value={counts.followUpsDue} highlight={counts.followUpsDue > 0} />
+        <StatCard
+          label="Follow-ups due"
+          value={counts.followUpsDue}
+          highlight={counts.followUpsDue > 0}
+        />
       </div>
 
       {isEmpty ? (
@@ -210,7 +220,10 @@ function TrackerPage() {
                     <span className="font-medium">{c.contact_name}</span>
                     {c.company ? ` · ${c.company}` : ""}
                     <span className="ml-2 text-xs text-muted-foreground">
-                      Follow-up {c.follow_up_date === today ? "due today" : `overdue since ${c.follow_up_date}`}
+                      Follow-up{" "}
+                      {c.follow_up_date === today
+                        ? "due today"
+                        : `overdue since ${c.follow_up_date}`}
                     </span>
                   </li>
                 ))}
@@ -226,8 +239,8 @@ function TrackerPage() {
                   Gmail updates
                 </h2>
                 <p className="text-sm text-muted-foreground">
-                  Scanning proposes status updates from your mailbox. You accept or dismiss each one —
-                  nothing changes automatically.
+                  Scanning proposes status updates from your mailbox. You accept or dismiss each one
+                  — nothing changes automatically.
                 </p>
               </div>
               <button className="btn btn-outline" onClick={runScan}>
@@ -273,7 +286,6 @@ function TrackerPage() {
               </ul>
             )}
           </section>
-
         </>
       )}
 
@@ -776,7 +788,9 @@ function CoffeeChatRow({ chat, onChanged }: { chat: CoffeeChat; onChanged: () =>
         </div>
       </div>
       {overdue && (
-        <p className="mt-2 text-xs text-destructive">Follow-up overdue since {chat.follow_up_date}</p>
+        <p className="mt-2 text-xs text-destructive">
+          Follow-up overdue since {chat.follow_up_date}
+        </p>
       )}
       <div className="mt-2 flex items-center justify-between">
         {error && (
