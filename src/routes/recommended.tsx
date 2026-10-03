@@ -116,8 +116,8 @@ function RecommendedPage() {
           <div>
             <h2 id="rec-passport">Confirm your Passport first</h2>
             <p>
-              Recommendations are shaped by your confirmed degree level, field and skills. Until
-              you confirm, searches would be guesswork — so they stay off.
+              Recommendations are shaped by your confirmed degree level, field and skills. Until you
+              confirm, searches would be guesswork — so they stay off.
             </p>
           </div>
           <Link to="/passport" className="atlas-text-link">
@@ -208,8 +208,8 @@ function CategorySection({
 
       {state.status === "loading" && (
         <p className="text-sm text-muted-foreground" role="status">
-          Searching and reading real pages for {label.toLowerCase()} opportunities… this can take
-          up to a minute.
+          Searching and reading real pages for {label.toLowerCase()} opportunities… this can take up
+          to a minute.
         </p>
       )}
 

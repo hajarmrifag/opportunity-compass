@@ -145,8 +145,7 @@ describe("runRecommended", () => {
     const { f } = mockFetch({
       model: (body) => {
         seen.push(body.model);
-        if (body.model === RECOMMENDED_MODEL)
-          return new Response("nope", { status: 500 });
+        if (body.model === RECOMMENDED_MODEL) return new Response("nope", { status: 500 });
         return sse({ queries: ["software internship"] });
       },
       search: () => new Response(JSON.stringify({ data: [] }), { status: 200 }),
@@ -160,7 +159,8 @@ describe("runRecommended", () => {
   it("serves the second identical request from cache without new provider calls", async () => {
     const { f, calls } = mockFetch({
       model: (body) => {
-        if (body.text.format.name === "search_plan") return sse({ queries: ["software internship"] });
+        if (body.text.format.name === "search_plan")
+          return sse({ queries: ["software internship"] });
         const ids = [...body.input[1].content.matchAll(/"id":"(live-[a-z0-9]+)"/g)].map(
           (m) => m[1] as string,
         );

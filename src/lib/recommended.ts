@@ -31,13 +31,18 @@ export interface ProfileHints {
 }
 
 export function profileHints(profile: Profile | null): ProfileHints {
-  if (!profile)
-    return { degreeLevel: "", field: "", skills: [], languages: [], remoteOk: false };
+  if (!profile) return { degreeLevel: "", field: "", skills: [], languages: [], remoteOk: false };
   return {
     degreeLevel: profile.degreeLevel ? DEGREE_LABELS[profile.degreeLevel] : "",
     field: profile.field.trim().slice(0, 80),
-    skills: profile.skills.map((s) => s.trim().slice(0, 40)).filter(Boolean).slice(0, 6),
-    languages: profile.languages.map((l) => l.trim().slice(0, 30)).filter(Boolean).slice(0, 4),
+    skills: profile.skills
+      .map((s) => s.trim().slice(0, 40))
+      .filter(Boolean)
+      .slice(0, 6),
+    languages: profile.languages
+      .map((l) => l.trim().slice(0, 30))
+      .filter(Boolean)
+      .slice(0, 4),
     remoteOk: profile.preferences.remoteOk === true,
   };
 }

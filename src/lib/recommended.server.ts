@@ -19,8 +19,7 @@ export function _clearRecommendedCache() {
   cache.clear();
 }
 
-const cacheKeyFor = (input: RecommendedInput) =>
-  `${input.category}:${JSON.stringify(input.hints)}`;
+const cacheKeyFor = (input: RecommendedInput) => `${input.category}:${JSON.stringify(input.hints)}`;
 
 export async function runRecommended(
   input: RecommendedInput,
