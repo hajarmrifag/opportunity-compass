@@ -36,3 +36,32 @@ export async function chatAboutCv(args: {
   });
   return { reply: res.reply, changes: res.changes ?? [], newFacts: res.new_facts ?? [], gaps: res.gaps ?? [] };
 }
+
+export interface OfferAnalysis {
+  summary: string;
+  lookingFor: Array<{ point: string; quote: string }>;
+  documents: Array<{ kind: string; quote: string }>;
+  keywords: string[];
+  pageText: string;
+  sourceUrl: string;
+}
+
+/** Reads the opportunity's official page and lists what the employer asks for, each point backed by a quote. */
+export async function analyzeOffer(url: string, title: string): Promise<OfferAnalysis> {
+  const res = await call<{
+    summary: string;
+    looking_for: OfferAnalysis["lookingFor"];
+    documents: OfferAnalysis["documents"];
+    keywords: string[];
+    page_text: string;
+    source_url: string;
+  }>({ action: "analyze_offer", url, title });
+  return {
+    summary: res.summary ?? "",
+    lookingFor: res.looking_for ?? [],
+    documents: res.documents ?? [],
+    keywords: res.keywords ?? [],
+    pageText: res.page_text ?? "",
+    sourceUrl: res.source_url ?? url,
+  };
+}
