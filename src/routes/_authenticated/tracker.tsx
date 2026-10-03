@@ -626,6 +626,26 @@ function GmailSection({
 
   const refreshStatus = () => queryClient.invalidateQueries({ queryKey: ["gmail-status"] });
 
+  // Fallback: the sign-in window landed back here with a code because it
+  // couldn't reach the original page. Finish the connection in this window.
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const code = params.get("gmail_code");
+    if (!code) return;
+    params.delete("gmail_code");
+    const qs = params.toString();
+    window.history.replaceState(null, "", window.location.pathname + (qs ? `?${qs}` : ""));
+    setBusy("connect");
+    completeGmailConnection({ data: { code } })
+      .then(() => {
+        setNote("Gmail connected. Checking your inbox for updates…");
+        refreshStatus();
+      })
+      .catch((err) => setError(err instanceof Error ? err.message : "Could not finish connecting Gmail."))
+      .finally(() => setBusy(null));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const connect = async () => {
     setError("");
     setNote("");
@@ -639,34 +659,41 @@ function GmailSection({
       const { authorizationUrl } = await startGmailConnect();
       popup.location.href = authorizationUrl;
       const code = await new Promise<string | null>((resolve, reject) => {
-        let poll: number | undefined;
+        // Google's sign-in page can cut the link between this page and the
+        // popup, so also listen on a same-origin channel and don't treat a
+        // "closed" reading as failure (it can be wrong after Google).
+        const channel = typeof BroadcastChannel !== "undefined" ? new BroadcastChannel("gmail-oauth") : null;
+        const timeout = window.setTimeout(() => {
+          cleanup();
+          reject(new Error("The Google sign-in took too long. Please try again."));
+        }, 5 * 60 * 1000);
         const cleanup = () => {
           window.removeEventListener("message", onMessage);
-          if (poll !== undefined) window.clearInterval(poll);
+          channel?.close();
+          window.clearTimeout(timeout);
         };
-        const onMessage = (event: MessageEvent) => {
-          const type = event.data?.type;
+        const handle = (data: any) => {
+          const type = data?.type;
           if (
-            event.origin !== window.location.origin ||
-            event.source !== popup ||
-            event.data?.connectorId !== "google_mail" ||
+            data?.connectorId !== "google_mail" ||
             (type !== "appUserConnectorOAuthComplete" && type !== "appUserConnectorOAuthFailed")
           )
-            return;
+            return false;
+          channel?.postMessage({ type: "ack" });
           cleanup();
           if (type === "appUserConnectorOAuthComplete") {
-            resolve(typeof event.data?.code === "string" ? event.data.code : null);
-            return;
+            resolve(typeof data?.code === "string" ? data.code : null);
+          } else {
+            reject(new Error("The Gmail connection did not complete."));
           }
-          popup.close();
-          reject(new Error("The Gmail connection did not complete."));
+          return true;
+        };
+        const onMessage = (event: MessageEvent) => {
+          if (event.origin !== window.location.origin) return;
+          handle(event.data);
         };
         window.addEventListener("message", onMessage);
-        poll = window.setInterval(() => {
-          if (!popup.closed) return;
-          cleanup();
-          reject(new Error("The sign-in window was closed before finishing."));
-        }, 500);
+        if (channel) channel.onmessage = (e) => handle(e.data);
       });
       const finishedCode = await code;
       if (finishedCode) await completeGmailConnection({ data: { code: finishedCode } });
