@@ -1,5 +1,14 @@
 # Roadmap
 
+## Exact Sourced homepage handoff
+- [x] Replace src/routes/index.tsx with the supplied content verbatim
+- [x] Supply missing motion exports and preserve the demo search parameter
+- [x] Verify compilation and homepage navigation without restyling or teammate edits
+- [x] Apply the supplied Sourced styles additively and preserve teammate styles
+- [x] Add motion helpers and simple reduced-motion-aware atmosphere components
+- [x] Update Sourced shell navigation and demo-search cinema mode
+- [x] Verify the Sourced headline, lime uppercase button, demo-search cinema navigation, and mobile layout; build OK and no browser errors
+
 - [x] Audit current files/contracts; preserve teammate changes
 - [x] Profile edits invalidate confirmation; unknown never passes
 - [x] Expiry distinct from eligibility; invalid deadlines/URLs handled
@@ -98,3 +107,8 @@
 - [x] 71 tests pass, tsgo clean, build OK, browser check of /tracker (empty state) clean
 - [ ] Full data test after draft acceptance (migration not applied in draft)
 - [ ] AI feedback: clarify user's requested change
+
+## Exact cinema replay import
+- [x] Copy requested research and search source files from e7dd172
+- [x] Add only replay fixtures and merge cinema/evidence styles
+- [x] Verify recorded replay completion (6 pages, 3 kept, 3 rejected), stop control, source evidence, mobile layout, and homepage preservation; exact-file checks, 100 tests, and build passed
