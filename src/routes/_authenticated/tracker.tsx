@@ -668,7 +668,6 @@ function GmailSection({
           reject(new Error("The sign-in window was closed before finishing."));
         }, 500);
       });
-      popup.location.href = authorizationUrl;
       const finishedCode = await code;
       if (finishedCode) await completeGmailConnection({ data: { code: finishedCode } });
       setNote("Gmail connected. Checking your inbox for updates…");
