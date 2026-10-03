@@ -1412,3 +1412,452 @@
     transform: none !important;
   }
 }
+
+/* ===========================================================================
+   Evidence Trail — the research run rendered as a working board of sources.
+   Amplifies the existing brutalist language: hard borders, mono labels,
+   acid for "kept", vermilion for "rejected", no rounded corners.
+   =========================================================================== */
+.atlas-trail {
+  margin-bottom: 2.5rem;
+  border: 2px solid var(--foreground);
+  background: var(--card);
+  box-shadow: 7px 7px 0 color-mix(in oklab, var(--foreground) 16%, transparent);
+}
+.atlas-trail-head {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: start;
+  gap: 1.25rem;
+  border-bottom: 1px solid var(--border);
+  padding: clamp(1rem, 2.5vw, 1.6rem);
+}
+.atlas-trail-heading h2 {
+  margin-top: 0.3rem;
+  font-size: clamp(1.75rem, 3vw, 2.6rem);
+  line-height: 1;
+  text-transform: uppercase;
+  overflow: hidden;
+}
+.atlas-trail-query {
+  margin-top: 0.5rem;
+  max-width: 46rem;
+  color: var(--muted-foreground);
+  font-family: var(--font-editorial);
+  font-size: 1.05rem;
+}
+.atlas-trail-tally {
+  display: grid;
+  grid-auto-flow: column;
+  gap: 1.5rem;
+}
+.atlas-trail-tally-item dt {
+  color: var(--muted-foreground);
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.atlas-trail-tally-item dd {
+  font-family: var(--font-display);
+  font-size: 2.1rem;
+  line-height: 1;
+}
+.atlas-trail-tally-item.is-kept dd {
+  color: var(--success);
+}
+.atlas-trail-tally-item.is-rejected dd {
+  color: var(--destructive);
+}
+.atlas-trail-stop {
+  grid-column: 2;
+}
+.atlas-trail-pulse {
+  position: relative;
+  height: 3px;
+  overflow: hidden;
+  background: var(--muted);
+}
+.atlas-trail-pulse > span {
+  display: block;
+  width: 24%;
+  height: 100%;
+  background: var(--primary);
+}
+.atlas-trail-disclaimer {
+  border-bottom: 1px solid var(--border);
+  background: color-mix(in oklab, var(--demo) 8%, var(--card));
+  padding: 0.7rem clamp(1rem, 2.5vw, 1.6rem);
+  color: var(--demo);
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  line-height: 1.5;
+}
+.atlas-trail-queries {
+  border-bottom: 1px solid var(--border);
+  padding: clamp(1rem, 2.5vw, 1.6rem);
+}
+.atlas-trail-queries ol {
+  margin-top: 0.6rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+.atlas-trail-query-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  border: 1px solid var(--border);
+  background: var(--background);
+  padding: 0.4rem 0.7rem;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+}
+.atlas-trail-query-chip.is-active {
+  border-color: var(--primary);
+  background: color-mix(in oklab, var(--primary) 10%, var(--card));
+  box-shadow: inset 3px 0 0 var(--primary);
+}
+.atlas-trail-query-chip.is-refinement {
+  border-style: dashed;
+}
+.atlas-trail-refine-tag {
+  background: var(--acid);
+  padding: 0.05rem 0.3rem;
+  font-size: 0.6rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+/* --- the board of source pages --- */
+.atlas-source-board {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0;
+}
+.atlas-source-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  border-right: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  background: var(--card);
+  padding: clamp(0.9rem, 2vw, 1.25rem);
+  transition: background-color 240ms ease;
+}
+.atlas-source-card:nth-child(2n) {
+  border-right: 0;
+}
+.atlas-source-card.is-failed {
+  background: color-mix(in oklab, var(--muted) 55%, var(--card));
+  color: var(--muted-foreground);
+}
+.atlas-source-card.is-kept {
+  background: color-mix(in oklab, var(--acid) 12%, var(--card));
+  box-shadow: inset 4px 0 0 var(--acid);
+}
+.atlas-source-card.is-rejected {
+  background: color-mix(in oklab, var(--destructive) 7%, var(--card));
+}
+.atlas-source-head {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 0.6rem;
+}
+.atlas-source-index {
+  color: var(--primary);
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+  line-height: 1;
+}
+.atlas-source-url {
+  display: flex;
+  min-width: 0;
+  align-items: baseline;
+  gap: 0.15rem;
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+}
+.atlas-source-host {
+  flex: none;
+  font-weight: 700;
+}
+.atlas-source-path {
+  overflow: hidden;
+  color: var(--muted-foreground);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.atlas-source-status {
+  flex: none;
+  border: 1px solid currentColor;
+  padding: 0.05rem 0.35rem;
+  color: var(--muted-foreground);
+  font-family: var(--font-mono);
+  font-size: 0.6rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+.atlas-source-status.is-fetching,
+.atlas-source-status.is-extracting {
+  border-color: var(--primary);
+  color: var(--primary);
+}
+.atlas-source-status.is-kept {
+  border-color: var(--success);
+  background: var(--success-soft);
+  color: var(--success);
+}
+.atlas-source-status.is-rejected,
+.atlas-source-status.is-failed {
+  border-color: var(--destructive);
+  color: var(--destructive);
+}
+.atlas-source-title {
+  font-size: 1rem;
+  font-weight: 600;
+  line-height: 1.25;
+}
+.atlas-source-card.is-failed .atlas-source-title {
+  text-decoration: line-through;
+  text-decoration-thickness: 1px;
+}
+.atlas-source-scan {
+  position: relative;
+  height: 2px;
+  overflow: hidden;
+  background: var(--muted);
+}
+.atlas-source-scan > span {
+  display: block;
+  width: 30%;
+  height: 100%;
+  background: var(--primary);
+}
+.atlas-source-failure {
+  color: var(--destructive);
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+}
+
+/* --- extracted evidence: verbatim sentence, matched span lit --- */
+.atlas-evidence-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+  border-left: 2px solid var(--border);
+  padding-left: 0.7rem;
+}
+.atlas-evidence-fact {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.4rem;
+}
+.atlas-evidence-field {
+  color: var(--muted-foreground);
+  font-family: var(--font-mono);
+  font-size: 0.6rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+.atlas-evidence-fact strong {
+  font-size: 0.85rem;
+}
+.atlas-evidence-sentence {
+  margin-top: 0.15rem;
+  color: var(--muted-foreground);
+  font-size: 0.78rem;
+  line-height: 1.55;
+}
+.atlas-evidence-mark {
+  position: relative;
+  display: inline;
+  padding: 0 0.12rem;
+  color: var(--foreground);
+  font-weight: 600;
+}
+.atlas-evidence-wipe {
+  position: absolute;
+  inset: -0.05rem -0.12rem;
+  z-index: 0;
+  background: var(--acid);
+  transform-origin: left center;
+}
+.atlas-evidence-text {
+  position: relative;
+  z-index: 1;
+}
+
+/* --- the candidate row and its stamp --- */
+.atlas-source-candidate {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 0.75rem;
+  margin-top: auto;
+  border-top: 1px solid var(--border);
+  padding-top: 0.6rem;
+}
+.atlas-source-candidate .atlas-card-index {
+  display: block;
+  color: var(--muted-foreground);
+  font-size: 0.6rem;
+}
+.atlas-source-candidate strong {
+  display: block;
+  font-size: 0.9rem;
+  line-height: 1.2;
+}
+.atlas-source-candidate span:last-child {
+  color: var(--muted-foreground);
+  font-size: 0.72rem;
+}
+.atlas-source-reason {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  color: var(--muted-foreground);
+  font-size: 0.74rem;
+}
+.atlas-stamp-slot {
+  position: relative;
+  display: grid;
+  place-items: center;
+  flex: none;
+}
+.atlas-stamp {
+  display: inline-block;
+  border: 3px solid currentColor;
+  padding: 0.2rem 0.55rem;
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.atlas-stamp.is-kept {
+  color: var(--success);
+  background: color-mix(in oklab, var(--acid) 45%, transparent);
+}
+.atlas-stamp.is-rejected {
+  color: var(--destructive);
+  background: color-mix(in oklab, var(--destructive) 10%, transparent);
+}
+.atlas-stamp-ring {
+  position: absolute;
+  inset: -0.3rem;
+  border: 3px solid currentColor;
+  pointer-events: none;
+}
+.atlas-stamp-ring.is-kept {
+  color: var(--success);
+}
+.atlas-stamp-ring.is-rejected {
+  color: var(--destructive);
+}
+
+@media (max-width: 900px) {
+  .atlas-source-board {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .atlas-source-card {
+    border-right: 0;
+  }
+  .atlas-trail-head {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .atlas-trail-tally {
+    grid-auto-flow: row;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 0.75rem;
+  }
+  .atlas-trail-stop {
+    grid-column: 1;
+    justify-self: start;
+  }
+  .atlas-trail-tally-item dd {
+    font-size: 1.6rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .atlas-trail-pulse > span,
+  .atlas-source-scan > span {
+    animation: none !important;
+  }
+}
+
+/* Replay controls + the provenance block carried by each surviving result. */
+.atlas-replay-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+.atlas-replay-controls p {
+  max-width: 46rem;
+}
+.atlas-trail-results {
+  margin-bottom: 2.5rem;
+}
+.atlas-provenance {
+  margin-top: 1rem;
+  border: 1px dashed var(--border);
+  background: color-mix(in oklab, var(--acid) 7%, transparent);
+}
+.atlas-provenance-toggle {
+  display: grid;
+  width: 100%;
+  grid-template-columns: auto auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.55rem 0.75rem;
+  text-align: left;
+}
+.atlas-provenance-host {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  font-weight: 700;
+}
+.atlas-provenance-count {
+  color: var(--muted-foreground);
+  font-size: 0.72rem;
+}
+.atlas-provenance-toggle [aria-hidden] {
+  transition: transform 200ms ease;
+}
+.atlas-provenance-toggle [aria-hidden].is-open {
+  transform: rotate(180deg);
+}
+.atlas-provenance-list {
+  overflow: hidden;
+  border-top: 1px dashed var(--border);
+}
+.atlas-provenance-list > li {
+  display: grid;
+  gap: 0.15rem;
+  border-bottom: 1px dashed var(--border);
+  padding: 0.6rem 0.75rem;
+}
+.atlas-provenance-list > li:last-child {
+  border-bottom: 0;
+}
+.atlas-provenance-list q {
+  color: var(--muted-foreground);
+  font-size: 0.76rem;
+  line-height: 1.5;
+}
+@media (max-width: 640px) {
+  .atlas-provenance-toggle {
+    grid-template-columns: auto minmax(0, 1fr) auto;
+  }
+  .atlas-provenance-count {
+    grid-column: 1 / -1;
+  }
+}
