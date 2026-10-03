@@ -11,6 +11,7 @@ import type {
   ActionTask,
   Application,
   ApplicationStatus,
+  FinanceScenario,
   Opportunity,
   Profile,
 } from "@/domain/types";
@@ -56,6 +57,8 @@ interface Store {
   profileDraft: Profile | null;
   setProfileDraft: (p: Profile | null) => void;
   pendingProfileEdits: boolean;
+  getFinanceScenario: (oppId: string) => FinanceScenario | undefined;
+  saveFinanceScenario: (scenario: FinanceScenario) => void;
   resetAll: () => void;
 }
 
@@ -131,6 +134,15 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     profileDraft: state.profileDraft,
     setProfileDraft: (profileDraft) => commit((s) => ({ ...s, profileDraft })),
     pendingProfileEdits: state.profileDraft !== null,
+    getFinanceScenario: (oppId) => state.financeScenarios[oppId],
+    saveFinanceScenario: (scenario) =>
+      commit((s) => ({
+        ...s,
+        financeScenarios: {
+          ...s.financeScenarios,
+          [scenario.opportunityId]: { ...scenario, updatedAt: now() },
+        },
+      })),
     saveProfile: (p) => {
       commit((s) => ({ ...s, profile: p, profileDraft: null }));
     },

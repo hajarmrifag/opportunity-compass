@@ -1,5 +1,5 @@
 // Versioned browser-local repository. Swap for a remote repository later.
-import type { Application, Opportunity, Profile } from "@/domain/types";
+import type { Application, FinanceScenario, Opportunity, Profile } from "@/domain/types";
 
 export const STORAGE_KEY = "opportunityos";
 export const STORAGE_VERSION = 3;
@@ -27,6 +27,7 @@ export interface PersistedState {
   customOpportunities: Opportunity[];
   compareIds: string[];
   profileDraft: Profile | null;
+  financeScenarios: Record<string, FinanceScenario>;
 }
 
 export const emptyState = (): PersistedState => ({
@@ -36,6 +37,7 @@ export const emptyState = (): PersistedState => ({
   customOpportunities: [],
   compareIds: [],
   profileDraft: null,
+  financeScenarios: {},
 });
 
 function normalizeExperiences(value: unknown): Profile["workExperience"] {
@@ -116,6 +118,10 @@ export const localRepository: Repository = {
             : [],
           compareIds: normalizeCompareIds(parsed.compareIds),
           profileDraft: normalizeProfile(parsed.profileDraft),
+          financeScenarios:
+            parsed.financeScenarios && typeof parsed.financeScenarios === "object"
+              ? parsed.financeScenarios
+              : {},
         },
         error: null,
       };
