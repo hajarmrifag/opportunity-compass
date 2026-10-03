@@ -1,22 +1,18 @@
 import { useState, type ReactNode } from "react";
 import { Pencil } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import type { ConflictChoice, Profile, ProfileValueSource } from "@/domain/types";
+import type { Profile, ProfileValueSource } from "@/domain/types";
+import { DEGREE_LABELS } from "@/domain/types";
 import { fieldLabel, type ExtractionConflict } from "@/lib/profileExtraction";
 
-/** Small provenance label: extracted vs added by you vs not provided. */
+/** Small provenance label: extracted vs added by you. */
 export function SourceTag({ source }: { source: ProfileValueSource | undefined }) {
-  if (!source || source === "unknown") return null;
-  const text =
-    source === "cv_parser" || source === "web_link"
-      ? "From your document"
-      : source === "manual"
-        ? "Added by you"
-        : source === "demo"
-          ? "Demo data"
-          : null;
-  if (!text) return null;
-  return <span className="chip chip-muted">{text}</span>;
+  if (!source) return null;
+  return (
+    <span className="chip chip-muted">
+      {source === "extracted" ? "From your document" : "Added by you"}
+    </span>
+  );
 }
 
 export function NotProvided() {
@@ -55,7 +51,7 @@ function Row({
   children,
 }: {
   label: string;
-  source?: ProfileValueSource;
+  source?: ProfileValueSource | undefined;
   children: ReactNode;
 }) {
   return (
@@ -81,8 +77,8 @@ export function StepReview({
 }: {
   draft: Profile;
   conflicts: ExtractionConflict[];
-  choices: Record<string, ConflictChoice>;
-  onChooseConflict: (key: string, choice: ConflictChoice) => void;
+  choices: Record<string, string>;
+  onChooseConflict: (field: string, value: string) => void;
   educationEditor: ReactNode;
   detailsEditor: ReactNode;
   skillsEditor: ReactNode;
@@ -112,25 +108,25 @@ export function StepReview({
           </p>
           <ul className="mt-3 grid gap-4">
             {conflicts.map((conflict) => (
-              <li key={conflict.key}>
+              <li key={conflict.field}>
                 <p className="font-semibold">{fieldLabel(conflict.field)}</p>
                 <div className="mt-1 flex flex-wrap gap-2">
-                  {conflict.values.map((value, index) => (
+                  {[...new Set(conflict.candidates.map((item) => item.value))].map((value) => (
                     <Button
-                      key={`${conflict.key}-${index}`}
+                      key={value}
                       size="sm"
-                      variant={choices[conflict.key] === value.value ? "default" : "outline"}
-                      aria-pressed={choices[conflict.key] === value.value}
-                      onClick={() => onChooseConflict(conflict.key, value.value)}
+                      variant={choices[conflict.field] === value ? "default" : "outline"}
+                      aria-pressed={choices[conflict.field] === value}
+                      onClick={() => onChooseConflict(conflict.field, value)}
                     >
-                      {value.value}
+                      {value}
                     </Button>
                   ))}
                   <Button
                     size="sm"
-                    variant={choices[conflict.key] === "" ? "default" : "ghost"}
-                    aria-pressed={choices[conflict.key] === ""}
-                    onClick={() => onChooseConflict(conflict.key, "")}
+                    variant={choices[conflict.field] === "" ? "default" : "ghost"}
+                    aria-pressed={choices[conflict.field] === ""}
+                    onClick={() => onChooseConflict(conflict.field, "")}
                   >
                     Leave empty
                   </Button>
@@ -148,21 +144,21 @@ export function StepReview({
           onToggle={() => toggle("education")}
           summary={
             <div className="divide-y divide-border">
-              <Row label="Degree level" source={provenance["education.degreeLevel"]}>
-                {education?.degreeLevel ?? <NotProvided />}
+              <Row label="Degree level" source={provenance.degreeLevel}>
+                {education?.degreeLevel ? DEGREE_LABELS[education.degreeLevel] : <NotProvided />}
               </Row>
-              <Row label="Degree" source={provenance["education.degreeName"]}>
+              <Row label="Degree" source={provenance.degreeName}>
                 {education?.degreeName || <NotProvided />}
               </Row>
-              <Row label="School" source={provenance["education.school"]}>
+              <Row label="School" source={provenance.school}>
                 {education?.school || <NotProvided />}
               </Row>
-              <Row label="Field of study" source={provenance["education.field"]}>
+              <Row label="Field of study" source={provenance.field}>
                 {education?.field || <NotProvided />}
               </Row>
-              <Row label="GPA" source={provenance["education.gpaValue"]}>
-                {education?.gpaValue != null
-                  ? `${education.gpaValue}${education.gpaScale != null ? ` / ${education.gpaScale}` : ""}`
+              <Row label="GPA" source={provenance.gpaValue}>
+                {draft.gpaValue.trim()
+                  ? `${draft.gpaValue}${draft.gpaScale.trim() ? ` / ${draft.gpaScale}` : ""}`
                   : "Not provided"}
               </Row>
             </div>
@@ -179,9 +175,6 @@ export function StepReview({
               <Row label="Name" source={provenance.fullName}>
                 {draft.fullName || <NotProvided />}
               </Row>
-              <Row label="Nationality" source={provenance.nationality}>
-                {draft.nationality || <NotProvided />}
-              </Row>
               <Row label="Graduation" source={provenance.graduationDate}>
                 {draft.graduationDate || <NotProvided />}
               </Row>
@@ -196,12 +189,14 @@ export function StepReview({
           onToggle={() => toggle("skills")}
           summary={
             <div className="divide-y divide-border">
-              <Row label="Skills" source={provenance.skills}>
+              <Row label="Skills" source={provenance.skill}>
                 {draft.skills.length ? draft.skills.join(", ") : <NotProvided />}
               </Row>
-              <Row label="Languages" source={provenance.languages}>
-                {draft.languages.length
-                  ? draft.languages.map((lang) => `${lang.name} (${lang.level})`).join(", ")
+              <Row label="Languages" source={provenance.language}>
+                {draft.languageDetails.length
+                  ? draft.languageDetails
+                      .map((lang) => (lang.level ? `${lang.name} (${lang.level})` : lang.name))
+                      .join(", ")
                   : "Not provided"}
               </Row>
             </div>

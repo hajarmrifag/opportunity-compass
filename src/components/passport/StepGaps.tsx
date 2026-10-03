@@ -2,7 +2,7 @@ import { useMemo, useState, type ReactNode } from "react";
 import { Plus, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { Category, GraduationDatePrecision, Profile } from "@/domain/types";
-import { CATEGORY_LABELS } from "@/domain/types";
+import { CATEGORY_LABELS, DEGREE_LABELS, type DegreeLevel } from "@/domain/types";
 import {
   FIELD_OPTIONS,
   LANGUAGE_LEVELS,
@@ -15,28 +15,18 @@ import { uid } from "./shared";
 
 const CATEGORIES: Category[] = [
   "masters",
-  "phd",
+  "research",
   "fellowship",
   "scholarship",
   "internship",
   "exchange",
 ];
 
-const DEGREE_LEVELS = ["High school", "Bachelor's", "Master's", "PhD", "Other"];
-
 function Why({ children }: { children: ReactNode }) {
   return <p className="text-sm text-muted-foreground">{children}</p>;
 }
 
-function Question({
-  title,
-  why,
-  children,
-}: {
-  title: string;
-  why: string;
-  children: ReactNode;
-}) {
+function Question({ title, why, children }: { title: string; why: string; children: ReactNode }) {
   return (
     <section className="border border-border bg-card p-5">
       <h3 className="text-lg font-semibold">{title}</h3>
@@ -62,11 +52,15 @@ function GraduationControl({
   const mode = precision ?? "unknown";
 
   const build = (year: string, month: string, day: string, nextMode: string) => {
-    if (!year) return onChange(null, nextMode === "unknown" ? null : (nextMode as GraduationDatePrecision));
+    if (!year)
+      return onChange(null, nextMode === "unknown" ? null : (nextMode as GraduationDatePrecision));
     if (nextMode === "year") return onChange(year, "year");
     if (nextMode === "month") return onChange(month ? `${year}-${month}` : year, "month");
     if (nextMode === "day")
-      return onChange(month && day ? `${year}-${month}-${day}` : month ? `${year}-${month}` : year, "day");
+      return onChange(
+        month && day ? `${year}-${month}-${day}` : month ? `${year}-${month}` : year,
+        "day",
+      );
     onChange(year, "year");
   };
 
@@ -76,7 +70,9 @@ function GraduationControl({
         <select
           id="grad-precision"
           value={mode}
-          onChange={(event) => build(yearPart ?? "", monthPart ?? "", dayPart ?? "", event.target.value)}
+          onChange={(event) =>
+            build(yearPart ?? "", monthPart ?? "", dayPart ?? "", event.target.value)
+          }
         >
           <option value="unknown">Not sure yet</option>
           <option value="year">Just the year</option>
@@ -164,9 +160,7 @@ export function StepGaps({
   const fundingAny =
     draft.fundingNeeds.tuition || draft.fundingNeeds.living || draft.fundingNeeds.travel;
 
-  const showEducation = missingEducation || addingEducation;
-  const showSkills = draft.skills.length === 0 || true; // always offer to refine
-  const showLanguages = draft.languages.length === 0 || true;
+  const showEducation = missingEducation || addingEducation || true; // always editable here
 
   const nothingMissing = useMemo(
     () =>
@@ -181,10 +175,21 @@ export function StepGaps({
   const addLanguage = () => {
     const name = langName.trim();
     if (!name) return;
-    if (draft.languages.some((lang) => lang.name.toLowerCase() === name.toLowerCase())) return;
-    manual("languages", { ...draft, languages: [...draft.languages, { name, level: langLevel }] });
+    if (draft.languages.some((lang) => lang.toLowerCase() === name.toLowerCase())) return;
+    manual("languages", {
+      ...draft,
+      languages: [...draft.languages, name],
+      languageDetails: [...draft.languageDetails, { name, level: langLevel }],
+    });
     setLangName("");
   };
+
+  const removeLanguage = (name: string) =>
+    manual("languages", {
+      ...draft,
+      languages: draft.languages.filter((item) => item !== name),
+      languageDetails: draft.languageDetails.filter((item) => item.name !== name),
+    });
 
   const setFunding = (key: "tuition" | "living" | "travel", value: boolean) =>
     manual("fundingNeeds", { ...draft, fundingNeeds: { ...draft.fundingNeeds, [key]: value } });
@@ -194,8 +199,8 @@ export function StepGaps({
       <p className="eyebrow">Step 4 of 5</p>
       <h2 className="mt-1 text-2xl">Add anything that's missing</h2>
       <p className="mt-1 text-muted-foreground">
-        A few focused questions. Each one explains why it helps match you with opportunities.
-        Skip anything that doesn't apply.
+        A few focused questions. Each one explains why it helps match you with opportunities. Skip
+        anything that doesn't apply.
       </p>
 
       {nothingMissing && (
@@ -217,13 +222,15 @@ export function StepGaps({
                   id="gap-degree-level"
                   value={draft.education[0]?.degreeLevel ?? ""}
                   onChange={(event) =>
-                    updateEducation({ degreeLevel: event.target.value || null })
+                    updateEducation({
+                      degreeLevel: (event.target.value || null) as DegreeLevel | null,
+                    })
                   }
                 >
                   <option value="">Choose…</option>
-                  {DEGREE_LEVELS.map((level) => (
+                  {(Object.keys(DEGREE_LABELS) as DegreeLevel[]).map((level) => (
                     <option key={level} value={level}>
-                      {level}
+                      {DEGREE_LABELS[level]}
                     </option>
                   ))}
                 </select>
@@ -253,6 +260,7 @@ export function StepGaps({
                   ...draft,
                   graduationDate: date,
                   graduationDatePrecision: precision,
+                  graduationYear: date ? Number(date.slice(0, 4)) || null : null,
                 })
               }
             />
@@ -299,8 +307,6 @@ export function StepGaps({
                             degreeName: newDegree.trim(),
                             school: newSchool.trim(),
                             field: "",
-                            gpaValue: null,
-                            gpaScale: null,
                           },
                         ],
                       });
@@ -347,82 +353,74 @@ export function StepGaps({
           </Question>
         )}
 
-        {showSkills && (
-          <Question
-            title="Your skills"
-            why="Skills help us explain why an opportunity fits you — they're never used to decide if you're eligible."
-          >
-            <MultiSelect
-              id="gap-skills"
-              label="Skills"
-              hint="Search the list or add your own."
-              options={SKILL_OPTIONS}
-              values={draft.skills}
-              onChange={(skills) => manual("skills", { ...draft, skills })}
-            />
-          </Question>
-        )}
+        <Question
+          title="Your skills"
+          why="Skills help us explain why an opportunity fits you — they're never used to decide if you're eligible."
+        >
+          <MultiSelect
+            id="gap-skills"
+            label="Skills"
+            hint="Search the list or add your own."
+            options={SKILL_OPTIONS}
+            values={draft.skills}
+            onChange={(skills) => manual("skills", { ...draft, skills })}
+          />
+        </Question>
 
-        {showLanguages && (
-          <Question
-            title="Languages"
-            why="Some opportunities require or prefer certain languages."
-          >
-            <div className="flex flex-wrap items-end gap-2">
-              <F id="lang-name" label="Language" className="flex-1">
-                <input
-                  id="lang-name"
-                  list="language-options"
-                  value={langName}
-                  onChange={(event) => setLangName(event.target.value)}
-                />
-              </F>
-              <datalist id="language-options">
-                {LANGUAGE_OPTIONS.map((language) => (
-                  <option key={language} value={language} />
+        <Question
+          title="Languages"
+          why="Some opportunities require or prefer certain languages."
+        >
+          <div className="flex flex-wrap items-end gap-2">
+            <F id="lang-name" label="Language" className="flex-1">
+              <input
+                id="lang-name"
+                list="language-options"
+                value={langName}
+                onChange={(event) => setLangName(event.target.value)}
+              />
+            </F>
+            <datalist id="language-options">
+              {LANGUAGE_OPTIONS.map((language) => (
+                <option key={language} value={language} />
+              ))}
+            </datalist>
+            <F id="lang-level" label="Level">
+              <select
+                id="lang-level"
+                value={langLevel}
+                onChange={(event) => setLangLevel(event.target.value)}
+              >
+                {LANGUAGE_LEVELS.map((level) => (
+                  <option key={level} value={level}>
+                    {level}
+                  </option>
                 ))}
-              </datalist>
-              <F id="lang-level" label="Level">
-                <select
-                  id="lang-level"
-                  value={langLevel}
-                  onChange={(event) => setLangLevel(event.target.value)}
-                >
-                  {LANGUAGE_LEVELS.map((level) => (
-                    <option key={level} value={level}>
-                      {level}
-                    </option>
-                  ))}
-                </select>
-              </F>
-              <Button type="button" onClick={addLanguage} disabled={!langName.trim()}>
-                <Plus /> Add language
-              </Button>
-            </div>
-            {draft.languages.length > 0 && (
-              <ul className="flex flex-wrap gap-2">
-                {draft.languages.map((lang) => (
-                  <li key={lang.name} className="chip chip-teal flex items-center gap-1">
-                    {lang.name} ({lang.level})
-                    <button
-                      type="button"
-                      aria-label={`Remove ${lang.name}`}
-                      className="inline-flex min-h-[24px] min-w-[24px] items-center justify-center"
-                      onClick={() =>
-                        manual("languages", {
-                          ...draft,
-                          languages: draft.languages.filter((item) => item.name !== lang.name),
-                        })
-                      }
-                    >
-                      ×
-                    </button>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </Question>
-        )}
+              </select>
+            </F>
+            <Button type="button" onClick={addLanguage} disabled={!langName.trim()}>
+              <Plus /> Add language
+            </Button>
+          </div>
+          {draft.languageDetails.length > 0 && (
+            <ul className="flex flex-wrap gap-2">
+              {draft.languageDetails.map((lang) => (
+                <li key={lang.name} className="chip chip-teal flex items-center gap-1">
+                  {lang.name}
+                  {lang.level ? ` (${lang.level})` : ""}
+                  <button
+                    type="button"
+                    aria-label={`Remove ${lang.name}`}
+                    className="inline-flex min-h-[24px] min-w-[24px] items-center justify-center"
+                    onClick={() => removeLanguage(lang.name)}
+                  >
+                    ×
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
+        </Question>
 
         <Question
           title="What are you looking for?"
@@ -446,7 +444,7 @@ export function StepGaps({
           {wantsMasters && (
             <MultiSelect
               id="gap-masters-field"
-              label="Preferred fields for a Master's"
+              label="Preferred field for a Master's"
               hint="Shown because you picked Master's programmes."
               options={FIELD_OPTIONS}
               values={draft.education[0]?.field ? [draft.education[0].field] : []}
