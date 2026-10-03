@@ -34,8 +34,20 @@ describe("validation", () => {
     expect(safeHttpUrl("example.com")).toBeNull();
     expect(safeHttpUrl("https://example.org/x")).toBe("https://example.org/x");
   });
+  it("counts calendar days, local-midnight based (3 Oct -> 20 Oct = 17)", () => {
+    for (const hour of [0, 1, 14, 23]) {
+      const now = new Date(2026, 9, 3, hour, 59);
+      expect(deadlineState("2026-10-20", now).days).toBe(17);
+      expect(deadlineState("2026-10-03", now)).toEqual({ state: "closing_soon", days: 0 });
+      expect(deadlineState("2026-10-02", now).state).toBe("expired");
+    }
+    expect(deadlineState("2026-10-17", new Date(2026, 9, 3)).state).toBe("closing_soon");
+    expect(deadlineState("2026-10-18", new Date(2026, 9, 3)).state).toBe("open");
+    // across a DST change (Europe/US late Oct/early Nov) still whole days
+    expect(deadlineState("2026-11-10", new Date(2026, 9, 20, 12)).days).toBe(21);
+  });
   it("expiry is timing only", () => {
-    const now = new Date("2026-10-03T12:00:00");
+    const now = new Date(2026, 9, 3, 12);
     expect(deadlineState("2026-10-01", now).state).toBe("expired");
     expect(deadlineState("2026-10-10", now).state).toBe("closing_soon");
     expect(deadlineState("bad", now).state).toBe("invalid");

@@ -21,15 +21,24 @@ export function safeHttpUrl(s: string | null | undefined): string | null {
 
 export type DeadlineState = "open" | "closing_soon" | "expired" | "unknown" | "invalid";
 
-/** Timing only — deliberately independent of eligibility. */
+/**
+ * Timing only — deliberately independent of eligibility.
+ * Date-only deadlines are compared as whole calendar days in the user's local timezone:
+ * both dates are anchored at local midnight, and DST is absorbed by rounding.
+ */
 export function deadlineState(iso: string | null | undefined, now = new Date()): { state: DeadlineState; days: number | null } {
   if (!iso) return { state: "unknown", days: null };
   if (!isValidIsoDate(iso)) return { state: "invalid", days: null };
-  const end = new Date(iso + "T23:59:59");
-  const days = Math.ceil((end.getTime() - now.getTime()) / 86400000);
+  const [y, m, d] = iso.split("-").map(Number) as [number, number, number];
+  const due = new Date(y, m - 1, d);
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const days = Math.round((due.getTime() - today.getTime()) / 86400000);
   if (days < 0) return { state: "expired", days };
-  return { state: days <= 14 ? "closing_soon" : "open", days };
+  return { state: days <= DEADLINE_WINDOW_DAYS ? "closing_soon" : "open", days };
 }
+
+/** Single source for the "approaching deadline" window used by chips and the dashboard. */
+export const DEADLINE_WINDOW_DAYS = 14;
 
 export const oppKey = (title: string, org: string) =>
   `${title.trim().toLowerCase().replace(/\s+/g, " ")}|${org.trim().toLowerCase().replace(/\s+/g, " ")}`;

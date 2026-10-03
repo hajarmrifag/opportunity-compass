@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { effectiveDeadline, daysUntil, useStore } from "@/lib/store";
 import { STATUS_LABELS, STATUSES } from "@/domain/types";
+import { DEADLINE_WINDOW_DAYS } from "@/lib/validation";
 import { DeadlineText, EmptyState, Loading, PageHeader } from "@/components/ui-bits";
 
 export const Route = createFileRoute("/")({
@@ -22,9 +23,9 @@ function Dashboard() {
   const counts = STATUSES.map((s) => ({ s, n: applications.filter((a) => a.status === s).length }));
   const upcoming = applications
     .map((a) => ({ a, o: getOpportunity(a.opportunityId), d: effectiveDeadline(a, getOpportunity(a.opportunityId)) }))
-    .filter((x) => { const n = daysUntil(x.d); return n !== null && n >= 0 && !["rejected", "withdrawn", "offer"].includes(x.a.status); })
+    .filter((x) => { const n = daysUntil(x.d); return n !== null && n >= 0 && n <= DEADLINE_WINDOW_DAYS && !["rejected", "withdrawn", "offer"].includes(x.a.status); })
     .sort((x, y) => (x.d! < y.d! ? -1 : 1))
-    .slice(0, 5);
+    .slice(0, 8);
 
   return (
     <>
@@ -42,13 +43,13 @@ function Dashboard() {
         <Stat label="Opportunities available" value={opportunities.length} />
         <Stat label="Tracked" value={applications.length} />
         <Stat label="Submitted or later" value={applications.filter((a) => ["submitted", "interview", "offer"].includes(a.status)).length} />
-        <Stat label="Deadlines ≤ 14 days" value={upcoming.filter((u) => (daysUntil(u.d) ?? 99) <= 14).length} />
+        <Stat label={`Deadlines in next ${DEADLINE_WINDOW_DAYS} days`} value={upcoming.length} />
       </section>
       <div className="grid gap-6 lg:grid-cols-2">
         <section className="card p-5">
-          <h2 className="mb-3 text-xl">Approaching deadlines</h2>
+          <h2 className="mb-3 text-xl">Deadlines in the next {DEADLINE_WINDOW_DAYS} days</h2>
           {upcoming.length === 0 ? (
-            <p className="text-sm text-muted-foreground">No upcoming deadlines among your tracked items.</p>
+            <p className="text-sm text-muted-foreground">No tracked items close within this window. Closed, offered, rejected and withdrawn items are excluded.</p>
           ) : (
             <ul className="divide-y divide-border">
               {upcoming.map(({ a, o, d }) => (
