@@ -1,5 +1,4 @@
-import { cleanup, render, screen } from "@testing-library/react";
-import userEvent from "@testing-library/user-event";
+import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { TrackerInsights } from "@/features/tracker/Insights";
 import type { TrackerApplication } from "@/lib/tracker.functions";
@@ -34,22 +33,20 @@ describe("Tracker insights", () => {
   });
 
   it("shows AI feedback after the button is used", async () => {
-    const user = userEvent.setup();
     const onAdvice = vi.fn(async () => ({ advice: "Keep going.", resources: [] }));
     render(<TrackerInsights apps={[app]} chats={[]} onAdvice={onAdvice} />);
-    await user.click(screen.getByRole("button", { name: /AI feedback/i }));
+    fireEvent.click(screen.getByRole("button", { name: /AI feedback/i }));
     expect(onAdvice).toHaveBeenCalledTimes(1);
-    expect(await screen.findByText("Keep going.")).toBeInTheDocument();
+    await waitFor(() => expect(screen.getByText("Keep going.")).toBeInTheDocument());
   });
 
   it("falls back to the labelled preview when AI feedback fails", async () => {
-    const user = userEvent.setup();
     render(
       <TrackerInsights apps={[app]} chats={[]} onAdvice={async () => Promise.reject(new Error())} />,
     );
-    await user.click(screen.getByRole("button", { name: /AI feedback/i }));
-    expect(
-      await screen.findByText(/Preview — AI feedback isn't connected yet/i),
-    ).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: /AI feedback/i }));
+    await waitFor(() =>
+      expect(screen.getByText(/Preview — AI feedback isn't connected yet/i)).toBeInTheDocument(),
+    );
   });
 });
