@@ -41,7 +41,7 @@ export async function runLiveSearch(input: LiveSearchInput, signal?: AbortSignal
   try {
     res = await fetch(`${GATEWAY}/search`, {
       method: "POST",
-      signal,
+      signal: signal ?? null,
       headers: { "Content-Type": "application/json", Authorization: `Bearer ${lov}`, "X-Connection-Api-Key": fc },
       body: JSON.stringify({
         query: queryUsed,
