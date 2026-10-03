@@ -10,6 +10,7 @@ export function DemoBadge() {
 export function SourceBadge({ opp }: { opp: Opportunity }) {
   if (opp.isDemo) return <DemoBadge />;
   if (opp.verification === "user_entered") return <span className="chip chip-muted">Added by you</span>;
+  if (opp.verification === "web_retrieved") return <span className="chip chip-unknown" title="Extracted from the source page; not human-verified">From live web · unverified</span>;
   return <span className="chip chip-met">Verified</span>;
 }
 

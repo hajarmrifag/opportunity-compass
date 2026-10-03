@@ -21,7 +21,7 @@ export const Route = createFileRoute("/add")({
 const schema = z.object({
   title: z.string().trim().min(1, "Title is required").max(150),
   organization: z.string().trim().min(1, "Organization is required").max(150),
-  category: z.enum(["internship", "scholarship", "research", "exchange", "fellowship"]),
+  category: z.enum(Object.keys(CATEGORY_LABELS) as [Category, ...Category[]]),
   location: z.string().trim().max(100),
   deadline: z.string().refine((d) => d === "" || isValidIsoDate(d), "Enter a real date"),
   link: z.string().trim().url("Enter a full URL starting with https://").refine((u) => /^https?:\/\//.test(u), "Must start with http(s)://").or(z.literal("")),
