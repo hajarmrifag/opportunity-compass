@@ -1,19 +1,21 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
+import { AnimatePresence, LayoutGroup, motion } from "motion/react";
 import { useStore } from "@/lib/store";
 import { CATEGORY_LABELS, type Category } from "@/domain/types";
 import { EmptyState, Loading, PageHeader } from "@/components/ui-bits";
 import { OpportunityCard } from "@/components/OpportunityCard";
+import { Counter } from "@/components/motion/Counter";
 
 export const Route = createFileRoute("/discover")({
   head: () => ({
     meta: [
-      { title: "Discover — Source" },
+      { title: "Browse · Sourced" },
       {
         name: "description",
         content: "Search internships, scholarships, research, exchanges and fellowships.",
       },
-      { property: "og:title", content: "Discover — Source" },
+      { property: "og:title", content: "Browse · Sourced" },
       {
         property: "og:description",
         content: "Search internships, scholarships, research, exchanges and fellowships.",
@@ -52,10 +54,10 @@ function Discover() {
   return (
     <>
       <PageHeader
-        title="Demo listings"
-        sub="Fictional, unverified examples for testing. Use Live search for real opportunities."
+        title="Browse"
+        sub="Fictional examples for testing. Use Search for real opportunities."
       />
-      <div className="atlas-search-workbench mb-6 grid gap-3 border-y border-foreground py-5 md:grid-cols-[1fr_auto]">
+      <div className="atlas-search-workbench mb-6 grid gap-3 border-y py-5 md:grid-cols-[1fr_auto]">
         <div>
           <label htmlFor="q">Search</label>
           <input
@@ -80,27 +82,42 @@ function Discover() {
             <option value="travel">Travel</option>
           </select>
         </div>
-        <div className="atlas-filter-grid md:col-span-2" role="group" aria-label="Category">
-          {(["all", ...cats] as const).map((c) => {
-            const n =
-              c === "all"
-                ? opportunities.length
-                : opportunities.filter((o) => o.category === c).length;
-            return (
-              <button
-                key={c}
-                onClick={() => setCat(c)}
-                aria-pressed={cat === c}
-                className={`btn btn-sm ${cat === c ? "" : "btn-outline"}`}
-              >
-                {c === "all" ? "All" : CATEGORY_LABELS[c]} ({n})
-              </button>
-            );
-          })}
-        </div>
+        <LayoutGroup id="discover-filters">
+          <div className="atlas-filter-grid md:col-span-2" role="group" aria-label="Category">
+            {(["all", ...cats] as const).map((c) => {
+              const n =
+                c === "all"
+                  ? opportunities.length
+                  : opportunities.filter((o) => o.category === c).length;
+              const active = cat === c;
+              return (
+                <button
+                  key={c}
+                  onClick={() => setCat(c)}
+                  aria-pressed={active}
+                  className={`atlas-filter-pill ${active ? "is-active" : ""}`}
+                >
+                  {/* One indicator slides between pills instead of each one toggling. */}
+                  {active && (
+                    <motion.span
+                      layoutId="discover-filter-active"
+                      className="atlas-filter-pill-bg"
+                      transition={{ type: "spring", stiffness: 480, damping: 40 }}
+                    />
+                  )}
+                  <span>{c === "all" ? "All" : CATEGORY_LABELS[c]}</span>
+                  <b>{n}</b>
+                </button>
+              );
+            })}
+          </div>
+        </LayoutGroup>
       </div>
-      <p className="mb-3 text-sm text-muted-foreground" aria-live="polite">
-        {results.length} result{results.length === 1 ? "" : "s"}
+      <p className="mb-4 flex items-baseline gap-2 text-sm text-muted-foreground" aria-live="polite">
+        <span className="atlas-result-number">
+          <Counter value={results.length} duration={0.35} />
+        </span>{" "}
+        result{results.length === 1 ? "" : "s"} in view
       </p>
       {results.length === 0 ? (
         <EmptyState
@@ -120,11 +137,15 @@ function Discover() {
           }
         />
       ) : (
-        <div className="atlas-stagger grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-          {results.map((o) => (
-            <OpportunityCard key={o.id} opp={o} />
-          ))}
-        </div>
+        <LayoutGroup id="discover-field">
+          <motion.div layout className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+            <AnimatePresence mode="popLayout" initial={false}>
+              {results.map((o) => (
+                <OpportunityCard key={o.id} opp={o} />
+              ))}
+            </AnimatePresence>
+          </motion.div>
+        </LayoutGroup>
       )}
     </>
   );

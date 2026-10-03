@@ -65,7 +65,7 @@ function Detail() {
         body="It may have been removed from this browser."
         action={
           <Link to="/discover" className="btn">
-            Back to Discover
+            Back to Browse
           </Link>
         }
       />
@@ -93,7 +93,7 @@ function Detail() {
         to={app ? "/journey" : "/search"}
         className="text-sm text-muted-foreground hover:underline"
       >
-        ← {app ? "My Journey" : "Live search"}
+        ← {app ? "My Journey" : "Search"}
       </Link>
       <header className="atlas-detail-hero mt-3 mb-8 border-b border-border pb-8">
         <p className="atlas-kicker">Opportunity Brief</p>

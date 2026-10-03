@@ -45,7 +45,7 @@ function ComparePage() {
         />
         <EmptyState
           title="Choose at least two"
-          body="Add opportunities from Live search, demo listings, or saved cards. You can compare up to three."
+          body="Add opportunities from Search, Browse, or saved cards. You can compare up to three."
           action={
             <Link to="/search" className="btn">
               Find opportunities
