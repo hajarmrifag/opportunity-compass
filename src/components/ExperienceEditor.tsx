@@ -22,7 +22,12 @@ const blank = (type: WorkType | null): WorkExperienceEntry => ({
   progress: "",
 });
 
-const GROUPS: { key: string; title: string; icon: typeof FlaskConical; match: (e: WorkExperienceEntry) => boolean }[] = [
+const GROUPS: {
+  key: string;
+  title: string;
+  icon: typeof FlaskConical;
+  match: (e: WorkExperienceEntry) => boolean;
+}[] = [
   { key: "research", title: "Research", icon: FlaskConical, match: (e) => e.type === "research" },
   { key: "volunteer", title: "Volunteer", icon: HandHeart, match: (e) => e.type === "volunteer" },
   {
@@ -47,18 +52,22 @@ export function ExperienceEditor({
   const save = () => {
     if (!editing) return;
     if (!editing.role.trim() && !editing.organization.trim()) return;
+    const cleaned = { ...editing, outputs: editing.outputs.map((s) => s.trim()).filter(Boolean) };
     const exists = roles.some((r) => r.id === editing.id);
     onChange({
       ...profile,
       workExperience: exists
-        ? roles.map((r) => (r.id === editing.id ? editing : r))
-        : [...roles, editing],
+        ? roles.map((r) => (r.id === cleaned.id ? cleaned : r))
+        : [...roles, cleaned],
     });
     setEditing(null);
   };
 
   return (
-    <section className="md:col-span-2 border-t border-border pt-5" aria-labelledby="experience-title">
+    <section
+      className="md:col-span-2 border-t border-border pt-5"
+      aria-labelledby="experience-title"
+    >
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <h3 id="experience-title" className="text-xl">
@@ -70,10 +79,20 @@ export function ExperienceEditor({
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
-          <Button type="button" variant="outline" size="sm" onClick={() => setEditing(blank("research"))}>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() => setEditing(blank("research"))}
+          >
             <Plus /> Research
           </Button>
-          <Button type="button" variant="outline" size="sm" onClick={() => setEditing(blank("volunteer"))}>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() => setEditing(blank("volunteer"))}
+          >
             <Plus /> Volunteer
           </Button>
           <Button type="button" variant="outline" size="sm" onClick={() => setEditing(blank(null))}>
@@ -93,7 +112,11 @@ export function ExperienceEditor({
               <li key={item.id} className="border border-border bg-card p-3">
                 <EntryBody item={item} />
                 <div className="mt-3 flex flex-wrap gap-2">
-                  <Button type="button" size="sm" onClick={() => onChange(acceptExperience(profile, item.id))}>
+                  <Button
+                    type="button"
+                    size="sm"
+                    onClick={() => onChange(acceptExperience(profile, item.id))}
+                  >
                     <Check /> Accept
                   </Button>
                   <Button
@@ -107,7 +130,12 @@ export function ExperienceEditor({
                   >
                     <Pencil /> Accept and edit
                   </Button>
-                  <Button type="button" size="sm" variant="ghost" onClick={() => onChange(dismissExperience(profile, item.id))}>
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="ghost"
+                    onClick={() => onChange(dismissExperience(profile, item.id))}
+                  >
                     <X /> Dismiss
                   </Button>
                 </div>
@@ -120,16 +148,26 @@ export function ExperienceEditor({
       {editing && (
         <div className="mt-4 grid gap-3 border border-border bg-card p-4 md:grid-cols-2">
           <Field label="Role" id="exp-role">
-            <input id="exp-role" value={editing.role} onChange={(e) => setEditing({ ...editing, role: e.target.value })} />
+            <input
+              id="exp-role"
+              value={editing.role}
+              onChange={(e) => setEditing({ ...editing, role: e.target.value })}
+            />
           </Field>
           <Field label="Organisation" id="exp-org">
-            <input id="exp-org" value={editing.organization} onChange={(e) => setEditing({ ...editing, organization: e.target.value })} />
+            <input
+              id="exp-org"
+              value={editing.organization}
+              onChange={(e) => setEditing({ ...editing, organization: e.target.value })}
+            />
           </Field>
           <Field label="Type" id="exp-type">
             <select
               id="exp-type"
               value={editing.type ?? ""}
-              onChange={(e) => setEditing({ ...editing, type: (e.target.value || null) as WorkType | null })}
+              onChange={(e) =>
+                setEditing({ ...editing, type: (e.target.value || null) as WorkType | null })
+              }
             >
               <option value="">Not stated</option>
               {(Object.keys(WORK_TYPE_LABELS) as WorkType[]).map((t) => (
@@ -140,10 +178,19 @@ export function ExperienceEditor({
             </select>
           </Field>
           <Field label="Location" id="exp-loc">
-            <input id="exp-loc" value={editing.location} onChange={(e) => setEditing({ ...editing, location: e.target.value })} />
+            <input
+              id="exp-loc"
+              value={editing.location}
+              onChange={(e) => setEditing({ ...editing, location: e.target.value })}
+            />
           </Field>
           <Field label="What you did" id="exp-desc" wide>
-            <textarea id="exp-desc" rows={2} value={editing.description} onChange={(e) => setEditing({ ...editing, description: e.target.value })} />
+            <textarea
+              id="exp-desc"
+              rows={2}
+              value={editing.description}
+              onChange={(e) => setEditing({ ...editing, description: e.target.value })}
+            />
           </Field>
           <Field label="Your progress so far" id="exp-progress" wide>
             <textarea
@@ -154,7 +201,11 @@ export function ExperienceEditor({
               onChange={(e) => setEditing({ ...editing, progress: e.target.value })}
             />
           </Field>
-          <Field label="Outputs (one per line: papers, posters, projects, impact)" id="exp-outputs" wide>
+          <Field
+            label="Outputs (one per line: papers, posters, projects, impact)"
+            id="exp-outputs"
+            wide
+          >
             <textarea
               id="exp-outputs"
               rows={3}
@@ -162,7 +213,10 @@ export function ExperienceEditor({
               onChange={(e) =>
                 setEditing({
                   ...editing,
-                  outputs: e.target.value.split("\n").map((s) => s.trimStart()).slice(0, 20),
+                  outputs: e.target.value
+                    .split("\n")
+                    .map((s) => s.trimStart())
+                    .slice(0, 20),
                 })
               }
             />
@@ -170,10 +224,7 @@ export function ExperienceEditor({
           <div className="flex flex-wrap gap-2 md:col-span-2">
             <Button
               type="button"
-              onClick={() => {
-                setEditing({ ...editing, outputs: editing.outputs.map((s) => s.trim()).filter(Boolean) });
-                save();
-              }}
+              onClick={save}
               disabled={!editing.role.trim() && !editing.organization.trim()}
             >
               Save role
@@ -203,7 +254,13 @@ export function ExperienceEditor({
                   <li key={item.id} className="border border-border p-3">
                     <EntryBody item={item} />
                     <div className="mt-2 flex gap-2">
-                      <Button type="button" size="sm" variant="outline" onClick={() => setEditing(item)} aria-label={`Edit ${item.role || item.organization}`}>
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="outline"
+                        onClick={() => setEditing(item)}
+                        aria-label={`Edit ${item.role || item.organization}`}
+                      >
                         <Pencil /> Edit
                       </Button>
                       <Button
@@ -211,7 +268,12 @@ export function ExperienceEditor({
                         size="sm"
                         variant="ghost"
                         aria-label={`Delete ${item.role || item.organization}`}
-                        onClick={() => onChange({ ...profile, workExperience: roles.filter((r) => r.id !== item.id) })}
+                        onClick={() =>
+                          onChange({
+                            ...profile,
+                            workExperience: roles.filter((r) => r.id !== item.id),
+                          })
+                        }
                       >
                         <Trash2 /> Delete
                       </Button>
@@ -232,7 +294,10 @@ function EntryBody({ item }: { item: WorkExperienceEntry }) {
     <div>
       <p className="font-semibold">
         {item.role || "Role not stated"}
-        <span className="font-normal text-muted-foreground"> · {item.organization || "Organisation not stated"}</span>
+        <span className="font-normal text-muted-foreground">
+          {" "}
+          · {item.organization || "Organisation not stated"}
+        </span>
       </p>
       <p className="text-xs text-muted-foreground">
         {item.type ? WORK_TYPE_LABELS[item.type] : "Type not stated"}
@@ -261,7 +326,17 @@ function EntryBody({ item }: { item: WorkExperienceEntry }) {
   );
 }
 
-function Field({ label, id, wide, children }: { label: string; id: string; wide?: boolean; children: React.ReactNode }) {
+function Field({
+  label,
+  id,
+  wide,
+  children,
+}: {
+  label: string;
+  id: string;
+  wide?: boolean;
+  children: React.ReactNode;
+}) {
   return (
     <div className={wide ? "md:col-span-2" : ""}>
       <label htmlFor={id}>{label}</label>

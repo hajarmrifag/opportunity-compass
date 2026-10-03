@@ -15,12 +15,15 @@ import {
 } from "@/domain/types";
 import { Loading, PageHeader } from "@/components/ui-bits";
 import { Button } from "@/components/ui/button";
-import { extractProfile } from "@/lib/profileExtraction.functions";
+import { extractProfile, extractWebProfile } from "@/lib/profileExtraction.functions";
+import { ExperienceEditor } from "@/components/ExperienceEditor";
 import {
   applyExtractedCandidates,
   canConfirmProfile,
   extractionConflicts,
   fieldLabel,
+  normalizeWebSourceUrl,
+  webSourceLabel,
 } from "@/lib/profileExtraction";
 
 export const Route = createFileRoute("/passport")({
@@ -86,6 +89,11 @@ function Passport() {
   const [pasteLabel, setPasteLabel] = useState<DocumentLabel>("other");
   const [message, setMessage] = useState("");
   const [saving, setSaving] = useState(false);
+  const extractWeb = useServerFn(extractWebProfile);
+  const [webUrl, setWebUrl] = useState("");
+  const [webConsent, setWebConsent] = useState(false);
+  const [webBusy, setWebBusy] = useState(false);
+  const [webError, setWebError] = useState("");
 
   useEffect(() => {
     if (!ready) return;
@@ -224,6 +232,36 @@ function Passport() {
         ? "Extraction finished. Review every value and resolve any conflicts."
         : "Automatic extraction did not return any values. You can retry or continue manually.",
     );
+  };
+
+  const readWebLink = async () => {
+    const url = normalizeWebSourceUrl(webUrl);
+    if (!url) return setWebError("Enter a full public link, like https://github.com/yourname.");
+    if (!webConsent) return setWebError("Tick the box to confirm this link is yours.");
+    setWebBusy(true);
+    setWebError("");
+    try {
+      const result = await extractWeb({
+        data: { url, label: webSourceLabel(url), consent: true },
+      });
+      if (!result.ok) {
+        setWebError(result.error ?? "This page could not be read.");
+      } else {
+        const nextResults = [...results, result];
+        setResults(nextResults);
+        persistDraft(applyExtractedCandidates(draft, [result], choices));
+        const found = result.experiences?.length ?? 0;
+        setMessage(
+          `Read ${url}. ${found} ${found === 1 ? "role was" : "roles were"} found and added as suggestions below for you to accept or dismiss.`,
+        );
+        setWebUrl("");
+        setWebConsent(false);
+      }
+    } catch {
+      setWebError("This page could not be read. You can paste the text instead.");
+    } finally {
+      setWebBusy(false);
+    }
   };
 
   const chooseConflict = (field: string, value: string) => {
@@ -450,6 +488,47 @@ function Passport() {
             Files are processed privately and deleted after extraction.
           </span>
         </div>
+      </section>
+
+      <section className="mb-8 border-b border-border pb-6" aria-labelledby="web-title">
+        <p className="eyebrow">Optional</p>
+        <h2 id="web-title" className="mt-1 text-2xl">
+          Add your own web link
+        </h2>
+        <p className="mt-1 text-sm text-muted-foreground">
+          LinkedIn, GitHub, a personal site or another public page about you. We read only the link
+          you give, never search for your name, and don't keep the page text.
+        </p>
+        <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-end">
+          <div className="flex-1">
+            <label htmlFor="web-url">Link</label>
+            <input
+              id="web-url"
+              className="mt-1"
+              inputMode="url"
+              placeholder="https://www.linkedin.com/in/yourname"
+              value={webUrl}
+              onChange={(event) => setWebUrl(event.target.value)}
+            />
+          </div>
+          <Button type="button" onClick={readWebLink} disabled={webBusy}>
+            {webBusy ? "Reading link…" : "Read link"}
+          </Button>
+        </div>
+        <label className="mt-3 flex items-start gap-2 font-normal">
+          <input
+            type="checkbox"
+            className="mt-1 w-auto"
+            checked={webConsent}
+            onChange={(event) => setWebConsent(event.target.checked)}
+          />
+          <span className="text-sm">This link is about me, and I agree to it being read once.</span>
+        </label>
+        {webError && (
+          <p role="alert" className="mt-3 text-sm text-warning-strong">
+            {webError}
+          </p>
+        )}
       </section>
 
       {conflicts.length > 0 && (
@@ -736,6 +815,7 @@ function Passport() {
               ))}
             </div>
           </fieldset>
+          <ExperienceEditor profile={draft} onChange={(next) => manual("workExperience", next)} />
           <F id="goals" label="Goals" className="md:col-span-2">
             <textarea
               id="goals"
