@@ -21,7 +21,7 @@ import {
   type TrackerEvent,
 } from "@/lib/tracker.functions";
 import { TrackerInsights } from "@/features/tracker/Insights";
-import { todayIso } from "@/features/tracker/CoffeeChatRow";
+import { CoffeeChatRow, todayIso } from "@/features/tracker/CoffeeChatRow";
 import { Loading, PageHeader } from "@/components/ui-bits";
 
 export const Route = createFileRoute("/_authenticated/tracker")({
@@ -139,7 +139,7 @@ function TrackerPage() {
     const q = search.trim().toLowerCase();
     if (!q) return [];
     return chats.filter((c) =>
-      [c.contact_name, c.company ?? "", c.comment ?? ""].some((field) =>
+      [c.contact_name, c.company ?? "", c.notes ?? ""].some((field) =>
         field.toLowerCase().includes(q),
       ),
     );
