@@ -191,16 +191,36 @@ export function FinancePanel({ opportunityId }: { opportunityId: string }) {
                     }
                   />
                   <Result
-                    label="Base case · eventual gap"
-                    value={money(group.currency, group.baseEventualGap)}
+                    label="Base case · complete gap"
+                    value={
+                      group.totalUnknown ? "Unknown" : money(group.currency, group.baseEventualGap)
+                    }
                     strong
                   />
+                  {group.totalUnknown && (
+                    <Result
+                      label="Base case · gap on known costs only"
+                      value={money(group.currency, group.baseEventualGap)}
+                    />
+                  )}
                   <Result
-                    label="If awarded · eventual gap"
-                    value={money(group.currency, group.ifAwardedGap)}
+                    label="If awarded · complete gap"
+                    value={
+                      group.totalUnknown ? "Unknown" : money(group.currency, group.ifAwardedGap)
+                    }
                   />
+                  {group.totalUnknown && (
+                    <Result
+                      label="If awarded · gap on known costs only"
+                      value={money(group.currency, group.ifAwardedGap)}
+                    />
+                  )}
                   <Result
-                    label="Upfront cash need"
+                    label={
+                      group.totalUnknown
+                        ? "Upfront cash need · known costs only"
+                        : "Upfront cash need"
+                    }
                     value={money(group.currency, group.upfrontNeed)}
                     strong
                   />
