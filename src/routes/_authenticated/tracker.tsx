@@ -90,10 +90,6 @@ function TrackerPage() {
     queryFn: () => listEmailSuggestions(),
   });
   const [search, setSearch] = useState("");
-  const [showChart, setShowChart] = useState(false);
-  const [advice, setAdvice] = useState<AdviceResult | null>(null);
-  const [adviceBusy, setAdviceBusy] = useState(false);
-  const [adviceError, setAdviceError] = useState("");
   const [scanMessage, setScanMessage] = useState("");
 
   const apps = useMemo(() => appsQuery.data ?? [], [appsQuery.data]);
@@ -128,17 +124,6 @@ function TrackerPage() {
     [chats, today],
   );
 
-  const statusCounts = useMemo(
-    () =>
-      TRACKER_STATUSES.map((s) => ({
-        status: s,
-        label: STATUS_LABEL[s],
-        count: apps.filter((a) => a.status === s).length,
-      })),
-    [apps],
-  );
-  const maxStatusCount = Math.max(1, ...statusCounts.map((s) => s.count));
-
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
     if (!q) return apps;
@@ -146,18 +131,6 @@ function TrackerPage() {
       [a.company, a.role, a.notes].some((field) => field.toLowerCase().includes(q)),
     );
   }, [apps, search]);
-
-  const runAdvice = async () => {
-    setAdviceBusy(true);
-    setAdviceError("");
-    try {
-      setAdvice(await generateAdvice());
-    } catch (err) {
-      setAdviceError(err instanceof Error ? err.message : "Could not generate advice.");
-    } finally {
-      setAdviceBusy(false);
-    }
-  };
 
   const runScan = async () => {
     const result = await scanGmail();
