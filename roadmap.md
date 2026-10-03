@@ -28,6 +28,14 @@
 - [x] Real search validation (connector linked 3 Oct)
 - [x] Dashboard primary live search, demo excluded from counts
 
+## Recommended page (approved plan)
+
+- [x] recommended.ts: 5 categories, non-identifying profile hints, input schema
+- [x] recommended.server.ts: per-category agent search, 6h cache, gemini-3.8-flash + gpt-6-astra fallback
+- [x] /recommended page: explicit per-category buttons, cancel/retry, honest states, unverified labels
+- [x] Nav: Recommended in sidebar + mobile nav
+- [ ] Tests, typecheck, build, browser verification (needs Firecrawl reconnected for a real run)
+
 ## Hajar product experience
 
 - [x] Premium responsive visual system and purposeful dashboard workspace
