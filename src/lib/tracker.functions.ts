@@ -8,6 +8,7 @@ export const TRACKER_STATUSES = [
   "saved",
   "preparing",
   "submitted",
+  "assessment",
   "interview",
   "offer",
   "rejected",
