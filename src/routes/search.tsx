@@ -402,11 +402,22 @@ function LiveSearchPage() {
 
       <div aria-live="polite">
         {status === "loading" && (
-          <p className="text-sm text-muted-foreground" role="status">
-            {usedMode === "agent"
-              ? "Research agent working: planning, searching, reading pages and reviewing evidence. This can take up to two minutes; completed steps appear when it finishes."
-              : "Searching and reading source pages… this can take up to a minute."}
-          </p>
+          <div className="atlas-research-wait mb-6 border border-border p-5" role="status">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <strong>
+                {usedMode === "agent" ? "Research agent working" : "Reading source pages"}
+              </strong>
+              <span className="atlas-card-index">LIVE RESEARCH</span>
+            </div>
+            <div className="atlas-research-progress mt-4" aria-hidden="true">
+              <span />
+            </div>
+            <p className="mt-3 text-sm text-muted-foreground">
+              {usedMode === "agent"
+                ? "Research agent working: planning, searching, reading pages and reviewing evidence. This can take up to two minutes; completed steps appear when it finishes."
+                : "Searching and reading source pages… this can take up to a minute."}
+            </p>
+          </div>
         )}
         {status === "cancelled" && (
           <p className="flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
@@ -468,7 +479,7 @@ function LiveSearchPage() {
                 body="Try broader words or fewer filters. We don't fill gaps with made-up results."
               />
             ) : (
-              <ol className="atlas-result-list space-y-5">
+              <ol className="atlas-result-list atlas-stagger space-y-5">
                 {resp.results.map((o, index) => (
                   <LiveResult key={o.id} opp={o} index={index + 1} />
                 ))}
@@ -495,7 +506,7 @@ function AgentActivity({ a }: { a: AgentSearchResponse }) {
           {a.cached ? " · cached" : ""}
         </span>
       </div>
-      <ol className="mt-3 space-y-2 text-sm">
+      <ol className="atlas-evidence-trail mt-3 space-y-2 text-sm">
         {a.stages.map((s, i) => (
           <li key={i} className="flex flex-wrap gap-x-3 gap-y-1">
             <span className={`chip ${s.ok ? "chip-met" : "chip-notmet"}`}>
@@ -601,7 +612,7 @@ function LiveResult({ opp, index }: { opp: Opportunity; index: number }) {
         </Link>
       </div>
       {open && (
-        <div className="mt-4 grid gap-4 md:grid-cols-2">
+        <div className="atlas-disclosure mt-4 grid gap-4 md:grid-cols-2">
           <div>
             <h4 className="font-semibold">Requirements found on page</h4>
             <p className="text-xs text-muted-foreground">

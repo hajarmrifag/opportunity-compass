@@ -120,7 +120,7 @@ function Discover() {
           }
         />
       ) : (
-        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+        <div className="atlas-stagger grid gap-4 md:grid-cols-2 xl:grid-cols-3">
           {results.map((o) => (
             <OpportunityCard key={o.id} opp={o} />
           ))}

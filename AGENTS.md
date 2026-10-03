@@ -31,3 +31,5 @@
 - The research agent (`src/lib/agentSearch*.ts`) may only propose queries and keep/reject rule-extracted candidates; facts come from Firecrawl page extraction, all model output is schema-validated and bounded (3 queries/8 pages/1 refinement) — model cannot invent listings.
 - Affordability scenarios are user-owned browser-local assumptions calculated only by the pure `calculateAffordability` seam; they never overwrite sourced funding facts or application status — keeps finance review modular and honest.
 - The finance teammate's pure calculator lives in `src/features/calculator/` (no DB access); `reviewedData.ts` feeds it only reviewed, non-demo rows and otherwise the Brief uses the local `calculateAffordability` — eligibility never counts as an award.
+
+- Shared motion uses scoped CSS and the cmdk CommandCenter in AppShell; research trails render only returned agent stages — keeps presentation independent of teammate data contracts.

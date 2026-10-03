@@ -76,3 +76,9 @@
 - [x] Save to Tracker button on listing cards (idempotent, sign-in prompt when logged out); bearer middleware in start.ts
 - [x] Types, 44 tests, production build pass
 - [ ] BLOCKED (main thread only): enable email sign-in; migration applies when draft is accepted — tracker cannot be exercised end-to-end in this draft
+
+## Draft motion handoff
+
+- [x] Merge six presentation source files; retain Tracker and all teammate contracts
+- [x] Automatic build passed; 71 regressions and formatter passed; desktop/mobile shortcuts, Tracker, route/card motion and reduced motion verified
+- [ ] Separate TypeScript invocation is unavailable under the managed validation workflow; live research visuals await a configured search service (no integration changes requested)

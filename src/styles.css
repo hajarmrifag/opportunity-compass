@@ -1116,3 +1116,299 @@
     flex: 1 1 100%;
   }
 }
+
+/* One restrained motion language for navigation, research and decisions. */
+@keyframes atlas-settle {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 10px, 0);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+@keyframes atlas-progress {
+  from {
+    transform: translateX(-100%) scaleX(0.45);
+  }
+  to {
+    transform: translateX(260%) scaleX(0.75);
+  }
+}
+@keyframes atlas-check-in {
+  from {
+    opacity: 0;
+    transform: scale(0.75);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+.atlas-route-enter {
+  animation: atlas-settle 300ms cubic-bezier(0.2, 0.75, 0.2, 1) both;
+}
+.atlas-page-header > div {
+  animation: atlas-settle 340ms cubic-bezier(0.2, 0.75, 0.2, 1) both;
+}
+.atlas-page-header > div > p:last-child {
+  animation: atlas-settle 340ms 55ms cubic-bezier(0.2, 0.75, 0.2, 1) both;
+}
+.atlas-stagger > * {
+  animation: atlas-settle 360ms cubic-bezier(0.2, 0.75, 0.2, 1) backwards;
+}
+.atlas-stagger > :nth-child(2) {
+  animation-delay: 35ms;
+}
+.atlas-stagger > :nth-child(3) {
+  animation-delay: 70ms;
+}
+.atlas-stagger > :nth-child(4) {
+  animation-delay: 105ms;
+}
+.atlas-stagger > :nth-child(5) {
+  animation-delay: 140ms;
+}
+.atlas-stagger > :nth-child(n + 6) {
+  animation-delay: 170ms;
+}
+@media (hover: hover) and (pointer: fine) {
+  .atlas-opportunity,
+  .atlas-live-result {
+    transition:
+      transform 220ms cubic-bezier(0.2, 0.75, 0.2, 1),
+      box-shadow 220ms ease,
+      border-color 220ms ease;
+  }
+  .atlas-opportunity:hover,
+  .atlas-live-result:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--motion-card-shadow);
+  }
+}
+:root {
+  --motion-card-shadow: 5px 6px 0 color-mix(in oklab, var(--foreground) 18%, transparent);
+  --command-shadow: 8px 8px 0 var(--foreground);
+}
+.atlas-opportunity:focus-within,
+.atlas-live-result:focus-within {
+  border-color: var(--primary);
+}
+.atlas-opportunity:active,
+.atlas-live-result:active {
+  transform: scale(0.998);
+}
+.btn:active,
+.atlas-direction-row:active {
+  transform: translate(0, 0) scale(0.985);
+  box-shadow: none;
+}
+.btn:disabled:active {
+  transform: none;
+}
+.btn svg,
+.atlas-live-result .btn svg {
+  transition: transform 180ms ease;
+}
+.btn:hover svg,
+.atlas-text-link:hover svg {
+  transform: translateX(2px);
+}
+.nav-link::after {
+  content: "";
+  position: absolute;
+  inset-block: 0.45rem;
+  left: -3px;
+  width: 3px;
+  background: var(--acid);
+  transform: scaleY(0);
+  transform-origin: center;
+  transition: transform 220ms cubic-bezier(0.2, 0.75, 0.2, 1);
+}
+.nav-link-active::after {
+  transform: scaleY(1);
+}
+.mobile-nav-link {
+  transition:
+    background-color 200ms ease,
+    color 200ms ease;
+}
+.atlas-disclosure {
+  animation: atlas-settle 250ms cubic-bezier(0.2, 0.75, 0.2, 1) both;
+}
+.atlas-empty-mark {
+  animation: atlas-check-in 320ms cubic-bezier(0.2, 0.75, 0.2, 1) both;
+}
+.atlas-research-wait {
+  background: var(--card);
+  border-left: 4px solid var(--acid);
+}
+.atlas-research-progress {
+  height: 3px;
+  overflow: hidden;
+  background: var(--muted);
+}
+.atlas-research-progress > span {
+  display: block;
+  width: 40%;
+  height: 100%;
+  background: var(--primary);
+  transform-origin: left;
+  animation: atlas-progress 1.55s ease-in-out infinite;
+}
+.atlas-evidence-trail {
+  position: relative;
+  margin-left: 0.5rem;
+  padding-left: 1.5rem;
+}
+.atlas-evidence-trail::before {
+  content: "";
+  position: absolute;
+  top: 0.75rem;
+  bottom: 0.75rem;
+  left: 0.34rem;
+  width: 1px;
+  background: var(--border);
+}
+.atlas-evidence-trail > li {
+  position: relative;
+  padding: 0.3rem 0;
+  animation: atlas-settle 320ms cubic-bezier(0.2, 0.75, 0.2, 1) both;
+}
+.atlas-evidence-trail > li::before {
+  content: "";
+  position: absolute;
+  top: 0.95rem;
+  left: -1.5rem;
+  width: 0.7rem;
+  height: 0.7rem;
+  border: 2px solid var(--primary);
+  border-radius: 50%;
+  background: var(--card);
+}
+.atlas-evidence-trail > li:nth-child(2) {
+  animation-delay: 45ms;
+}
+.atlas-evidence-trail > li:nth-child(3) {
+  animation-delay: 90ms;
+}
+.atlas-evidence-trail > li:nth-child(4) {
+  animation-delay: 135ms;
+}
+.atlas-evidence-trail > li:nth-child(n + 5) {
+  animation-delay: 170ms;
+}
+.atlas-command-trigger {
+  position: fixed;
+  z-index: 45;
+  bottom: 3rem;
+  left: 0.65rem;
+  display: flex;
+  width: 9.2rem;
+  min-height: 2.4rem;
+  height: auto;
+  align-items: center;
+  gap: 0.4rem;
+  border: 1px solid color-mix(in oklab, var(--card) 35%, transparent);
+  padding: 0.4rem 0.55rem;
+  background: color-mix(in oklab, var(--foreground) 92%, var(--primary));
+  color: var(--card);
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+.atlas-command-trigger:hover,
+.atlas-command-trigger:focus-visible {
+  border-color: var(--acid);
+  background: var(--foreground);
+  color: var(--acid);
+}
+.atlas-command-trigger kbd {
+  margin-left: auto;
+  color: color-mix(in oklab, var(--card) 60%, transparent);
+}
+.atlas-command-dialog {
+  border-radius: 0;
+  border-color: var(--primary);
+  box-shadow: var(--command-shadow);
+}
+.atlas-command-dialog[data-state="open"] {
+  animation: atlas-command-open 220ms cubic-bezier(0.2, 0.75, 0.2, 1) both;
+}
+.atlas-command-dialog[data-state="closed"] {
+  animation: atlas-command-close 150ms ease-in both;
+}
+@keyframes atlas-command-open {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -49%) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+}
+@keyframes atlas-command-close {
+  from {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: translate(-50%, -49%) scale(0.985);
+  }
+}
+.atlas-command-list [cmdk-item] {
+  transition:
+    background-color 130ms ease,
+    transform 130ms ease;
+}
+.atlas-command-list [cmdk-item][data-selected="true"] {
+  transform: translateX(2px);
+}
+@media (max-width: 767px) {
+  .atlas-command-trigger {
+    right: 1rem;
+    bottom: 5.5rem;
+    left: auto;
+    width: 2.5rem;
+    height: 2.5rem;
+    justify-content: center;
+    padding: 0;
+  }
+  .atlas-command-trigger span,
+  .atlas-command-trigger kbd {
+    display: none;
+  }
+  .atlas-command-dialog {
+    width: calc(100vw - 1.5rem);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .atlas-route-enter,
+  .atlas-page-header > div,
+  .atlas-page-header > div > p:last-child,
+  .atlas-stagger > *,
+  .atlas-disclosure,
+  .atlas-empty-mark,
+  .atlas-evidence-trail > li,
+  .atlas-research-progress > span,
+  .atlas-command-dialog[data-state="open"],
+  .atlas-command-dialog[data-state="closed"] {
+    animation: none !important;
+  }
+  .atlas-opportunity:hover,
+  .atlas-live-result:hover,
+  .atlas-opportunity:active,
+  .atlas-live-result:active,
+  .btn:hover,
+  .btn:active,
+  .atlas-direction-row:active,
+  .btn:hover svg,
+  .atlas-text-link:hover svg,
+  .atlas-command-list [cmdk-item][data-selected="true"] {
+    transform: none !important;
+  }
+}
