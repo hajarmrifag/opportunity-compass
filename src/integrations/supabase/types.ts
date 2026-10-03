@@ -86,6 +86,8 @@ export type Database = {
           created_at: string
           id: string
           listing_id: string
+          next_action: string
+          next_action_date: string | null
           notes: string
           role: string
           source: string
@@ -99,6 +101,8 @@ export type Database = {
           created_at?: string
           id?: string
           listing_id: string
+          next_action?: string
+          next_action_date?: string | null
           notes?: string
           role: string
           source?: string
@@ -112,6 +116,8 @@ export type Database = {
           created_at?: string
           id?: string
           listing_id?: string
+          next_action?: string
+          next_action_date?: string | null
           notes?: string
           role?: string
           source?: string
