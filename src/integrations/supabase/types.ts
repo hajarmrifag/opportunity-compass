@@ -44,6 +44,33 @@ export type Database = {
         }
         Relationships: []
       }
+      app_user_connections: {
+        Row: {
+          connection_key_ciphertext: string
+          connector_id: string
+          created_at: string
+          id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          connection_key_ciphertext: string
+          connector_id: string
+          created_at?: string
+          id?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          connection_key_ciphertext?: string
+          connector_id?: string
+          created_at?: string
+          id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       application_events: {
         Row: {
           application_id: string
@@ -86,6 +113,8 @@ export type Database = {
           created_at: string
           id: string
           listing_id: string
+          next_action: string
+          next_action_date: string | null
           notes: string
           role: string
           source: string
@@ -99,6 +128,8 @@ export type Database = {
           created_at?: string
           id?: string
           listing_id: string
+          next_action?: string
+          next_action_date?: string | null
           notes?: string
           role: string
           source?: string
@@ -112,6 +143,8 @@ export type Database = {
           created_at?: string
           id?: string
           listing_id?: string
+          next_action?: string
+          next_action_date?: string | null
           notes?: string
           role?: string
           source?: string
@@ -128,6 +161,7 @@ export type Database = {
           created_at: string
           date: string | null
           follow_up_date: string | null
+          follow_up_done: boolean
           id: string
           notes: string
           outcome: string
@@ -140,6 +174,7 @@ export type Database = {
           created_at?: string
           date?: string | null
           follow_up_date?: string | null
+          follow_up_done?: boolean
           id?: string
           notes?: string
           outcome?: string
@@ -152,6 +187,7 @@ export type Database = {
           created_at?: string
           date?: string | null
           follow_up_date?: string | null
+          follow_up_done?: boolean
           id?: string
           notes?: string
           outcome?: string
