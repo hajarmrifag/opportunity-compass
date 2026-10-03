@@ -62,7 +62,10 @@ export async function extractWebSource(
       aborted ? "Reading this link was cancelled." : "This page could not be reached.",
     );
   }
-  if (markdown.length < 80 || (input.label === "linkedin" && AUTH_WALL.test(markdown.slice(0, 3000)))) {
+  if (
+    markdown.length < 80 ||
+    (input.label === "linkedin" && AUTH_WALL.test(markdown.slice(0, 3000)))
+  ) {
     return fail(
       name,
       input.label,
