@@ -341,7 +341,7 @@ const MONEY_OPTIONS: Array<{ value: ItemStatus; label: string }> = [
 
 const SOURCE_LABEL: Record<PlanItem["source"], string> = {
   official_page: "From the official page",
-  team: "Added by the OpportunityOS team",
+  team: "Added by the Sourced team",
   student_added: "You added this",
   money_check: "From your money check",
 };
