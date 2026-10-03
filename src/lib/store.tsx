@@ -1,0 +1,113 @@
+import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
+import type { Application, ApplicationStatus, Opportunity, Profile } from "@/domain/types";
+import { DEMO_OPPORTUNITIES, DEMO_PROFILE } from "@/data/fixtures";
+import { emptyState, localRepository, type PersistedState } from "@/data/storage";
+
+interface Store {
+  ready: boolean;
+  error: string | null;
+  dismissError: () => void;
+  profile: Profile | null;
+  opportunities: Opportunity[];
+  applications: Application[];
+  getOpportunity: (id: string) => Opportunity | undefined;
+  getApplication: (oppId: string) => Application | undefined;
+  saveProfile: (p: Profile) => void;
+  loadDemoProfile: () => void;
+  saveOpportunity: (oppId: string) => Application;
+  updateApplication: (id: string, patch: Partial<Pick<Application, "status" | "notes" | "deadline">>) => void;
+  removeApplication: (id: string) => void;
+  addManualOpportunity: (opp: Opportunity) => void;
+  resetAll: () => void;
+}
+
+const Ctx = createContext<Store | null>(null);
+const now = () => new Date().toISOString();
+const uid = () => Math.random().toString(36).slice(2, 10) + Date.now().toString(36);
+
+export function StoreProvider({ children }: { children: ReactNode }) {
+  const [state, setState] = useState<PersistedState>(emptyState);
+  const [ready, setReady] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const { state: s, error: e } = localRepository.load();
+    setState(s);
+    setError(e);
+    setReady(true);
+  }, []);
+
+  const commit = useCallback((fn: (s: PersistedState) => PersistedState) => {
+    setState((prev) => {
+      const next = fn(prev);
+      const e = localRepository.save(next);
+      if (e) setError(e);
+      return next;
+    });
+  }, []);
+
+  const opportunities = useMemo(() => [...DEMO_OPPORTUNITIES, ...state.customOpportunities], [state.customOpportunities]);
+
+  const store: Store = {
+    ready,
+    error,
+    dismissError: () => setError(null),
+    profile: state.profile,
+    opportunities,
+    applications: state.applications,
+    getOpportunity: (id) => opportunities.find((o) => o.id === id),
+    getApplication: (oppId) => state.applications.find((a) => a.opportunityId === oppId),
+    saveProfile: (p) => commit((s) => ({ ...s, profile: p })),
+    loadDemoProfile: () => commit((s) => ({ ...s, profile: { ...DEMO_PROFILE } })),
+    saveOpportunity: (oppId) => {
+      const existing = state.applications.find((a) => a.opportunityId === oppId);
+      if (existing) return existing;
+      const t = now();
+      const app: Application = {
+        id: uid(), opportunityId: oppId, status: "saved", notes: "", deadline: null,
+        createdAt: t, updatedAt: t, history: [{ status: "saved", at: t }],
+      };
+      // Idempotent even under rapid double-clicks: re-check inside updater.
+      commit((s) => (s.applications.some((a) => a.opportunityId === oppId) ? s : { ...s, applications: [...s.applications, app] }));
+      return app;
+    },
+    updateApplication: (id, patch) =>
+      commit((s) => ({
+        ...s,
+        applications: s.applications.map((a) => {
+          if (a.id !== id) return a;
+          const t = now();
+          const statusChanged = patch.status && patch.status !== a.status;
+          return {
+            ...a, ...patch, updatedAt: t,
+            history: statusChanged ? [...a.history, { status: patch.status as ApplicationStatus, at: t }] : a.history,
+          };
+        }),
+      })),
+    removeApplication: (id) => commit((s) => ({ ...s, applications: s.applications.filter((a) => a.id !== id) })),
+    addManualOpportunity: (opp) => commit((s) => ({ ...s, customOpportunities: [...s.customOpportunities, opp] })),
+    resetAll: () => {
+      localRepository.clear();
+      setState(emptyState());
+    },
+  };
+
+  return <Ctx.Provider value={store}>{children}</Ctx.Provider>;
+}
+
+export function useStore() {
+  const s = useContext(Ctx);
+  if (!s) throw new Error("useStore must be used inside StoreProvider");
+  return s;
+}
+
+export function daysUntil(iso: string | null): number | null {
+  if (!iso) return null;
+  const d = new Date(iso + "T23:59:59");
+  if (isNaN(d.getTime())) return null;
+  return Math.ceil((d.getTime() - Date.now()) / 86400000);
+}
+
+export function effectiveDeadline(app: Application | undefined, opp: Opportunity | undefined) {
+  return app?.deadline || opp?.deadline || null;
+}
