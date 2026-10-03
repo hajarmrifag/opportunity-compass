@@ -3,6 +3,7 @@ import type { Opportunity } from "@/domain/types";
 import { useStore } from "@/lib/store";
 import { CategoryChip, DeadlineText, SourceBadge } from "./ui-bits";
 import { CompareButton } from "./CompareButton";
+import { SaveToTrackerButton } from "./SaveToTrackerButton";
 
 export function OpportunityCard({ opp }: { opp: Opportunity }) {
   const { getApplication, saveOpportunity } = useStore();
@@ -47,6 +48,7 @@ export function OpportunityCard({ opp }: { opp: Opportunity }) {
           {saved ? "✓ Saved" : "Save"}
         </button>
         <CompareButton opportunityId={opp.id} />
+        <SaveToTrackerButton opp={opp} />
       </div>
     </article>
   );

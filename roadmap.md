@@ -68,3 +68,11 @@
 - [x] Verify required numeric cases, existing regressions, desktop/mobile/keyboard and refresh persistence
 
 - [x] Integrate finance handoff rules into Brief Affordability (re-verify after syncing Main)
+
+## Account-backed Tracker (draft)
+
+- [x] Staged additive migration: applications, application_events, coffee_chats, outreach_templates, resources, advice_log, user_roles + has_role, RLS + grants
+- [x] Email sign-in page (/auth), protected layout, Tracker page (status dropdown, source, applied date, notes, keyword search), Resources page (shared curated list, admin-only edits); admin granted manually only; email_suggestions table staged
+- [x] Save to Tracker button on listing cards (idempotent, sign-in prompt when logged out); bearer middleware in start.ts
+- [x] Types, 44 tests, production build pass
+- [ ] BLOCKED (main thread only): enable email sign-in; migration applies when draft is accepted — tracker cannot be exercised end-to-end in this draft
