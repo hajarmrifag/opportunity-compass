@@ -144,7 +144,9 @@ export function applyExtractedCandidates(
   results: DocumentExtractionResult[],
   choices: Record<string, string> = {},
 ): Profile {
-  const candidates = results.flatMap((result) => result.candidates);
+  const candidates = (Array.isArray(results) ? results : []).flatMap((result) =>
+    Array.isArray(result?.candidates) ? result.candidates : [],
+  );
   const byField = new Map<string, ExtractionCandidate[]>();
   for (const candidate of candidates) {
     byField.set(candidate.field, [...(byField.get(candidate.field) ?? []), candidate]);
