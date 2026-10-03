@@ -1,0 +1,1 @@
+ALTER TABLE public.coffee_chats ADD COLUMN IF NOT EXISTS referral boolean;

@@ -258,6 +258,7 @@ export interface CoffeeChat {
   follow_up_date: string | null;
   notes: string;
   outcome: "" | CoffeeChatOutcome;
+  referral: boolean | null;
   created_at: string;
 }
 
@@ -284,6 +285,7 @@ export const saveCoffeeChat = createServerFn({ method: "POST" })
         follow_up_date: z.string().nullable().optional(),
         notes: z.string().max(5000).default(""),
         outcome: z.enum(["", ...COFFEE_CHAT_OUTCOMES]).default(""),
+        referral: z.boolean().nullable().optional(),
       })
       .parse(data),
   )
