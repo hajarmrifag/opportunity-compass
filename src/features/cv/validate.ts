@@ -38,7 +38,7 @@ export function checkEmail(v: string): FieldIssue[] {
   if (!s) return [{ level: "warning", message: "Add an email so employers can contact you." }];
   if (s.length > LIMITS.email) return [{ level: "error", message: `Email addresses can be at most ${LIMITS.email} characters.` }];
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(s)) return [{ level: "error", message: "This doesn't look like an email address (name@example.com)." }];
-  const local = s.split("@")[0];
+  const local = s.split("@")[0] ?? "";
   if (local.length > 64) return [{ level: "error", message: "The part before @ can be at most 64 characters." }];
   return [];
 }
