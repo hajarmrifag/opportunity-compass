@@ -7,3 +7,5 @@
 - [ ] docs/TEAM_INTEGRATION.md
 - [ ] docs/QA_CHECKLIST.md
 - [ ] docs/DEMO_SCRIPT.md
+- [ ] docs/AUTH_DB_PLAN.md (per-user RLS, provenance, migration/rollback, isolation tests, approvals) — plan only, no backend
+- [ ] Typecheck, unit tests, browser tests (core + mobile); final report
