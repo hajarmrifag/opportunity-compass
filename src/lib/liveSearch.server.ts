@@ -11,8 +11,11 @@ const WINDOW_MS = 60_000;
 const MAX_PER_WINDOW = 6;
 export const UPSTREAM_TIMEOUT_MS = 55_000;
 
-export const isAbortError = (e: unknown) =>
-  e instanceof Error && (e.name === "AbortError" || e.name === "TimeoutError");
+// DOMException is not always an Error subclass (e.g. some test/runtime realms), so check the name.
+export const isAbortError = (e: unknown) => {
+  const name = typeof e === "object" && e !== null ? (e as { name?: unknown }).name : undefined;
+  return name === "AbortError" || name === "TimeoutError";
+};
 
 // Best-effort, per-isolate. Serverless workers do not share memory, so this bounds bursts
 // from one instance; it is not a global quota (documented in docs/LIVE_SEARCH.md).
