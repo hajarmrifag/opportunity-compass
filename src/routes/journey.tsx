@@ -24,20 +24,56 @@ function Journey() {
 
   return (
     <>
-      <PageHeader title="My Journey" sub="Update statuses yourself — nothing is marked Submitted automatically." right={<div className="flex flex-wrap gap-2"><Link to="/tracker-io" className="btn btn-ghost">Import / export</Link><Link to="/add" className="btn btn-outline">+ Add opportunity</Link></div>} />
+      <PageHeader
+        title="My Journey"
+        sub="Update statuses yourself — nothing is marked Submitted automatically."
+        right={
+          <div className="flex flex-wrap gap-2">
+            <Link to="/tracker-io" className="btn btn-ghost">
+              Import / export
+            </Link>
+            <Link to="/add" className="btn btn-outline">
+              + Add opportunity
+            </Link>
+          </div>
+        }
+      />
       {applications.length === 0 ? (
-        <EmptyState title="Your journey starts here" body="Find real opportunities with Live search, or add one you found elsewhere." action={<Link to="/search" className="btn">Go to Live search</Link>} />
+        <EmptyState
+          title="Your journey starts here"
+          body="Find real opportunities with Live search, or add one you found elsewhere."
+          action={
+            <Link to="/search" className="btn">
+              Go to Live search
+            </Link>
+          }
+        />
       ) : (
         <>
           <div className="mb-4 flex flex-wrap gap-2" role="group" aria-label="Filter by status">
             {(["all", ...STATUSES] as const).map((s) => (
-              <button key={s} aria-pressed={filter === s} className={`btn btn-sm ${filter === s ? "" : "btn-outline"}`} onClick={() => setFilter(s)}>
-                {s === "all" ? "All" : STATUS_LABELS[s]} ({s === "all" ? applications.length : applications.filter((a) => a.status === s).length})
+              <button
+                key={s}
+                aria-pressed={filter === s}
+                className={`btn btn-sm ${filter === s ? "" : "btn-outline"}`}
+                onClick={() => setFilter(s)}
+              >
+                {s === "all" ? "All" : STATUS_LABELS[s]} (
+                {s === "all"
+                  ? applications.length
+                  : applications.filter((a) => a.status === s).length}
+                )
               </button>
             ))}
           </div>
-          {list.length === 0 ? <p className="text-muted-foreground">No items with this status.</p> : (
-            <ul className="space-y-4">{list.map((a) => <AppRow key={a.id} app={a} />)}</ul>
+          {list.length === 0 ? (
+            <p className="text-muted-foreground">No items with this status.</p>
+          ) : (
+            <ul className="space-y-4">
+              {list.map((a) => (
+                <AppRow key={a.id} app={a} />
+              ))}
+            </ul>
           )}
         </>
       )}
@@ -58,37 +94,91 @@ function AppRow({ app }: { app: Application }) {
         <div>
           {opp ? (
             <>
-              <div className="mb-1"><SourceBadge opp={opp} /></div>
-              <Link to="/opportunities/$id" params={{ id: opp.id }} className="text-lg font-semibold hover:underline">{opp.title}</Link>
+              <div className="mb-1">
+                <SourceBadge opp={opp} />
+              </div>
+              <Link
+                to="/opportunities/$id"
+                params={{ id: opp.id }}
+                className="text-lg font-semibold hover:underline"
+              >
+                {opp.title}
+              </Link>
               <p className="text-sm text-muted-foreground">{opp.organization}</p>
             </>
-          ) : <p className="font-semibold text-destructive">Opportunity data missing</p>}
-          <p className="mt-1 text-sm"><DeadlineText iso={effectiveDeadline(app, opp)} /></p>
+          ) : (
+            <p className="font-semibold text-destructive">Opportunity data missing</p>
+          )}
+          <p className="mt-1 text-sm">
+            <DeadlineText iso={effectiveDeadline(app, opp)} />
+          </p>
         </div>
         <div className="w-full sm:w-48">
           <label htmlFor={`st-${app.id}`}>Status</label>
-          <select id={`st-${app.id}`} value={app.status} onChange={(e) => updateApplication(app.id, { status: e.target.value as ApplicationStatus })}>
-            {STATUSES.map((s) => <option key={s} value={s}>{STATUS_LABELS[s]}</option>)}
+          <select
+            id={`st-${app.id}`}
+            value={app.status}
+            onChange={(e) =>
+              updateApplication(app.id, { status: e.target.value as ApplicationStatus })
+            }
+          >
+            {STATUSES.map((s) => (
+              <option key={s} value={s}>
+                {STATUS_LABELS[s]}
+              </option>
+            ))}
           </select>
         </div>
       </div>
       <div className="mt-4 grid gap-3 md:grid-cols-[1fr_200px]">
         <div>
           <label htmlFor={`n-${app.id}`}>Notes</label>
-          <textarea id={`n-${app.id}`} rows={2} maxLength={2000} value={notes} onChange={(e) => { setNotes(e.target.value); setSavedMsg(""); }} />
+          <textarea
+            id={`n-${app.id}`}
+            rows={2}
+            maxLength={2000}
+            value={notes}
+            onChange={(e) => {
+              setNotes(e.target.value);
+              setSavedMsg("");
+            }}
+          />
           <div className="mt-1 flex items-center gap-2">
-            <button className="btn btn-sm" disabled={!dirty} onClick={() => { updateApplication(app.id, { notes }); setSavedMsg("Notes saved"); }}>Save notes</button>
-            <span className="text-xs text-success" aria-live="polite">{savedMsg}</span>
+            <button
+              className="btn btn-sm"
+              disabled={!dirty}
+              onClick={() => {
+                updateApplication(app.id, { notes });
+                setSavedMsg("Notes saved");
+              }}
+            >
+              Save notes
+            </button>
+            <span className="text-xs text-success" aria-live="polite">
+              {savedMsg}
+            </span>
           </div>
         </div>
         <div>
           <label htmlFor={`d-${app.id}`}>My deadline (optional)</label>
-          <input id={`d-${app.id}`} type="date" value={app.deadline ?? ""} onChange={(e) => updateApplication(app.id, { deadline: e.target.value || null })} />
+          <input
+            id={`d-${app.id}`}
+            type="date"
+            value={app.deadline ?? ""}
+            onChange={(e) => updateApplication(app.id, { deadline: e.target.value || null })}
+          />
         </div>
       </div>
       <div className="mt-3 flex justify-between text-xs text-muted-foreground">
         <span>Updated {new Date(app.updatedAt).toLocaleString()}</span>
-        <button className="underline hover:text-destructive" onClick={() => { if (confirm("Stop tracking this opportunity?")) removeApplication(app.id); }}>Remove</button>
+        <button
+          className="underline hover:text-destructive"
+          onClick={() => {
+            if (confirm("Stop tracking this opportunity?")) removeApplication(app.id);
+          }}
+        >
+          Remove
+        </button>
       </div>
     </li>
   );
