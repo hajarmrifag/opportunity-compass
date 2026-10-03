@@ -9,13 +9,15 @@ export const DEGREE_LABELS: Record<DegreeLevel, string> = {
   other: "Other",
 };
 
-export type Category = "internship" | "scholarship" | "research" | "exchange" | "fellowship";
+export type Category = "internship" | "scholarship" | "research" | "exchange" | "fellowship" | "job" | "masters";
 export const CATEGORY_LABELS: Record<Category, string> = {
   internship: "Internship",
   scholarship: "Scholarship",
   research: "Research",
   exchange: "Exchange",
   fellowship: "Fellowship",
+  job: "Job",
+  masters: "Master's programme",
 };
 
 export interface Profile {
@@ -60,7 +62,8 @@ export interface FundingCoverage {
   paymentTiming: string | null; // null = unknown
 }
 
-export type Verification = "demo_unverified" | "user_entered" | "verified";
+/** web_retrieved = extracted from the live source page at retrievedAt; NOT human-verified. */
+export type Verification = "demo_unverified" | "user_entered" | "web_retrieved" | "verified";
 
 export interface Opportunity {
   id: string;
@@ -79,6 +82,8 @@ export interface Opportunity {
   lastVerified: string | null;
   verification: Verification;
   isDemo: boolean;
+  /** ISO timestamp when the source page was fetched (live search only). */
+  retrievedAt?: string | null;
 }
 
 export type RequirementStatus = "met" | "not_met" | "unknown";
