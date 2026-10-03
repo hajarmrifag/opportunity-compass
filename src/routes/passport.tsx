@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { z } from "zod";
 import { useStore } from "@/lib/store";
 import { EMPTY_PROFILE } from "@/data/fixtures";
@@ -147,7 +147,7 @@ function Passport() {
   );
 }
 
-function F({ id, label, err, children, className = "" }: { id: string; label: string; err?: string; children: React.ReactNode; className?: string }) {
+function F({ id, label, err, children, className = "" }: { id: string; label: string; err?: string; children: ReactNode; className?: string }) {
   return (
     <div className={className}>
       <label htmlFor={id}>{label}</label>

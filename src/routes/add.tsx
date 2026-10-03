@@ -1,5 +1,5 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useState } from "react";
+import { useState, type FormEvent } from "react";
 import { z } from "zod";
 import { useStore } from "@/lib/store";
 import { CATEGORY_LABELS, type Category, type Opportunity } from "@/domain/types";
@@ -34,7 +34,7 @@ function AddPage() {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const set = (k: keyof typeof v) => (e: { target: { value: string } }) => setV({ ...v, [k]: e.target.value });
 
-  const submit = (e: React.FormEvent) => {
+  const submit = (e: FormEvent) => {
     e.preventDefault();
     const r = schema.safeParse(v);
     if (!r.success) {
