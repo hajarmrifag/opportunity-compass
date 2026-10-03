@@ -1,7 +1,13 @@
 // FICTIONAL demo data. Organizations and programs are invented. Do not treat as real.
 import type { Opportunity, Profile } from "@/domain/types";
 
-const demo = { sourceUrl: null, applyUrl: null, lastVerified: null, verification: "demo_unverified" as const, isDemo: true };
+const demo = {
+  sourceUrl: null,
+  applyUrl: null,
+  lastVerified: null,
+  verification: "demo_unverified" as const,
+  isDemo: true,
+};
 
 export const DEMO_OPPORTUNITIES: Opportunity[] = [
   {
@@ -12,18 +18,27 @@ export const DEMO_OPPORTUNITIES: Opportunity[] = [
     category: "internship",
     location: "Lisbon, Portugal",
     mode: "hybrid",
-    summary: "Ten-week internship supporting a fictional analytics team with dashboards and data cleaning.",
+    summary:
+      "Ten-week internship supporting a fictional analytics team with dashboards and data cleaning.",
     deadline: "2026-10-20",
     tags: ["data", "python", "sql", "computer science", "statistics"],
     requirements: [
-      { id: "r1", kind: "degreeLevel", label: "Enrolled in a Bachelor's or Master's", values: ["bachelor", "master"] },
+      {
+        id: "r1",
+        kind: "degreeLevel",
+        label: "Enrolled in a Bachelor's or Master's",
+        values: ["bachelor", "master"],
+      },
       { id: "r2", kind: "skill", label: "Python", values: ["python"] },
       { id: "r3", kind: "language", label: "English", values: ["english"] },
       { id: "r4", kind: "other", label: "Right to work in Portugal" },
     ],
     funding: {
       tuition: { status: "not_covered" },
-      living: { status: "partial", note: "Monthly stipend stated; amount vs. living costs unknown" },
+      living: {
+        status: "partial",
+        note: "Monthly stipend stated; amount vs. living costs unknown",
+      },
       travel: { status: "unknown" },
       paymentTiming: "Monthly, in arrears",
     },
@@ -36,12 +51,25 @@ export const DEMO_OPPORTUNITIES: Opportunity[] = [
     category: "scholarship",
     location: "Any partner university",
     mode: "in_person",
-    summary: "Fictional scholarship for international students starting a master's in a STEM field.",
+    summary:
+      "Fictional scholarship for international students starting a master's in a STEM field.",
     deadline: "2026-11-30",
     tags: ["stem", "engineering", "computer science", "international"],
     requirements: [
       { id: "r1", kind: "degreeLevel", label: "Completing a Bachelor's", values: ["bachelor"] },
-      { id: "r2", kind: "field", label: "STEM field", values: ["computer science", "engineering", "mathematics", "physics", "biology", "chemistry"] },
+      {
+        id: "r2",
+        kind: "field",
+        label: "STEM field",
+        values: [
+          "computer science",
+          "engineering",
+          "mathematics",
+          "physics",
+          "biology",
+          "chemistry",
+        ],
+      },
       { id: "r3", kind: "graduationYear", label: "Graduating 2026–2027", min: 2026, max: 2027 },
       { id: "r4", kind: "other", label: "Admission offer from a partner university" },
     ],
@@ -60,12 +88,18 @@ export const DEMO_OPPORTUNITIES: Opportunity[] = [
     category: "research",
     location: "Remote + 2-week field visit",
     mode: "hybrid",
-    summary: "Assist a fictional research group analysing coastal sensor data, with a short field component.",
+    summary:
+      "Assist a fictional research group analysing coastal sensor data, with a short field component.",
     deadline: "2026-10-12",
     tags: ["biology", "environment", "research", "r", "data"],
     requirements: [
       { id: "r1", kind: "degreeLevel", label: "Bachelor's student", values: ["bachelor"] },
-      { id: "r2", kind: "field", label: "Biology or environmental science", values: ["biology", "environmental science"] },
+      {
+        id: "r2",
+        kind: "field",
+        label: "Biology or environmental science",
+        values: ["biology", "environmental science"],
+      },
       { id: "r3", kind: "skill", label: "R or Python", values: ["r", "python"] },
     ],
     funding: {
@@ -87,7 +121,12 @@ export const DEMO_OPPORTUNITIES: Opportunity[] = [
     deadline: null,
     tags: ["exchange", "international", "engineering", "design"],
     requirements: [
-      { id: "r1", kind: "degreeLevel", label: "Bachelor's or Master's", values: ["bachelor", "master"] },
+      {
+        id: "r1",
+        kind: "degreeLevel",
+        label: "Bachelor's or Master's",
+        values: ["bachelor", "master"],
+      },
       { id: "r2", kind: "language", label: "English", values: ["english"] },
       { id: "r3", kind: "other", label: "Nomination by home university" },
     ],
@@ -110,7 +149,13 @@ export const DEMO_OPPORTUNITIES: Opportunity[] = [
     deadline: "2026-10-28",
     tags: ["civic", "software", "javascript", "design", "computer science"],
     requirements: [
-      { id: "r1", kind: "graduationYear", label: "Graduated or graduating 2025–2027", min: 2025, max: 2027 },
+      {
+        id: "r1",
+        kind: "graduationYear",
+        label: "Graduated or graduating 2025–2027",
+        min: 2025,
+        max: 2027,
+      },
       { id: "r2", kind: "skill", label: "JavaScript", values: ["javascript", "typescript"] },
       { id: "r3", kind: "language", label: "English", values: ["english"] },
     ],
@@ -134,7 +179,12 @@ export const DEMO_OPPORTUNITIES: Opportunity[] = [
     tags: ["machine learning", "phd", "research", "computer science"],
     requirements: [
       { id: "r1", kind: "degreeLevel", label: "PhD applicant or student", values: ["phd"] },
-      { id: "r2", kind: "field", label: "Computer science or related", values: ["computer science", "mathematics", "statistics"] },
+      {
+        id: "r2",
+        kind: "field",
+        label: "Computer science or related",
+        values: ["computer science", "mathematics", "statistics"],
+      },
       { id: "r3", kind: "language", label: "English or French", values: ["english", "french"] },
     ],
     funding: {
@@ -153,12 +203,37 @@ export const DEMO_PROFILE: Profile = {
   graduationYear: 2027,
   skills: ["Python", "SQL", "JavaScript"],
   languages: ["English", "Spanish"],
-  preferences: { categories: ["internship", "scholarship", "fellowship"], locations: ["Europe"], remoteOk: true },
+  preferences: {
+    categories: ["internship", "scholarship", "fellowship"],
+    locations: ["Europe"],
+    remoteOk: true,
+  },
   goals: "Gain data and software experience, then pursue a funded master's.",
   fundingNeeds: { tuition: true, living: true, travel: false },
   confirmed: false,
   confirmedAt: null,
   source: "demo",
+  education: [
+    {
+      id: "demo-education",
+      degreeLevel: "bachelor",
+      degreeName: "Bachelor's degree",
+      school: "",
+      field: "Computer Science",
+    },
+  ],
+  gpaValue: "",
+  gpaScale: "",
+  graduationDate: "2027",
+  graduationDatePrecision: "year",
+  languageDetails: [
+    { name: "English", level: "" },
+    { name: "Spanish", level: "" },
+  ],
+  constraints: [],
+  fieldProvenance: {},
+  sourceDocuments: [],
+  fieldEvidence: [],
 };
 
 export const EMPTY_PROFILE: Profile = {
@@ -174,4 +249,14 @@ export const EMPTY_PROFILE: Profile = {
   confirmed: false,
   confirmedAt: null,
   source: "manual",
+  education: [],
+  gpaValue: "",
+  gpaScale: "",
+  graduationDate: null,
+  graduationDatePrecision: null,
+  languageDetails: [],
+  constraints: [],
+  fieldProvenance: {},
+  sourceDocuments: [],
+  fieldEvidence: [],
 };

@@ -2,7 +2,7 @@
 import type { Application, Opportunity, Profile } from "@/domain/types";
 
 export const STORAGE_KEY = "opportunityos";
-export const STORAGE_VERSION = 2;
+export const STORAGE_VERSION = 3;
 export const COMPARE_LIMIT = 3;
 
 export function normalizeCompareIds(value: unknown): string[] {
@@ -26,6 +26,7 @@ export interface PersistedState {
   applications: Application[];
   customOpportunities: Opportunity[];
   compareIds: string[];
+  profileDraft: Profile | null;
 }
 
 export const emptyState = (): PersistedState => ({
@@ -34,7 +35,42 @@ export const emptyState = (): PersistedState => ({
   applications: [],
   customOpportunities: [],
   compareIds: [],
+  profileDraft: null,
 });
+
+export function normalizeProfile(profile: Profile | null | undefined): Profile | null {
+  if (!profile) return null;
+  const legacy = profile as Profile & { graduationYear?: number | null };
+  return {
+    ...profile,
+    education: Array.isArray(profile.education)
+      ? profile.education
+      : profile.degreeLevel || profile.field
+        ? [
+            {
+              id: "legacy-education",
+              degreeLevel: profile.degreeLevel,
+              degreeName: "",
+              school: "",
+              field: profile.field,
+            },
+          ]
+        : [],
+    gpaValue: profile.gpaValue ?? "",
+    gpaScale: profile.gpaScale ?? "",
+    graduationDate:
+      profile.graduationDate ?? (legacy.graduationYear ? String(legacy.graduationYear) : null),
+    graduationDatePrecision:
+      profile.graduationDatePrecision ?? (legacy.graduationYear ? "year" : null),
+    languageDetails: Array.isArray(profile.languageDetails)
+      ? profile.languageDetails
+      : (profile.languages ?? []).map((name) => ({ name, level: "" })),
+    constraints: Array.isArray(profile.constraints) ? profile.constraints : [],
+    fieldProvenance: profile.fieldProvenance ?? {},
+    sourceDocuments: Array.isArray(profile.sourceDocuments) ? profile.sourceDocuments : [],
+    fieldEvidence: Array.isArray(profile.fieldEvidence) ? profile.fieldEvidence : [],
+  };
+}
 
 export interface Repository {
   load(): { state: PersistedState; error: string | null };
@@ -48,7 +84,7 @@ export const localRepository: Repository = {
       const raw = window.localStorage.getItem(STORAGE_KEY);
       if (!raw) return { state: emptyState(), error: null };
       const parsed = JSON.parse(raw) as Partial<PersistedState>;
-      if (parsed.version !== 1 && parsed.version !== STORAGE_VERSION) {
+      if (parsed.version !== 1 && parsed.version !== 2 && parsed.version !== STORAGE_VERSION) {
         return {
           state: emptyState(),
           error: `Saved data used an unsupported version (${String(parsed.version)}). Starting fresh.`,
@@ -57,7 +93,7 @@ export const localRepository: Repository = {
       return {
         state: {
           version: STORAGE_VERSION,
-          profile: parsed.profile ?? null,
+          profile: normalizeProfile(parsed.profile),
           applications: Array.isArray(parsed.applications)
             ? parsed.applications.map((application) => ({
                 ...application,
@@ -68,6 +104,7 @@ export const localRepository: Repository = {
             ? parsed.customOpportunities
             : [],
           compareIds: normalizeCompareIds(parsed.compareIds),
+          profileDraft: normalizeProfile(parsed.profileDraft),
         },
         error: null,
       };

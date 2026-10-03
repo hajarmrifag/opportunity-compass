@@ -13,6 +13,12 @@ import {
   toggleCompareIds,
 } from "@/data/storage";
 import { activeFilters, searchSummary } from "@/routes/search";
+import {
+  applyExtractedCandidates,
+  canConfirmProfile,
+  extractionConflicts,
+} from "@/lib/profileExtraction";
+import type { DocumentExtractionResult } from "@/domain/types";
 
 describe("csv", () => {
   it("round-trips quotes, commas and newlines", () => {
@@ -214,5 +220,55 @@ describe("guided search mapping", () => {
       "Deadline from 2026-11-01",
     ]);
     expect(searchSummary(form)).toContain("climate policy · Fellowship · Brussels");
+  });
+});
+
+describe("profile document parsing", () => {
+  const cv: DocumentExtractionResult = {
+    ok: true,
+    document: { name: "TEST-cv.txt", label: "cv" },
+    candidates: [
+      {
+        field: "school",
+        value: "Test University",
+        sourceFile: "TEST-cv.txt",
+        snippet: "Student at Test University",
+      },
+      { field: "gpaValue", value: "3.6", sourceFile: "TEST-cv.txt", snippet: "GPA 3.6" },
+      { field: "skill", value: "Python", sourceFile: "TEST-cv.txt", snippet: "Skills: Python" },
+    ],
+    warnings: [],
+    error: null,
+  };
+  const transcript: DocumentExtractionResult = {
+    ok: true,
+    document: { name: "TEST-transcript.txt", label: "transcript" },
+    candidates: [
+      {
+        field: "gpaValue",
+        value: "3.4",
+        sourceFile: "TEST-transcript.txt",
+        snippet: "Cumulative GPA: 3.4",
+      },
+      { field: "gpaScale", value: "4.0", sourceFile: "TEST-transcript.txt", snippet: "Scale: 4.0" },
+    ],
+    warnings: [],
+    error: null,
+  };
+
+  it("keeps conflicting document values unresolved until the student chooses", () => {
+    expect(extractionConflicts([cv, transcript]).map((item) => item.field)).toEqual(["gpaValue"]);
+    const draft = applyExtractedCandidates(DEMO_PROFILE, [cv, transcript]);
+    expect(draft.gpaValue).toBe("");
+    expect(canConfirmProfile(draft, 1).ok).toBe(false);
+    const resolved = applyExtractedCandidates(draft, [cv, transcript], { gpaValue: "3.4" });
+    expect(resolved.gpaValue).toBe("3.4");
+    expect(resolved.gpaScale).toBe("4.0");
+  });
+
+  it("requires a GPA scale but allows other unknown fields", () => {
+    const noScale = { ...DEMO_PROFILE, gpaValue: "3.5", gpaScale: "" };
+    expect(canConfirmProfile(noScale, 0).reason).toContain("GPA scale");
+    expect(canConfirmProfile({ ...noScale, gpaScale: "4.0" }, 0).ok).toBe(true);
   });
 });

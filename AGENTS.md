@@ -24,3 +24,5 @@
 - CSV import applies only after preview + explicit confirm, as one atomic `importTracker` commit — prevents partial or surprise writes.
 - Live search runs only server-side via `src/lib/liveSearch.server.ts`; listings come from retrieved page text (`verification: "web_retrieved"`), never model memory, with no demo fallback — honesty + no client secrets.
 - Comparison IDs and application tasks persist additively in the versioned repository; task completion never changes application status — preserves records and explicit user control.
+- Profile documents are processed transiently by the server and never persisted; only reviewed values, source labels, filenames, and short evidence snippets may be saved — limits exposure of sensitive student documents.
+- A profile review draft is stored separately from the last confirmed profile; extraction and edits never replace the profile used for matching until the student presses Make profile — preserves explicit consent.

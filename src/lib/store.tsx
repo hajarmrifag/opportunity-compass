@@ -96,7 +96,6 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   const [state, setState] = useState<PersistedState>(emptyState);
   const [ready, setReady] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [profileDraft, setProfileDraft] = useState<Profile | null>(null);
 
   useEffect(() => {
     const { state: s, error: e } = localRepository.load();
@@ -129,16 +128,14 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     compareIds: state.compareIds,
     getOpportunity: (id) => opportunities.find((o) => o.id === id),
     getApplication: (oppId) => state.applications.find((a) => a.opportunityId === oppId),
-    profileDraft,
-    setProfileDraft,
-    pendingProfileEdits: profileDraft !== null,
+    profileDraft: state.profileDraft,
+    setProfileDraft: (profileDraft) => commit((s) => ({ ...s, profileDraft })),
+    pendingProfileEdits: state.profileDraft !== null,
     saveProfile: (p) => {
-      setProfileDraft(null);
-      commit((s) => ({ ...s, profile: p }));
+      commit((s) => ({ ...s, profile: p, profileDraft: null }));
     },
     loadDemoProfile: () => {
-      setProfileDraft(null);
-      commit((s) => ({ ...s, profile: { ...DEMO_PROFILE } }));
+      commit((s) => ({ ...s, profile: { ...DEMO_PROFILE }, profileDraft: null }));
     },
     saveOpportunity: (oppId) => {
       const existing = state.applications.find((a) => a.opportunityId === oppId);

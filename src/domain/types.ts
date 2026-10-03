@@ -21,6 +21,35 @@ export const CATEGORY_LABELS: Record<Category, string> = {
   masters: "Master's programme",
 };
 
+export type DocumentLabel = "cv" | "transcript" | "other";
+export type GraduationDatePrecision = "day" | "month" | "year";
+export type ProfileValueSource = "extracted" | "manual";
+
+export interface EducationEntry {
+  id: string;
+  degreeLevel: DegreeLevel | null;
+  degreeName: string;
+  school: string;
+  field: string;
+}
+
+export interface LanguageEntry {
+  name: string;
+  level: string;
+}
+
+export interface SourceDocument {
+  name: string;
+  label: DocumentLabel;
+}
+
+export interface FieldEvidence {
+  field: string;
+  value: string;
+  sourceFile: string;
+  snippet: string;
+}
+
 export interface Profile {
   fullName: string;
   degreeLevel: DegreeLevel | null;
@@ -34,11 +63,57 @@ export interface Profile {
   confirmed: boolean;
   confirmedAt: string | null;
   source: "manual" | "demo" | "cv_parser";
+  education: EducationEntry[];
+  gpaValue: string;
+  gpaScale: string;
+  graduationDate: string | null;
+  graduationDatePrecision: GraduationDatePrecision | null;
+  languageDetails: LanguageEntry[];
+  constraints: string[];
+  fieldProvenance: Record<string, ProfileValueSource>;
+  sourceDocuments: SourceDocument[];
+  fieldEvidence: FieldEvidence[];
 }
 
 /** Integration point: CV parser returns a DRAFT; the user must still review + confirm. */
 export interface ProfileExtractor {
-  extract(file: File): Promise<Partial<Omit<Profile, "confirmed" | "confirmedAt">>>;
+  extract(input: DocumentExtractionInput): Promise<DocumentExtractionResult>;
+}
+
+export interface DocumentExtractionInput {
+  name: string;
+  label: DocumentLabel;
+  mimeType: "application/pdf" | "text/plain";
+  content: string;
+}
+
+export type ExtractableProfileField =
+  | "fullName"
+  | "degreeLevel"
+  | "degreeName"
+  | "school"
+  | "field"
+  | "gpaValue"
+  | "gpaScale"
+  | "graduationDate"
+  | "graduationDatePrecision"
+  | "skill"
+  | "language"
+  | "languageLevel";
+
+export interface ExtractionCandidate {
+  field: ExtractableProfileField;
+  value: string;
+  sourceFile: string;
+  snippet: string;
+}
+
+export interface DocumentExtractionResult {
+  ok: boolean;
+  document: SourceDocument;
+  candidates: ExtractionCandidate[];
+  warnings: string[];
+  error: string | null;
 }
 
 export type RequirementKind =

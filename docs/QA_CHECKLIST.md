@@ -8,6 +8,14 @@
 - 390×844 mobile dashboard and first-tab Skip to content keyboard focus verified visually and interactively.
 - Browser run used a fresh context and a clearly labelled `TEST — email mentor` task; no real Passport was loaded or changed.
 
+# Student profile creation verification — 3 Oct 2026
+
+- A clearly labelled fictional pasted CV completed the real server-side extraction path. It extracted Test University, Bachelor of Science, Computer Science, 2027, Python, SQL and English, with source snippets beside the corresponding fields.
+- The test profile remained separate until “Make profile”; confirmation was enabled only after the education requirement was met, then the confirmed profile survived a full refresh. No page errors occurred.
+- Automated regressions cover cross-document GPA conflicts, explicit conflict selection, and the rule that a GPA value cannot be confirmed without its scale. Full suite: 44 passed; type check clean.
+- Files are validated before extraction, processed privately, and are not stored. Per-file errors preserve successful results and manual entry remains available.
+- Remaining limitations: scanned PDFs are not OCR'd; automatic extraction depends on available workspace AI credits; data still stays only in this browser, so multi-user row isolation awaits the planned backend handoff.
+
 # QA checklist — milestone 1 (draft, 3 Oct 2026)
 
 Environments: dev preview, Chromium (Playwright) at 1280×1800 and 390×844, timezone Asia/Hong_Kong. Unit tests are also run with TZ = Asia/Hong_Kong, America/Los_Angeles, UTC, Pacific/Kiritimati.
