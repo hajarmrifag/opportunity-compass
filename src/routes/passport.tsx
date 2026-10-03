@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useMemo, useState } from "react";
 import { ArrowLeft, ArrowRight, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ExperienceEditor } from "@/components/ExperienceEditor";
@@ -10,25 +10,20 @@ import { StepReview } from "@/components/passport/StepReview";
 import { StepGaps } from "@/components/passport/StepGaps";
 import { ProfileCreated, StepConfirm } from "@/components/passport/StepConfirm";
 import { F, MultiSelect } from "@/components/passport/fields";
-import { fileBase64, uid, type IntakeDocument } from "@/components/passport/shared";
-import {
-  LANGUAGE_OPTIONS,
-  LOCATION_OPTIONS,
-  SKILL_OPTIONS,
-} from "@/lib/curatedOptions";
+import { fileBase64, type IntakeDocument } from "@/components/passport/shared";
+import { LANGUAGE_OPTIONS, LOCATION_OPTIONS, SKILL_OPTIONS } from "@/lib/curatedOptions";
 import { EMPTY_PROFILE } from "@/data/fixtures";
 import type {
-  ConflictChoice,
   DocumentExtractionResult,
   EducationEntry,
   Profile,
 } from "@/domain/types";
+import { DEGREE_LABELS, type DegreeLevel } from "@/domain/types";
 import { extractProfile, extractWebProfile } from "@/lib/profileExtraction.functions";
 import {
   applyExtractedCandidates,
   canConfirmProfile,
   extractionConflicts,
-  fieldLabel,
 } from "@/lib/profileExtraction";
 import { useStore } from "@/lib/store";
 
@@ -63,14 +58,8 @@ export const Route = createFileRoute("/passport")({
 });
 
 function Passport() {
-  const {
-    ready,
-    profile,
-    saveProfile,
-    loadDemoProfile,
-    profileDraft,
-    setProfileDraft,
-  } = useStore();
+  const { ready, profile, saveProfile, loadDemoProfile, profileDraft, setProfileDraft } =
+    useStore();
   const runExtractionFn = useServerFn(extractProfile);
   const runWebExtraction = useServerFn(extractWebProfile);
 
@@ -78,7 +67,7 @@ function Passport() {
   const [created, setCreated] = useState(false);
   const [documents, setDocuments] = useState<IntakeDocument[]>([]);
   const [results, setResults] = useState<DocumentExtractionResult[]>([]);
-  const [choices, setChoices] = useState<Record<string, ConflictChoice>>({});
+  const [choices, setChoices] = useState<Record<string, string>>({});
   const [message, setMessage] = useState("");
   const [saving, setSaving] = useState(false);
   const [extracting, setExtracting] = useState(false);
@@ -91,10 +80,13 @@ function Passport() {
     [profileDraft, profile],
   );
 
+  const stampSaved = () =>
+    setSavedAt(new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }));
+
   /** Every draft change persists as the review draft (confirmed stays false until step 5). */
   const persistDraft = (next: Profile) => {
     setProfileDraft({ ...next, confirmed: false, confirmedAt: null });
-    setSavedAt(new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }));
+    stampSaved();
   };
 
   const manual = (field: string, next: Profile) =>
@@ -111,15 +103,22 @@ function Passport() {
       degreeName: "",
       school: "",
       field: "",
-      gpaValue: null,
-      gpaScale: null,
     };
     const next: Profile = {
       ...draft,
       education: [{ ...education, ...patch }, ...draft.education.slice(1)],
     };
-    for (const key of Object.keys(patch)) manual(`education.${key}`, next);
-    if (!Object.keys(patch).length) persistDraft(next);
+    const keys = Object.keys(patch);
+    if (!keys.length) return persistDraft(next);
+    let updated = next;
+    for (const key of keys) {
+      updated = {
+        ...updated,
+        fieldProvenance: { ...updated.fieldProvenance, [key]: "manual" },
+        fieldEvidence: (updated.fieldEvidence ?? []).filter((item) => item.field !== key),
+      };
+    }
+    persistDraft(updated);
   };
 
   const readWebLink = async (normalizedUrl: string) => {
@@ -128,14 +127,14 @@ function Passport() {
     try {
       const result = await runWebExtraction({ data: { url: normalizedUrl, consent: true } });
       if (result.error) return setWebError(result.error);
-      setResults((current) => [...current, result]);
-      const conflicts = extractionConflicts(draft, [result]);
-      setChoices((current) => {
-        const next = { ...current };
-        for (const conflict of conflicts) if (!(conflict.key in next)) next[conflict.key] = "";
-        return next;
-      });
-      persistDraft(applyExtractedCandidates(draft, [result], choices));
+      const nextResults = [...results, result];
+      setResults(nextResults);
+      const conflicts = extractionConflicts(nextResults);
+      const nextChoices = { ...choices };
+      for (const conflict of conflicts)
+        if (!(conflict.field in nextChoices)) nextChoices[conflict.field] = "";
+      setChoices(nextChoices);
+      persistDraft(applyExtractedCandidates(draft, [result], nextChoices));
     } catch {
       setWebError("We couldn't read that link. Check the address and try again.");
     } finally {
@@ -171,42 +170,48 @@ function Passport() {
         setDocuments((current) =>
           current.map((item) =>
             item.id === document.id
-              ? { ...item, state: result.error ? "error" : "done", error: result.error }
+              ? { ...item, state: result.error ? "error" : "done", error: result.error ?? undefined }
               : item,
           ),
         );
       } catch {
-        all.push({ name: document.name, source: document.label, candidates: [], error: "extraction failed" });
+        all.push({
+          ok: false,
+          document: { name: document.name, label: document.label },
+          candidates: [],
+          warnings: [],
+          error: "extraction failed",
+        });
         setDocuments((current) =>
           current.map((item) =>
-            item.id === document.id
-              ? { ...item, state: "error", error: "extraction failed" }
-              : item,
+            item.id === document.id ? { ...item, state: "error", error: "extraction failed" } : item,
           ),
         );
       }
     }
-    setResults((current) => [...current, ...all]);
-    const conflicts = extractionConflicts(draft, all);
+    const nextResults = [...results, ...all];
+    setResults(nextResults);
+    const conflicts = extractionConflicts(nextResults);
     const nextChoices = { ...choices };
     for (const conflict of conflicts)
-      if (!(conflict.key in nextChoices)) nextChoices[conflict.key] = "";
+      if (!(conflict.field in nextChoices)) nextChoices[conflict.field] = "";
     setChoices(nextChoices);
     persistDraft(applyExtractedCandidates(draft, all, nextChoices));
     setExtracting(false);
   };
 
-  const chooseConflict = (key: string, choice: ConflictChoice) => {
-    const nextChoices = { ...choices, [key]: choice };
+  const chooseConflict = (field: string, value: string) => {
+    const nextChoices = { ...choices, [field]: value };
     setChoices(nextChoices);
-    persistDraft(applyExtractedCandidates(EMPTY_PROFILE, results, nextChoices));
+    persistDraft(applyExtractedCandidates(draft, results, nextChoices));
   };
 
-  const conflicts = useMemo(() => extractionConflicts(draft, results), [draft, results]);
+  const conflicts = useMemo(() => extractionConflicts(results), [results]);
+  const unresolvedConflicts = conflicts.filter((conflict) => !(conflict.field in choices) || choices[conflict.field] === undefined).length;
 
   const confirm = () => {
-    if (!canConfirmProfile(draft, conflicts, choices).ok)
-      return setMessage("Resolve the conflicting values first.");
+    const check = canConfirmProfile(draft, unresolvedConflicts);
+    if (!check.ok) return setMessage(check.reason);
     setSaving(true);
     saveProfile({ ...draft, confirmed: true, confirmedAt: new Date().toISOString() });
     setSaving(false);
@@ -238,12 +243,14 @@ function Passport() {
         <select
           id="rev-degree-level"
           value={education?.degreeLevel ?? ""}
-          onChange={(event) => updateEducation({ degreeLevel: event.target.value || null })}
+          onChange={(event) =>
+            updateEducation({ degreeLevel: (event.target.value || null) as DegreeLevel | null })
+          }
         >
           <option value="">Choose…</option>
-          {["High school", "Bachelor's", "Master's", "PhD", "Other"].map((level) => (
+          {(Object.keys(DEGREE_LABELS) as DegreeLevel[]).map((level) => (
             <option key={level} value={level}>
-              {level}
+              {DEGREE_LABELS[level]}
             </option>
           ))}
         </select>
@@ -269,30 +276,18 @@ function Passport() {
           onChange={(event) => updateEducation({ field: event.target.value })}
         />
       </F>
-      <F id="rev-gpa" label="GPA">
+      <F id="rev-gpa" label="GPA value">
         <input
           id="rev-gpa"
-          type="number"
-          step="0.01"
-          value={education?.gpaValue ?? ""}
-          onChange={(event) =>
-            updateEducation({
-              gpaValue: event.target.value === "" ? null : Number(event.target.value),
-            })
-          }
+          value={draft.gpaValue}
+          onChange={(event) => manual("gpaValue", { ...draft, gpaValue: event.target.value })}
         />
       </F>
       <F id="rev-gpa-scale" label="GPA scale">
         <input
           id="rev-gpa-scale"
-          type="number"
-          step="0.1"
-          value={education?.gpaScale ?? ""}
-          onChange={(event) =>
-            updateEducation({
-              gpaScale: event.target.value === "" ? null : Number(event.target.value),
-            })
-          }
+          value={draft.gpaScale}
+          onChange={(event) => manual("gpaScale", { ...draft, gpaScale: event.target.value })}
         />
       </F>
     </div>
@@ -305,13 +300,6 @@ function Passport() {
           id="rev-name"
           value={draft.fullName}
           onChange={(event) => manual("fullName", { ...draft, fullName: event.target.value })}
-        />
-      </F>
-      <F id="rev-nationality" label="Nationality">
-        <input
-          id="rev-nationality"
-          value={draft.nationality}
-          onChange={(event) => manual("nationality", { ...draft, nationality: event.target.value })}
         />
       </F>
       <F id="rev-grad" label="Graduation date">
@@ -342,7 +330,7 @@ function Passport() {
       />
       <div className="grid gap-2">
         <p className="text-sm font-semibold">Languages</p>
-        {draft.languages.map((lang, index) => (
+        {draft.languageDetails.map((lang, index) => (
           <div key={`${lang.name}-${index}`} className="flex items-end gap-2">
             <F id={`lang-name-${index}`} label="Language" className="flex-1">
               <input
@@ -353,6 +341,9 @@ function Passport() {
                   manual("languages", {
                     ...draft,
                     languages: draft.languages.map((item, itemIndex) =>
+                      itemIndex === index ? event.target.value : item,
+                    ),
+                    languageDetails: draft.languageDetails.map((item, itemIndex) =>
                       itemIndex === index ? { ...item, name: event.target.value } : item,
                     ),
                   })
@@ -366,7 +357,7 @@ function Passport() {
                 onChange={(event) =>
                   manual("languages", {
                     ...draft,
-                    languages: draft.languages.map((item, itemIndex) =>
+                    languageDetails: draft.languageDetails.map((item, itemIndex) =>
                       itemIndex === index ? { ...item, level: event.target.value } : item,
                     ),
                   })
@@ -380,6 +371,9 @@ function Passport() {
                 manual("languages", {
                   ...draft,
                   languages: draft.languages.filter((_, itemIndex) => itemIndex !== index),
+                  languageDetails: draft.languageDetails.filter(
+                    (_, itemIndex) => itemIndex !== index,
+                  ),
                 })
               }
             >
@@ -399,7 +393,8 @@ function Passport() {
             onClick={() =>
               manual("languages", {
                 ...draft,
-                languages: [...draft.languages, { name: "", level: "Intermediate" }],
+                languages: [...draft.languages, ""],
+                languageDetails: [...draft.languageDetails, { name: "", level: "Intermediate" }],
               })
             }
           >
@@ -452,14 +447,7 @@ function Passport() {
     </F>
   );
 
-  const canContinue =
-    step === 0
-      ? true
-      : step === 1
-        ? !extracting
-        : step === 4
-          ? false
-          : true;
+  const canContinue = step === 1 ? !extracting : step < 4;
 
   return (
     <div className="mx-auto max-w-[760px] pb-24">
@@ -476,7 +464,7 @@ function Passport() {
             variant="outline"
             onClick={() => {
               loadDemoProfile();
-              setSavedAt(new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }));
+              stampSaved();
             }}
           >
             <Sparkles /> Load demo profile
@@ -528,9 +516,7 @@ function Passport() {
             detailsEditor={detailsEditor}
             skillsEditor={skillsEditor}
             preferencesEditor={preferencesEditor}
-            experienceEditor={
-              <ExperienceEditor profile={draft} onChange={persistDraft} />
-            }
+            experienceEditor={<ExperienceEditor profile={draft} onChange={persistDraft} />}
             goalsEditor={goalsEditor}
           />
         )}
