@@ -2,6 +2,7 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useState, t
 import type { Application, ApplicationStatus, Opportunity, Profile } from "@/domain/types";
 import { DEMO_OPPORTUNITIES, DEMO_PROFILE } from "@/data/fixtures";
 import { emptyState, localRepository, type PersistedState } from "@/data/storage";
+import { deadlineState } from "./validation";
 
 interface Store {
   ready: boolean;
@@ -93,6 +94,31 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       })),
     removeApplication: (id) => commit((s) => ({ ...s, applications: s.applications.filter((a) => a.id !== id) })),
     addManualOpportunity: (opp) => commit((s) => ({ ...s, customOpportunities: [...s.customOpportunities, opp] })),
+    importTracker: (plan) =>
+      commit((s) => {
+        const t = now();
+        let apps = [...s.applications];
+        const custom = [...s.customOpportunities];
+        const mk = (oppId: string, p: ImportPlanItem): Application => ({
+          id: uid(), opportunityId: oppId, status: p.status, notes: p.notes, deadline: p.deadline,
+          createdAt: t, updatedAt: t, history: [{ status: p.status, at: t }],
+        });
+        for (const p of plan) {
+          if (p.kind === "create") {
+            custom.push(p.opp);
+            apps.push(mk(p.opp.id, p));
+          } else if (p.kind === "track") {
+            if (!apps.some((a) => a.opportunityId === p.oppId)) apps.push(mk(p.oppId, p));
+          } else {
+            apps = apps.map((a) =>
+              a.id !== p.appId ? a : {
+                ...a, status: p.status, notes: p.notes || a.notes, deadline: p.deadline ?? a.deadline, updatedAt: t,
+                history: p.status !== a.status ? [...a.history, { status: p.status, at: t }] : a.history,
+              });
+          }
+        }
+        return { ...s, applications: apps, customOpportunities: custom };
+      }),
     resetAll: () => {
       localRepository.clear();
       setState(emptyState());
@@ -109,10 +135,7 @@ export function useStore() {
 }
 
 export function daysUntil(iso: string | null): number | null {
-  if (!iso) return null;
-  const d = new Date(iso + "T23:59:59");
-  if (isNaN(d.getTime())) return null;
-  return Math.ceil((d.getTime() - Date.now()) / 86400000);
+  return deadlineState(iso).days;
 }
 
 export function effectiveDeadline(app: Application | undefined, opp: Opportunity | undefined) {
