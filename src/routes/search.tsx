@@ -589,6 +589,7 @@ function LiveResult({ opp, index }: { opp: Opportunity; index: number }) {
         · retrieved {opp.retrievedAt ? new Date(opp.retrievedAt).toLocaleString() : "unknown"}
       </p>
       <div className="mt-5 flex flex-wrap gap-2 border-t border-border pt-4">
+        <ApplyButton opp={opp} />
         <button className="btn btn-sm" disabled={saved} onClick={save} aria-pressed={saved}>
           {saved ? "✓ Saved" : "Save to My Journey"}
         </button>
