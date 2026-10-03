@@ -216,7 +216,11 @@ export function FinancePanel({ opportunityId }: { opportunityId: string }) {
                     />
                   )}
                   <Result
-                    label="Upfront cash need"
+                    label={
+                      group.totalUnknown
+                        ? "Upfront cash need · known costs only"
+                        : "Upfront cash need"
+                    }
                     value={money(group.currency, group.upfrontNeed)}
                     strong
                   />
