@@ -34,7 +34,7 @@ function Passport() {
   const [skills, setSkills] = useState("");
   const [langs, setLangs] = useState("");
   const [locs, setLocs] = useState("");
-  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [errors, setErrors] = useState<Partial<Record<string, string>>>({});
   const [msg, setMsg] = useState("");
 
   useEffect(() => {
@@ -54,7 +54,7 @@ function Passport() {
     if (confirm) {
       const r = schema.safeParse({ ...next, degreeLevel: next.degreeLevel ?? "", graduationYear: next.graduationYear ?? undefined });
       if (!r.success) {
-        const e: Record<string, string> = {};
+        const e: Partial<Record<string, string>> = {};
         r.error.issues.forEach((i) => { e[String(i.path[0])] = i.message; });
         setErrors(e);
         setMsg("Please fix the highlighted fields before confirming.");
@@ -85,20 +85,20 @@ function Passport() {
       {msg && <p role="status" className="mb-4 rounded-lg bg-teal-soft p-3 text-sm">{msg}</p>}
 
       <form className="card grid gap-5 p-6 md:grid-cols-2" onSubmit={(e) => { e.preventDefault(); submit(true); }} noValidate>
-        <F id="fullName" label="Name" err={errors.fullName}>
-          <input id="fullName" value={p.fullName} maxLength={100} onChange={(e) => setP({ ...p, fullName: e.target.value })} aria-invalid={!!errors.fullName} />
+        <F id="fullName" label="Name" err={errors["fullName"]}>
+          <input id="fullName" value={p.fullName} maxLength={100} onChange={(e) => setP({ ...p, fullName: e.target.value })} aria-invalid={!!errors["fullName"]} />
         </F>
-        <F id="degree" label="Degree level" err={errors.degreeLevel}>
-          <select id="degree" value={p.degreeLevel ?? ""} onChange={(e) => setP({ ...p, degreeLevel: (e.target.value || null) as DegreeLevel | null })} aria-invalid={!!errors.degreeLevel}>
+        <F id="degree" label="Degree level" err={errors["degreeLevel"]}>
+          <select id="degree" value={p.degreeLevel ?? ""} onChange={(e) => setP({ ...p, degreeLevel: (e.target.value || null) as DegreeLevel | null })} aria-invalid={!!errors["degreeLevel"]}>
             <option value="">Select…</option>
             {Object.entries(DEGREE_LABELS).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
           </select>
         </F>
-        <F id="field" label="Field of study" err={errors.field}>
-          <input id="field" value={p.field} maxLength={100} placeholder="e.g. Computer Science" onChange={(e) => setP({ ...p, field: e.target.value })} aria-invalid={!!errors.field} />
+        <F id="field" label="Field of study" err={errors["field"]}>
+          <input id="field" value={p.field} maxLength={100} placeholder="e.g. Computer Science" onChange={(e) => setP({ ...p, field: e.target.value })} aria-invalid={!!errors["field"]} />
         </F>
-        <F id="grad" label="Graduation year" err={errors.graduationYear}>
-          <input id="grad" type="number" inputMode="numeric" value={p.graduationYear ?? ""} onChange={(e) => setP({ ...p, graduationYear: e.target.value ? Number(e.target.value) : null })} aria-invalid={!!errors.graduationYear} />
+        <F id="grad" label="Graduation year" err={errors["graduationYear"]}>
+          <input id="grad" type="number" inputMode="numeric" value={p.graduationYear ?? ""} onChange={(e) => setP({ ...p, graduationYear: e.target.value ? Number(e.target.value) : null })} aria-invalid={!!errors["graduationYear"]} />
         </F>
         <F id="skills" label="Skills (comma separated)">
           <input id="skills" value={skills} maxLength={500} placeholder="Python, SQL" onChange={(e) => setSkills(e.target.value)} />
@@ -147,7 +147,7 @@ function Passport() {
   );
 }
 
-function F({ id, label, err, children, className = "" }: { id: string; label: string; err?: string; children: ReactNode; className?: string }) {
+function F({ id, label, err, children, className = "" }: { id: string; label: string; err?: string | undefined; children: ReactNode; className?: string }) {
   return (
     <div className={className}>
       <label htmlFor={id}>{label}</label>

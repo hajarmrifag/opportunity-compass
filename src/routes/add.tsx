@@ -31,14 +31,14 @@ function AddPage() {
   const { addManualOpportunity, saveOpportunity } = useStore();
   const nav = useNavigate();
   const [v, setV] = useState({ title: "", organization: "", category: "internship" as Category, location: "", deadline: "", link: "", summary: "" });
-  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [errors, setErrors] = useState<Partial<Record<string, string>>>({});
   const set = (k: keyof typeof v) => (e: { target: { value: string } }) => setV({ ...v, [k]: e.target.value });
 
   const submit = (e: FormEvent) => {
     e.preventDefault();
     const r = schema.safeParse(v);
     if (!r.success) {
-      const errs: Record<string, string> = {};
+      const errs: Partial<Record<string, string>> = {};
       r.error.issues.forEach((i) => { errs[String(i.path[0])] = i.message; });
       setErrors(errs);
       return;
@@ -64,15 +64,15 @@ function AddPage() {
     <>
       <PageHeader title="Add an opportunity" sub="For opportunities you found elsewhere. Saved to this browser and tracked as Saved." />
       <form onSubmit={submit} noValidate className="card grid max-w-3xl gap-4 p-6 md:grid-cols-2">
-        <div><label htmlFor="t">Title *</label><input id="t" value={v.title} onChange={set("title")} aria-invalid={!!errors.title} />{err("title")}</div>
-        <div><label htmlFor="o">Organization *</label><input id="o" value={v.organization} onChange={set("organization")} aria-invalid={!!errors.organization} />{err("organization")}</div>
+        <div><label htmlFor="t">Title *</label><input id="t" value={v.title} onChange={set("title")} aria-invalid={!!errors["title"]} />{err("title")}</div>
+        <div><label htmlFor="o">Organization *</label><input id="o" value={v.organization} onChange={set("organization")} aria-invalid={!!errors["organization"]} />{err("organization")}</div>
         <div><label htmlFor="c">Category</label>
           <select id="c" value={v.category} onChange={set("category")}>
             {Object.entries(CATEGORY_LABELS).map(([k, l]) => <option key={k} value={k}>{l}</option>)}
           </select></div>
         <div><label htmlFor="l">Location</label><input id="l" value={v.location} onChange={set("location")} /></div>
         <div><label htmlFor="d">Deadline</label><input id="d" type="date" value={v.deadline} onChange={set("deadline")} />{err("deadline")}</div>
-        <div><label htmlFor="u">Link (optional)</label><input id="u" type="url" placeholder="https://" value={v.link} onChange={set("link")} aria-invalid={!!errors.link} />{err("link")}</div>
+        <div><label htmlFor="u">Link (optional)</label><input id="u" type="url" placeholder="https://" value={v.link} onChange={set("link")} aria-invalid={!!errors["link"]} />{err("link")}</div>
         <div className="md:col-span-2"><label htmlFor="s">Notes / summary</label><textarea id="s" rows={3} value={v.summary} onChange={set("summary")} /></div>
         <p className="text-xs text-muted-foreground md:col-span-2">Eligibility and funding will show as Unknown until verified data is available.</p>
         <div className="md:col-span-2"><button type="submit" className="btn">Add & track</button></div>
