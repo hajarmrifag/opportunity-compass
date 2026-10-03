@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AddRouteImport } from './routes/add'
+import { Route as CompareRouteImport } from './routes/compare'
 import { Route as DiscoverRouteImport } from './routes/discover'
 import { Route as JourneyRouteImport } from './routes/journey'
 import { Route as PassportRouteImport } from './routes/passport'
@@ -26,6 +27,11 @@ const IndexRoute = IndexRouteImport.update({
 const AddRoute = AddRouteImport.update({
   id: '/add',
   path: '/add',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CompareRoute = CompareRouteImport.update({
+  id: '/compare',
+  path: '/compare',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DiscoverRoute = DiscoverRouteImport.update({
@@ -62,6 +68,7 @@ const OpportunitiesIdRoute = OpportunitiesIdRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/add': typeof AddRoute
+  '/compare': typeof CompareRoute
   '/discover': typeof DiscoverRoute
   '/journey': typeof JourneyRoute
   '/passport': typeof PassportRoute
@@ -72,6 +79,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/add': typeof AddRoute
+  '/compare': typeof CompareRoute
   '/discover': typeof DiscoverRoute
   '/journey': typeof JourneyRoute
   '/passport': typeof PassportRoute
@@ -83,6 +91,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/add': typeof AddRoute
+  '/compare': typeof CompareRoute
   '/discover': typeof DiscoverRoute
   '/journey': typeof JourneyRoute
   '/passport': typeof PassportRoute
@@ -95,6 +104,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/add'
+    | '/compare'
     | '/discover'
     | '/journey'
     | '/passport'
@@ -105,6 +115,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/add'
+    | '/compare'
     | '/discover'
     | '/journey'
     | '/passport'
@@ -115,6 +126,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/add'
+    | '/compare'
     | '/discover'
     | '/journey'
     | '/passport'
@@ -126,6 +138,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AddRoute: typeof AddRoute
+  CompareRoute: typeof CompareRoute
   DiscoverRoute: typeof DiscoverRoute
   JourneyRoute: typeof JourneyRoute
   PassportRoute: typeof PassportRoute
@@ -148,6 +161,13 @@ declare module '@tanstack/react-router' {
       path: '/add'
       fullPath: '/add'
       preLoaderRoute: typeof AddRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/compare': {
+      id: '/compare'
+      path: '/compare'
+      fullPath: '/compare'
+      preLoaderRoute: typeof CompareRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/discover': {
@@ -198,6 +218,7 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AddRoute: AddRoute,
+  CompareRoute: CompareRoute,
   DiscoverRoute: DiscoverRoute,
   JourneyRoute: JourneyRoute,
   PassportRoute: PassportRoute,

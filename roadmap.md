@@ -1,4 +1,5 @@
 # Roadmap
+
 - [x] Audit current files/contracts; preserve teammate changes
 - [x] Profile edits invalidate confirmation; unknown never passes
 - [x] Expiry distinct from eligibility; invalid deadlines/URLs handled
@@ -20,8 +21,18 @@
 - [x] Validate real search→source→save once connected (verified 3 Oct: approved Firecrawl connection already linked; real searches returned sourced listings and honest empty state)
 
 ## Live search
+
 - [x] Server search + mapping + caching/rate limit/cancel
 - [x] /search UI with filters, save to tracker
 - [x] Tests (28 pass), build, docs/LIVE_SEARCH.md
 - [x] Real search validation (connector linked 3 Oct)
 - [x] Dashboard primary live search, demo excluded from counts
+
+## Hajar product experience
+
+- [ ] Premium responsive visual system and purposeful dashboard workspace
+- [ ] Guided live search with editable summary and active filter controls
+- [ ] Persistent three-item comparison shortlist, tray and comparison view
+- [ ] Persistent per-application action plans with explicit status isolation
+- [ ] Hajar feature ownership documentation
+- [ ] Regression, accessibility, mobile, browser, formatting, type and production checks

@@ -9,7 +9,8 @@ export const DEGREE_LABELS: Record<DegreeLevel, string> = {
   other: "Other",
 };
 
-export type Category = "internship" | "scholarship" | "research" | "exchange" | "fellowship" | "job" | "masters";
+export type Category =
+  "internship" | "scholarship" | "research" | "exchange" | "fellowship" | "job" | "masters";
 export const CATEGORY_LABELS: Record<Category, string> = {
   internship: "Internship",
   scholarship: "Scholarship",
@@ -40,7 +41,8 @@ export interface ProfileExtractor {
   extract(file: File): Promise<Partial<Omit<Profile, "confirmed" | "confirmedAt">>>;
 }
 
-export type RequirementKind = "degreeLevel" | "field" | "graduationYear" | "skill" | "language" | "other";
+export type RequirementKind =
+  "degreeLevel" | "field" | "graduationYear" | "skill" | "language" | "other";
 export interface Requirement {
   id: string;
   kind: RequirementKind;
@@ -106,7 +108,7 @@ export interface EligibilityAdapter {
 }
 
 export type ApplicationStatus =
-  | "saved" | "preparing" | "submitted" | "interview" | "offer" | "rejected" | "withdrawn";
+  "saved" | "preparing" | "submitted" | "interview" | "offer" | "rejected" | "withdrawn";
 export const STATUS_LABELS: Record<ApplicationStatus, string> = {
   saved: "Saved",
   preparing: "Preparing",
@@ -127,4 +129,14 @@ export interface Application {
   createdAt: string;
   updatedAt: string;
   history: { status: ApplicationStatus; at: string }[];
+  tasks: ActionTask[];
+}
+
+export interface ActionTask {
+  id: string;
+  label: string;
+  completed: boolean;
+  dueDate: string | null;
+  suggested: boolean;
+  createdAt: string;
 }

@@ -1,4 +1,5 @@
 <!-- LOVABLE:BEGIN -->
+
 > [!IMPORTANT]
 > This project is connected to [Lovable](https://lovable.dev). Avoid rewriting
 > published git history — force pushing, or rebasing/amending/squashing commits
@@ -7,6 +8,7 @@
 >
 > Commits you push to the connected branch sync back to Lovable and show up in
 > the editor, so keep the branch in a working state.
+
 <!-- LOVABLE:END -->
 
 # OpportunityOS architecture rules
@@ -21,3 +23,4 @@
 - URLs render only through `safeHttpUrl`; CSV output goes through `src/lib/csv.ts` (`escapeCell`) for quoting and formula-injection protection.
 - CSV import applies only after preview + explicit confirm, as one atomic `importTracker` commit — prevents partial or surprise writes.
 - Live search runs only server-side via `src/lib/liveSearch.server.ts`; listings come from retrieved page text (`verification: "web_retrieved"`), never model memory, with no demo fallback — honesty + no client secrets.
+- Comparison IDs and application tasks persist additively in the versioned repository; task completion never changes application status — preserves records and explicit user control.

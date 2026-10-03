@@ -5,6 +5,14 @@ import { isValidIsoDate, safeHttpUrl, deadlineState } from "@/lib/validation";
 import { demoEligibilityAdapter } from "@/adapters/demoEligibility";
 import { DEMO_OPPORTUNITIES, DEMO_PROFILE } from "@/data/fixtures";
 import type { Application, Opportunity } from "@/domain/types";
+import {
+  localRepository,
+  normalizeCompareIds,
+  STORAGE_KEY,
+  STORAGE_VERSION,
+  toggleCompareIds,
+} from "@/data/storage";
+import { activeFilters, searchSummary } from "@/routes/search";
 
 describe("csv", () => {
   it("round-trips quotes, commas and newlines", () => {
@@ -12,13 +20,17 @@ describe("csv", () => {
     expect(parseCsv(toCsv(rows))).toEqual(rows);
   });
   it("handles CRLF and BOM", () => {
-    expect(parseCsv('\uFEFFa,b\r\n1,"2"\r\n')).toEqual([["a", "b"], ["1", "2"]]);
+    expect(parseCsv('\uFEFFa,b\r\n1,"2"\r\n')).toEqual([
+      ["a", "b"],
+      ["1", "2"],
+    ]);
   });
   it("rejects unterminated quotes", () => {
     expect(() => parseCsv('a,"b')).toThrow(CsvError);
   });
   it("neutralizes formula injection", () => {
-    for (const v of ["=1+1", "+cmd", "-2", "@SUM(A1)"]) expect(escapeCell(v).replace(/^"/, "").startsWith("'")).toBe(true);
+    for (const v of ["=1+1", "+cmd", "-2", "@SUM(A1)"])
+      expect(escapeCell(v).replace(/^"/, "").startsWith("'")).toBe(true);
     expect(escapeCell("normal")).toBe("normal");
   });
 });
@@ -63,8 +75,13 @@ describe("demo eligibility", () => {
     expect(r.requirements.every((x) => x.status === "unknown")).toBe(true);
   });
   it("missing profile fields are unknown, not met", () => {
-    const r = demoEligibilityAdapter.evaluate({ ...DEMO_PROFILE, confirmed: true, degreeLevel: null, skills: [] }, opp);
-    expect(r.requirements.find((x) => x.requirement.kind === "degreeLevel")!.status).toBe("unknown");
+    const r = demoEligibilityAdapter.evaluate(
+      { ...DEMO_PROFILE, confirmed: true, degreeLevel: null, skills: [] },
+      opp,
+    );
+    expect(r.requirements.find((x) => x.requirement.kind === "degreeLevel")!.status).toBe(
+      "unknown",
+    );
     expect(r.overall).not.toBe("meets_listed_criteria");
   });
   it("'other' criteria stay unknown so overall never fully passes", () => {
@@ -75,7 +92,10 @@ describe("demo eligibility", () => {
   it("edited profile recomputes", () => {
     const research = DEMO_OPPORTUNITIES.find((o) => o.id === "demo-coastal-research")!;
     const a = demoEligibilityAdapter.evaluate({ ...DEMO_PROFILE, confirmed: true }, research);
-    const b = demoEligibilityAdapter.evaluate({ ...DEMO_PROFILE, confirmed: true, field: "Biology" }, research);
+    const b = demoEligibilityAdapter.evaluate(
+      { ...DEMO_PROFILE, confirmed: true, field: "Biology" },
+      research,
+    );
     expect(a.overall).toBe("not_eligible");
     expect(b.overall).toBe("meets_listed_criteria");
   });
@@ -89,7 +109,19 @@ describe("demo eligibility", () => {
 
 describe("tracker csv import", () => {
   const opps: Opportunity[] = DEMO_OPPORTUNITIES;
-  const apps: Application[] = [{ id: "a1", opportunityId: opps[0]!.id, status: "saved", notes: "", deadline: null, createdAt: "", updatedAt: "", history: [] }];
+  const apps: Application[] = [
+    {
+      id: "a1",
+      opportunityId: opps[0]!.id,
+      status: "saved",
+      notes: "",
+      deadline: null,
+      createdAt: "",
+      updatedAt: "",
+      history: [],
+      tasks: [],
+    },
+  ];
   const csv = [
     "Title,Company,Status,Deadline,URL",
     "New Thing,Acme,preparing,2026-12-01,https://acme.test",
@@ -101,14 +133,86 @@ describe("tracker csv import", () => {
   const [h, ...body] = parseCsv(csv);
   const m = autoMap(h!);
   const rows = validateRows(body, m, opps, apps);
-  it("maps aliases", () => { expect(m.organization).toBe(1); expect(m.link).toBe(4); });
+  it("maps aliases", () => {
+    expect(m.organization).toBe(1);
+    expect(m.link).toBe(4);
+  });
   it("plans actions & dedupes", () => {
-    expect(rows.map((r) => actionFor(r, "skip"))).toEqual(["create", "skip", "skip", "track", "invalid"]);
+    expect(rows.map((r) => actionFor(r, "skip"))).toEqual([
+      "create",
+      "skip",
+      "skip",
+      "track",
+      "invalid",
+    ]);
     expect(actionFor(rows[2]!, "update")).toBe("update");
     expect(rows[4]!.errors.length).toBeGreaterThanOrEqual(4);
   });
   it("export + template are parseable", () => {
     expect(parseCsv(exportCsv(apps, opps))[1]![0]).toBe(opps[0]!.title);
     expect(parseCsv(templateCsv()).length).toBe(2);
+  });
+});
+
+describe("comparison persistence", () => {
+  it("deduplicates identity and enforces the three-item limit", () => {
+    expect(normalizeCompareIds(["a", "a", "b", "c", "d"])).toEqual(["a", "b", "c"]);
+    expect(toggleCompareIds(["a", "b", "c"], "d")).toEqual({
+      ids: ["a", "b", "c"],
+      ok: false,
+    });
+    expect(toggleCompareIds(["a", "b"], "a")).toEqual({ ids: ["b"], ok: true });
+  });
+
+  it("migrates v1 without deleting profile, applications or opportunities", () => {
+    const legacyApplication = {
+      id: "legacy-a1",
+      opportunityId: DEMO_OPPORTUNITIES[0]!.id,
+      status: "saved",
+      notes: "Keep this note",
+      deadline: null,
+      createdAt: "2026-01-01T00:00:00.000Z",
+      updatedAt: "2026-01-01T00:00:00.000Z",
+      history: [],
+    };
+    window.localStorage.setItem(
+      STORAGE_KEY,
+      JSON.stringify({
+        version: 1,
+        profile: DEMO_PROFILE,
+        applications: [legacyApplication],
+        customOpportunities: [DEMO_OPPORTUNITIES[0]],
+      }),
+    );
+    const loaded = localRepository.load().state;
+    expect(loaded.version).toBe(STORAGE_VERSION);
+    expect(loaded.profile?.fullName).toBe(DEMO_PROFILE.fullName);
+    expect(loaded.applications[0]?.tasks).toEqual([]);
+    expect(loaded.customOpportunities).toHaveLength(1);
+    expect(loaded.compareIds).toEqual([]);
+  });
+});
+
+describe("guided search mapping", () => {
+  const form = {
+    query: "climate policy",
+    category: "fellowship",
+    location: "Brussels",
+    remoteOnly: false,
+    subject: "policy",
+    education: "Master's",
+    fundedOnly: true,
+    deadlineAfter: "2026-11-01",
+  };
+  it("maps every active control into an editable summary", () => {
+    expect(activeFilters(form)).toEqual([
+      "Fellowship",
+      "Brussels",
+      "policy",
+      "Master's",
+      "Funding stated",
+      "Deadline from 2026-11-01",
+    ]);
+    expect(searchSummary(form)).toContain("climate policy · Fellowship · Brussels");
   });
 });

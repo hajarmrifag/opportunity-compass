@@ -19,6 +19,7 @@ import {
   ReqStatus,
 } from "@/components/ui-bits";
 import { deadlineState } from "@/lib/validation";
+import { CompareButton } from "@/components/CompareButton";
 
 export const Route = createFileRoute("/search")({
   validateSearch: (s: Record<string, unknown>): { q?: string } =>
@@ -64,6 +65,7 @@ function LiveSearchPage() {
   const [status, setStatus] = useState<Status>("idle");
   const [error, setError] = useState("");
   const [resp, setResp] = useState<LiveSearchResponse | null>(null);
+  const [showGuidance, setShowGuidance] = useState(false);
   const abortRef = useRef<AbortController | null>(null);
   const lastInput = useRef<LiveSearchInput | null>(null);
   const mounted = useRef(true);
@@ -156,7 +158,7 @@ function LiveSearchPage() {
         </div>
       )}
 
-      <form onSubmit={submit} className="card mb-6 grid gap-3 p-5 md:grid-cols-4" noValidate>
+      <form onSubmit={submit} className="card mb-6 grid gap-4 p-5 md:grid-cols-4" noValidate>
         <div className="md:col-span-4">
           <label htmlFor="lq">What are you looking for?</label>
           <input
@@ -167,92 +169,153 @@ function LiveSearchPage() {
             onChange={(e) => set("query", e.target.value)}
           />
         </div>
-        <div>
-          <label htmlFor="lc">Category</label>
-          <select id="lc" value={form.category} onChange={(e) => set("category", e.target.value)}>
-            <option value="all">Any</option>
-            {Object.entries(CATEGORY_LABELS).map(([k, l]) => (
-              <option key={k} value={k}>
-                {l}
-              </option>
-            ))}
-          </select>
-        </div>
-        <div>
-          <label htmlFor="ll">Location</label>
-          <input
-            id="ll"
-            value={form.location}
-            maxLength={80}
-            disabled={form.remoteOnly}
-            onChange={(e) => set("location", e.target.value)}
-          />
-        </div>
-        <div>
-          <label htmlFor="ls">Subject</label>
-          <input
-            id="ls"
-            value={form.subject}
-            maxLength={80}
-            onChange={(e) => set("subject", e.target.value)}
-          />
-        </div>
-        <div>
-          <label htmlFor="le">Education level</label>
-          <select id="le" value={form.education} onChange={(e) => set("education", e.target.value)}>
-            <option value="">Any</option>
-            {Object.values(DEGREE_LABELS).map((l) => (
-              <option key={l} value={l}>
-                {l}
-              </option>
-            ))}
-          </select>
-        </div>
-        <div>
-          <label htmlFor="ld">Deadline on or after</label>
-          <input
-            id="ld"
-            type="date"
-            value={form.deadlineAfter}
-            onChange={(e) => set("deadlineAfter", e.target.value)}
-          />
-        </div>
-        <label className="flex items-center gap-2 self-end font-normal">
-          <input
-            type="checkbox"
-            className="w-auto"
-            checked={form.remoteOnly}
-            onChange={(e) => set("remoteOnly", e.target.checked)}
-          />{" "}
-          Remote only
-        </label>
-        <label className="flex items-center gap-2 self-end font-normal">
-          <input
-            type="checkbox"
-            className="w-auto"
-            checked={form.fundedOnly}
-            onChange={(e) => set("fundedOnly", e.target.checked)}
-          />{" "}
-          Tuition or living costs covered
-        </label>
-        <div className="flex items-end gap-2">
+        <div className="md:col-span-4">
           <button
-            className="btn"
-            type="submit"
-            disabled={status === "loading" || configured === false}
+            type="button"
+            className="btn btn-ghost btn-sm"
+            aria-expanded={showGuidance}
+            onClick={() => setShowGuidance((value) => !value)}
           >
-            {status === "loading" ? "Searching…" : "Search the web"}
+            {showGuidance ? "Hide guided filters" : "Add guided filters"}
           </button>
-          {status === "loading" && (
-            <button
-              type="button"
-              className="btn btn-outline"
-              onClick={() => abortRef.current?.abort()}
-            >
-              Cancel
-            </button>
+        </div>
+        {showGuidance && (
+          <>
+            <div>
+              <label htmlFor="lc">Category</label>
+              <select
+                id="lc"
+                value={form.category}
+                onChange={(e) => set("category", e.target.value)}
+              >
+                <option value="all">Any</option>
+                {Object.entries(CATEGORY_LABELS).map(([k, l]) => (
+                  <option key={k} value={k}>
+                    {l}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label htmlFor="ll">Location</label>
+              <input
+                id="ll"
+                value={form.location}
+                maxLength={80}
+                disabled={form.remoteOnly}
+                onChange={(e) => set("location", e.target.value)}
+              />
+            </div>
+            <div>
+              <label htmlFor="ls">Subject</label>
+              <input
+                id="ls"
+                value={form.subject}
+                maxLength={80}
+                onChange={(e) => set("subject", e.target.value)}
+              />
+            </div>
+            <div>
+              <label htmlFor="le">Education level</label>
+              <select
+                id="le"
+                value={form.education}
+                onChange={(e) => set("education", e.target.value)}
+              >
+                <option value="">Any</option>
+                {Object.values(DEGREE_LABELS).map((l) => (
+                  <option key={l} value={l}>
+                    {l}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label htmlFor="ld">Deadline on or after</label>
+              <input
+                id="ld"
+                type="date"
+                value={form.deadlineAfter}
+                onChange={(e) => set("deadlineAfter", e.target.value)}
+              />
+            </div>
+            <label className="flex items-center gap-2 self-end font-normal">
+              <input
+                type="checkbox"
+                className="w-auto"
+                checked={form.remoteOnly}
+                onChange={(e) => set("remoteOnly", e.target.checked)}
+              />{" "}
+              Remote only
+            </label>
+            <label className="flex items-center gap-2 self-end font-normal">
+              <input
+                type="checkbox"
+                className="w-auto"
+                checked={form.fundedOnly}
+                onChange={(e) => set("fundedOnly", e.target.checked)}
+              />{" "}
+              Tuition or living costs covered
+            </label>
+            <div className="flex items-end gap-2">
+              <button
+                className="btn"
+                type="submit"
+                disabled={status === "loading" || configured === false}
+              >
+                {status === "loading" ? "Searching…" : "Search the web"}
+              </button>
+              {status === "loading" && (
+                <button
+                  type="button"
+                  className="btn btn-outline"
+                  onClick={() => abortRef.current?.abort()}
+                >
+                  Cancel
+                </button>
+              )}
+            </div>
+          </>
+        )}
+        <div className="md:col-span-4 rounded-md bg-muted p-3 text-sm">
+          <strong>Search summary:</strong> {searchSummary(form)}
+          {hasFilters(form) && (
+            <div className="mt-2 flex flex-wrap gap-2" aria-label="Active filters">
+              {activeFilters(form).map((filter) => (
+                <span className="chip chip-teal" key={filter}>
+                  {filter}
+                </span>
+              ))}
+              <button
+                type="button"
+                className="text-xs font-semibold text-primary underline"
+                onClick={() => setForm((current) => ({ ...EMPTY, query: current.query }))}
+              >
+                Reset filters
+              </button>
+            </div>
           )}
         </div>
+        {!showGuidance && (
+          <div className="flex items-end gap-2 md:col-span-4">
+            <button
+              className="btn"
+              type="submit"
+              disabled={status === "loading" || configured === false}
+            >
+              {status === "loading" ? "Searching…" : "Search the web"}
+            </button>
+            {status === "loading" && (
+              <button
+                type="button"
+                className="btn btn-outline"
+                onClick={() => abortRef.current?.abort()}
+              >
+                Cancel
+              </button>
+            )}
+          </div>
+        )}
         <p className="text-xs text-muted-foreground md:col-span-4">
           Only the fields above are sent to the search service — never your name, Passport, CV or
           notes. Filters on unknown facts exclude the result (e.g. "deadline on or after" drops
@@ -360,15 +423,20 @@ function LiveResult({ opp }: { opp: Opportunity }) {
       </p>
       <p className="mt-1 text-xs text-muted-foreground">
         Source:{" "}
-        <a className="underline" href={opp.sourceUrl!} target="_blank" rel="noopener noreferrer">
-          {new URL(opp.sourceUrl!).hostname}
-        </a>{" "}
+        {opp.sourceUrl ? (
+          <a className="underline" href={opp.sourceUrl} target="_blank" rel="noopener noreferrer">
+            {new URL(opp.sourceUrl).hostname}
+          </a>
+        ) : (
+          "Not stated"
+        )}{" "}
         · retrieved {opp.retrievedAt ? new Date(opp.retrievedAt).toLocaleString() : "unknown"}
       </p>
       <div className="mt-3 flex flex-wrap gap-2">
         <button className="btn btn-sm" disabled={saved} onClick={save} aria-pressed={saved}>
           {saved ? "✓ Saved" : "Save to My Journey"}
         </button>
+        <CompareButton opportunityId={opp.id} opportunity={opp} />
         <button
           className="btn btn-outline btn-sm"
           aria-expanded={open}
@@ -431,4 +499,34 @@ function LiveResult({ opp }: { opp: Opportunity }) {
       )}
     </li>
   );
+}
+
+function hasFilters(form: LiveSearchInput) {
+  return (
+    form.category !== "all" ||
+    !!form.location ||
+    form.remoteOnly ||
+    !!form.subject ||
+    !!form.education ||
+    form.fundedOnly ||
+    !!form.deadlineAfter
+  );
+}
+
+export function activeFilters(form: LiveSearchInput) {
+  return [
+    form.category !== "all"
+      ? (CATEGORY_LABELS[form.category as keyof typeof CATEGORY_LABELS] ?? form.category)
+      : "",
+    form.remoteOnly ? "Remote only" : form.location,
+    form.subject,
+    form.education,
+    form.fundedOnly ? "Funding stated" : "",
+    form.deadlineAfter ? `Deadline from ${form.deadlineAfter}` : "",
+  ].filter(Boolean);
+}
+
+export function searchSummary(form: LiveSearchInput) {
+  const filters = activeFilters(form);
+  return `${form.query.trim() || "No search terms yet"}${filters.length ? ` · ${filters.join(" · ")}` : ""}`;
 }

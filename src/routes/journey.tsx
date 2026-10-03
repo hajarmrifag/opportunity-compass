@@ -82,11 +82,22 @@ function Journey() {
 }
 
 function AppRow({ app }: { app: Application }) {
-  const { getOpportunity, updateApplication, removeApplication } = useStore();
+  const {
+    getOpportunity,
+    updateApplication,
+    removeApplication,
+    addTask,
+    updateTask,
+    removeTask,
+    addSuggestedTasks,
+  } = useStore();
   const opp = getOpportunity(app.opportunityId);
   const [notes, setNotes] = useState(app.notes);
   const [savedMsg, setSavedMsg] = useState("");
   const dirty = notes !== app.notes;
+  const [taskLabel, setTaskLabel] = useState("");
+  const [taskDue, setTaskDue] = useState("");
+  const completed = app.tasks.filter((task) => task.completed).length;
 
   return (
     <li className="card p-5">
@@ -169,6 +180,104 @@ function AppRow({ app }: { app: Application }) {
           />
         </div>
       </div>
+      <section className="mt-5 border-t border-border pt-4" aria-labelledby={`plan-${app.id}`}>
+        <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3">
+          <div className="min-w-0">
+            <h3 id={`plan-${app.id}`} className="text-base">
+              Action plan
+            </h3>
+            <p className="text-xs text-muted-foreground">
+              {completed} of {app.tasks.length} completed. Completing tasks never changes your
+              application status.
+            </p>
+          </div>
+          {app.tasks.length === 0 && (
+            <button
+              className="btn btn-outline btn-sm shrink-0"
+              onClick={() => addSuggestedTasks(app.id)}
+            >
+              Add general steps
+            </button>
+          )}
+        </div>
+        {app.tasks.some((task) => task.suggested) && (
+          <p className="mt-2 text-xs text-muted-foreground">
+            General suggestions only — verify the provider's actual requirements.
+          </p>
+        )}
+        <ul className="mt-3 space-y-2">
+          {app.tasks.map((task) => (
+            <li
+              key={task.id}
+              className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-2 rounded-md bg-muted p-2"
+            >
+              <input
+                aria-label={`Mark ${task.label} complete`}
+                className="w-auto"
+                type="checkbox"
+                checked={task.completed}
+                onChange={(e) => updateTask(app.id, task.id, { completed: e.target.checked })}
+              />
+              <div className="min-w-0">
+                <input
+                  aria-label="Task name"
+                  className={task.completed ? "line-through" : ""}
+                  value={task.label}
+                  maxLength={120}
+                  onChange={(e) => updateTask(app.id, task.id, { label: e.target.value })}
+                />
+                <input
+                  aria-label={`Due date for ${task.label}`}
+                  className="mt-1"
+                  type="date"
+                  value={task.dueDate ?? ""}
+                  onChange={(e) => updateTask(app.id, task.id, { dueDate: e.target.value || null })}
+                />
+              </div>
+              <button
+                className="btn btn-ghost btn-sm shrink-0"
+                aria-label={`Delete ${task.label}`}
+                onClick={() => removeTask(app.id, task.id)}
+              >
+                Delete
+              </button>
+            </li>
+          ))}
+        </ul>
+        <form
+          className="mt-3 grid gap-2 sm:grid-cols-[minmax(0,1fr)_170px_auto]"
+          onSubmit={(e) => {
+            e.preventDefault();
+            if (!taskLabel.trim()) return;
+            addTask(app.id, { label: taskLabel, dueDate: taskDue || null, suggested: false });
+            setTaskLabel("");
+            setTaskDue("");
+          }}
+        >
+          <label className="sr-only" htmlFor={`task-${app.id}`}>
+            New task
+          </label>
+          <input
+            id={`task-${app.id}`}
+            value={taskLabel}
+            maxLength={120}
+            placeholder="Add your own task"
+            onChange={(e) => setTaskLabel(e.target.value)}
+          />
+          <label className="sr-only" htmlFor={`task-date-${app.id}`}>
+            Optional task due date
+          </label>
+          <input
+            id={`task-date-${app.id}`}
+            type="date"
+            value={taskDue}
+            onChange={(e) => setTaskDue(e.target.value)}
+          />
+          <button className="btn btn-outline" type="submit" disabled={!taskLabel.trim()}>
+            Add task
+          </button>
+        </form>
+      </section>
       <div className="mt-3 flex justify-between text-xs text-muted-foreground">
         <span>Updated {new Date(app.updatedAt).toLocaleString()}</span>
         <button
