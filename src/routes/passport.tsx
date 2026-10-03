@@ -20,6 +20,7 @@ import {
   applyExtractedCandidates,
   canConfirmProfile,
   extractionConflicts,
+  webSourceLabel,
 } from "@/lib/profileExtraction";
 import { useStore } from "@/lib/store";
 

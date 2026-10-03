@@ -48,7 +48,7 @@ export async function extractWebSource(
           : res.status === 429
             ? "The web reading service is busy. Please try again shortly."
             : input.label === "linkedin"
-              ? "LinkedIn did not allow this page to be read. Copy your profile text and use Paste text instead."
+              ? "LinkedIn did not allow this page to be read. On your LinkedIn profile, choose More → Save to PDF and upload that file, or copy your profile text and use Paste text."
               : "This page could not be read. Check the link is public, or paste the text instead.";
       return fail(name, input.label, msg);
     }
@@ -67,7 +67,7 @@ export async function extractWebSource(
       name,
       input.label,
       input.label === "linkedin"
-        ? "LinkedIn showed a sign-in page instead of your profile, so nothing was read. Copy your profile text and use Paste text instead."
+        ? "LinkedIn showed a sign-in page instead of your profile, so nothing was read. On your LinkedIn profile, choose More → Save to PDF and upload that file, or copy your profile text and use Paste text."
         : "This page had no readable profile text. Paste the text instead.",
     );
   }
