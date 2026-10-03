@@ -20,14 +20,25 @@ const app: TrackerApplication = {
 
 describe("Tracker live charts", () => {
   it("shows zero, not sample outcomes, for empty records", () => {
-    render(<TrackerInsights apps={[]} chats={[]} suggestionsCount={0} onAdvice={async () => ({ advice: "", resources: [] })} />);
+    render(
+      <TrackerInsights
+        apps={[]}
+        chats={[]}
+        suggestionsCount={0}
+        onAdvice={async () => ({ advice: "", resources: [] })}
+      />,
+    );
     expect(screen.getByRole("img")).toHaveAccessibleName(/0 tracked applications/);
     expect(screen.getByText("No rejections recorded.")).toBeInTheDocument();
     expect(screen.queryByText(/Sample data/)).not.toBeInTheDocument();
   });
 
   it("updates the chart and rejected list when current records change", () => {
-    const props = { chats: [], suggestionsCount: 2, onAdvice: async () => ({ advice: "", resources: [] }) };
+    const props = {
+      chats: [],
+      suggestionsCount: 2,
+      onAdvice: async () => ({ advice: "", resources: [] }),
+    };
     const { rerender } = render(<TrackerInsights {...props} apps={[app]} />);
     expect(screen.getByRole("img")).toHaveAccessibleName(/Submitted: 1/);
     expect(screen.queryByText(app.role)).not.toBeInTheDocument();
