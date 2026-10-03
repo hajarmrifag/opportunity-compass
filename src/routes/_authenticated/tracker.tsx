@@ -260,14 +260,28 @@ function TrackerPage() {
               onChange={(e) => setSearch(e.target.value)}
             />
           </div>
-          {filtered.length === 0 ? (
+          {filtered.length === 0 && filteredChats.length === 0 ? (
             <p className="text-muted-foreground">No items match “{search}”.</p>
           ) : (
-            <ul className="space-y-4">
-              {filtered.map((a) => (
-                <TrackerRow key={a.id} app={a} onChanged={refresh} />
-              ))}
-            </ul>
+            <>
+              <ul className="space-y-4">
+                {filtered.map((a) => (
+                  <TrackerRow key={a.id} app={a} onChanged={refresh} />
+                ))}
+              </ul>
+              {filteredChats.length > 0 && (
+                <>
+                  <h3 className="mt-6 text-sm font-semibold text-muted-foreground">
+                    Matching coffee chats
+                  </h3>
+                  <ul className="mt-2 space-y-4">
+                    {filteredChats.map((c) => (
+                      <CoffeeChatRow key={c.id} chat={c} onChanged={refresh} />
+                    ))}
+                  </ul>
+                </>
+              )}
+            </>
           )}
         </section>
       </>
