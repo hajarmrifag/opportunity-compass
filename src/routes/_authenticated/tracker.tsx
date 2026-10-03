@@ -1,11 +1,9 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import { useMemo, useState, type ReactNode } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
-  COFFEE_CHAT_OUTCOMES,
   TRACKER_SOURCES,
   TRACKER_STATUSES,
-  deleteCoffeeChat,
   generateAdvice,
   listCoffeeChats,
   listEmailSuggestions,
@@ -13,7 +11,6 @@ import {
   listTrackerEvents,
   removeTrackerApplication,
   saveCoffeeChat,
-  scanGmail,
   updateEmailSuggestion,
   updateTrackerApplication,
   updateTrackerStatus,
@@ -24,6 +21,7 @@ import {
   type TrackerEvent,
 } from "@/lib/tracker.functions";
 import { TrackerInsights } from "@/features/tracker/Insights";
+import { todayIso } from "@/features/tracker/CoffeeChatRow";
 import { Loading, PageHeader } from "@/components/ui-bits";
 
 export const Route = createFileRoute("/_authenticated/tracker")({
@@ -66,19 +64,6 @@ const SOURCE_LABEL: Record<string, string> = {
   other: "Other",
 };
 
-const OUTCOME_LABEL: Record<string, string> = {
-  planned: "Planned",
-  responded: "Responded",
-  ghosted: "Ghosted",
-  follow_up_ghosted: "Followed up, then ghosted",
-  successful_referral: "Successful referral",
-};
-
-function todayIso(): string {
-  const d = new Date();
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
-}
-
 function TrackerPage() {
   const queryClient = useQueryClient();
   const appsQuery = useQuery({
@@ -97,7 +82,6 @@ function TrackerPage() {
     refetchInterval: 15_000,
   });
   const [search, setSearch] = useState("");
-  const [scanMessage, setScanMessage] = useState("");
 
   const apps = useMemo(() => appsQuery.data ?? [], [appsQuery.data]);
   const chats = useMemo(() => chatsQuery.data ?? [], [chatsQuery.data]);
@@ -110,7 +94,12 @@ function TrackerPage() {
   };
 
   const today = todayIso();
-  const monthStart = today.slice(0, 8) + "01";
+  const monthKey = today.slice(0, 7);
+  const weekAhead = (() => {
+    const d = new Date();
+    d.setDate(d.getDate() + 7);
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+  })();
 
   const counts = useMemo(() => {
     const byStatus = (s: string) => apps.filter((a) => a.status === s).length;
@@ -120,14 +109,21 @@ function TrackerPage() {
       interviews: byStatus("interview"),
       offers: byStatus("offer"),
       rejections: byStatus("rejected"),
-      chatsThisMonth: chats.filter((c) => c.date && c.date >= monthStart && c.date <= today).length,
-      followUpsDue: chats.filter((c) => c.follow_up_date && c.follow_up_date <= today).length,
+      // Any chat dated this calendar month (or logged this month without a date).
+      chatsThisMonth: chats.filter((c) =>
+        c.date ? c.date.slice(0, 7) === monthKey : c.created_at.slice(0, 7) === monthKey,
+      ).length,
+      // Overdue or due within the next 7 days.
+      followUpsDue: chats.filter((c) => c.follow_up_date && c.follow_up_date <= weekAhead).length,
     };
-  }, [apps, chats, monthStart, today]);
+  }, [apps, chats, monthKey, weekAhead]);
 
   const dueToday = useMemo(
-    () => chats.filter((c) => c.follow_up_date && c.follow_up_date <= today),
-    [chats, today],
+    () =>
+      chats
+        .filter((c) => c.follow_up_date && c.follow_up_date <= weekAhead)
+        .sort((x, y) => (x.follow_up_date ?? "").localeCompare(y.follow_up_date ?? "")),
+    [chats, weekAhead],
   );
 
   const filtered = useMemo(() => {
@@ -138,13 +134,12 @@ function TrackerPage() {
     );
   }, [apps, search]);
 
-  const runScan = async () => {
-    const result = await scanGmail();
-    setScanMessage(result.message);
-  };
+  const lastEmailUpdate = suggestions.reduce<string | null>(
+    (latest, x) => (!latest || x.created_at > latest ? x.created_at : latest),
+    null,
+  );
 
   if (appsQuery.isLoading || chatsQuery.isLoading) return <Loading />;
-
 
   return (
     <>
@@ -180,102 +175,97 @@ function TrackerPage() {
       </div>
 
       <>
-          {/* 2. Due today */}
-          <section className="card mt-6 p-5" aria-labelledby="due-today">
-            <h2 id="due-today" className="text-lg font-semibold">
-              Due today
-            </h2>
-            {dueToday.length === 0 ? (
-              <p className="mt-1 text-sm text-muted-foreground">
-                No follow-ups due. Set a follow-up date on a coffee chat and it appears here.
-              </p>
-            ) : (
-              <ul className="mt-2 space-y-2">
-                {dueToday.map((c) => (
-                  <li
-                    key={c.id}
-                    className={`rounded-md border p-3 text-sm ${
-                      c.follow_up_date && c.follow_up_date < today
-                        ? "border-destructive/50"
-                        : "border-border"
-                    }`}
-                  >
-                    <span className="font-medium">{c.contact_name}</span>
-                    {c.company ? ` · ${c.company}` : ""}
-                    <span className="ml-2 text-xs text-muted-foreground">
-                      Follow-up{" "}
-                      {c.follow_up_date === today
-                        ? "due today"
-                        : `overdue since ${c.follow_up_date}`}
-                    </span>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </section>
+        {/* 2. Due today */}
+        <section className="card mt-6 p-5" aria-labelledby="due-today">
+          <h2 id="due-today" className="text-lg font-semibold">
+            Follow-ups this week
+          </h2>
+          {dueToday.length === 0 ? (
+            <p className="mt-1 text-sm text-muted-foreground">
+              No follow-ups in the next 7 days. Set a follow-up date on a coffee chat and it appears
+              here.
+            </p>
+          ) : (
+            <ul className="mt-2 space-y-2">
+              {dueToday.map((c) => (
+                <li
+                  key={c.id}
+                  className={`rounded-md border p-3 text-sm ${
+                    c.follow_up_date && c.follow_up_date < today
+                      ? "border-destructive/50"
+                      : "border-border"
+                  }`}
+                >
+                  <span className="font-medium">{c.contact_name}</span>
+                  {c.company ? ` · ${c.company}` : ""}
+                  <span className="ml-2 text-xs text-muted-foreground">
+                    Follow-up{" "}
+                    {c.follow_up_date === today
+                      ? "due today"
+                      : (c.follow_up_date ?? "") < today
+                        ? `overdue since ${c.follow_up_date}`
+                        : `due ${c.follow_up_date}`}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          )}
+        </section>
 
-          {/* 3. Gmail scan */}
-          <section className="card mt-6 p-5" aria-labelledby="gmail-scan">
-            <div className="flex flex-wrap items-center justify-between gap-3">
-              <div>
-                <h2 id="gmail-scan" className="text-lg font-semibold">
-                  Gmail updates
-                </h2>
-                <p className="text-sm text-muted-foreground">
-                  Scanning proposes status updates from your mailbox. You accept or dismiss each one
-                  — nothing changes automatically.
-                </p>
-              </div>
-              <button className="btn btn-outline" onClick={runScan}>
-                Scan my Gmail
-              </button>
-            </div>
-            {scanMessage && (
-              <p role="status" className="mt-3 text-sm text-muted-foreground">
-                {scanMessage}
-              </p>
-            )}
-            {suggestions.length > 0 && (
-              <ul className="mt-3 space-y-2">
-                {suggestions.map((s) => (
-                  <SuggestionRow key={s.id} suggestion={s} onChanged={refresh} />
-                ))}
-              </ul>
-            )}
-          </section>
+        {/* 3. Results from email — no manual scan button */}
+        <section className="card mt-6 p-5" aria-labelledby="gmail-scan">
+          <h2 id="gmail-scan" className="text-lg font-semibold">
+            Results from email
+          </h2>
+          <p className="text-sm text-muted-foreground">
+            Assessments, interviews, offers and rejections found in your email appear here.
+          </p>
+          <p className="mt-2 text-xs text-muted-foreground" role="status">
+            {lastEmailUpdate
+              ? `Last updated ${new Date(lastEmailUpdate).toLocaleString()}`
+              : "Last updated: never — Gmail isn't connected yet, so no email results are available."}
+          </p>
+          {suggestions.length > 0 && (
+            <ul className="mt-3 space-y-2">
+              {suggestions.map((s) => (
+                <SuggestionRow key={s.id} suggestion={s} onChanged={refresh} />
+              ))}
+            </ul>
+          )}
+        </section>
 
-          {/* 5. Applications */}
-          <section className="mt-8" aria-labelledby="apps-heading">
-            <h2 id="apps-heading" className="text-lg font-semibold">
-              Applications
-            </h2>
-            <div className="mb-4 mt-2 max-w-md">
-              <label htmlFor="tracker-search">Search company, role or notes</label>
-              <input
-                id="tracker-search"
-                type="search"
-                value={search}
-                placeholder="e.g. Google, internship, referral…"
-                onChange={(e) => setSearch(e.target.value)}
-              />
-            </div>
-            {filtered.length === 0 ? (
-              <p className="text-muted-foreground">No items match “{search}”.</p>
-            ) : (
-              <ul className="space-y-4">
-                {filtered.map((a) => (
-                  <TrackerRow key={a.id} app={a} onChanged={refresh} />
-                ))}
-              </ul>
-            )}
-          </section>
+        {/* 5. Applications */}
+        <section className="mt-8" aria-labelledby="apps-heading">
+          <h2 id="apps-heading" className="text-lg font-semibold">
+            Applications
+          </h2>
+          <div className="mb-4 mt-2 max-w-md">
+            <label htmlFor="tracker-search">Search company, role or notes</label>
+            <input
+              id="tracker-search"
+              type="search"
+              value={search}
+              placeholder="e.g. Google, internship, referral…"
+              onChange={(e) => setSearch(e.target.value)}
+            />
+          </div>
+          {filtered.length === 0 ? (
+            <p className="text-muted-foreground">No items match “{search}”.</p>
+          ) : (
+            <ul className="space-y-4">
+              {filtered.map((a) => (
+                <TrackerRow key={a.id} app={a} onChanged={refresh} />
+              ))}
+            </ul>
+          )}
+        </section>
       </>
 
       {/* Coffee chats — always available, even before anything is tracked */}
-      <CoffeeChatSection chats={chats} onChanged={refresh} />
-
-      {/* Insights: AI feedback */}
-      <TrackerInsights apps={apps} chats={chats} onAdvice={() => generateAdvice()} />
+      <CoffeeChatSection chats={chats} onChanged={refresh}>
+        {/* Insights sit above the coffee chat history link */}
+        <TrackerInsights apps={apps} chats={chats} onAdvice={() => generateAdvice()} />
+      </CoffeeChatSection>
     </>
   );
 }
@@ -497,7 +487,15 @@ function StatusHistory({ applicationId }: { applicationId: string }) {
   );
 }
 
-function CoffeeChatSection({ chats, onChanged }: { chats: CoffeeChat[]; onChanged: () => void }) {
+function CoffeeChatSection({
+  chats,
+  onChanged,
+  children,
+}: {
+  chats: CoffeeChat[];
+  onChanged: () => void;
+  children?: ReactNode;
+}) {
   const [name, setName] = useState("");
   const [company, setCompany] = useState("");
   const [date, setDate] = useState("");
@@ -602,190 +600,20 @@ function CoffeeChatSection({ chats, onChanged }: { chats: CoffeeChat[]; onChange
           )}
         </div>
       </div>
-      {chats.length === 0 ? (
-        <p className="mt-3 text-sm text-muted-foreground">
-          No coffee chats yet. Add one above and track how it goes.
-        </p>
-      ) : (
-        <ul className="mt-3 space-y-3">
-          {chats.map((c) => (
-            <CoffeeChatRow key={c.id} chat={c} onChanged={onChanged} />
-          ))}
-        </ul>
-      )}
-    </section>
-  );
-}
-
-function CoffeeChatRow({ chat, onChanged }: { chat: CoffeeChat; onChanged: () => void }) {
-  const [busy, setBusy] = useState(false);
-  const [error, setError] = useState("");
-  const today = todayIso();
-  const overdue = chat.follow_up_date && chat.follow_up_date < today;
-
-  const [comment, setComment] = useState(chat.notes);
-  const [aiNote, setAiNote] = useState(false);
-  const patch = (changes: Partial<CoffeeChat>) =>
-    run(() =>
-      saveCoffeeChat({
-        data: {
-          id: chat.id,
-          contact_name: chat.contact_name,
-          company: chat.company,
-          date: chat.date,
-          follow_up_date: chat.follow_up_date,
-          notes: chat.notes,
-          outcome: chat.outcome,
-          referral: chat.referral ?? null,
-          ...changes,
-        } as never,
-      }),
-    );
-
-  const run = async (fn: () => Promise<unknown>) => {
-    setBusy(true);
-    setError("");
-    try {
-      await fn();
-      onChanged();
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Something went wrong.");
-    } finally {
-      setBusy(false);
-    }
-  };
-
-  return (
-    <li className={`card p-4 ${overdue ? "border-destructive/50" : ""}`}>
-      <div className="flex flex-wrap items-start justify-between gap-3">
+      {children}
+      <div className="card mt-6 flex flex-wrap items-center justify-between gap-3 p-5">
         <div>
-          <p className="font-semibold">{chat.contact_name}</p>
+          <h3 className="text-base font-semibold">Coffee chat history</h3>
           <p className="text-sm text-muted-foreground">
-            {chat.company || "No company"}
-            {chat.date ? ` · Chatted ${chat.date}` : ""}
+            {chats.length === 0
+              ? "No coffee chats logged yet."
+              : `${chats.length} coffee chat${chats.length === 1 ? "" : "s"} logged — update outcomes, follow-ups and referrals there.`}
           </p>
         </div>
-        <div className="flex flex-wrap items-end gap-3">
-          <div>
-            <label htmlFor={`cc-out-${chat.id}`}>Outcome</label>
-            <select
-              id={`cc-out-${chat.id}`}
-              value={chat.outcome}
-              disabled={busy}
-              onChange={(e) =>
-                run(() =>
-                  saveCoffeeChat({
-                    data: {
-                      id: chat.id,
-                      contact_name: chat.contact_name,
-                      company: chat.company,
-                      date: chat.date,
-                      follow_up_date: chat.follow_up_date,
-                      notes: chat.notes,
-                      outcome: e.target.value as never,
-                    },
-                  }),
-                )
-              }
-            >
-              <option value="">—</option>
-              {COFFEE_CHAT_OUTCOMES.map((o) => (
-                <option key={o} value={o}>
-                  {OUTCOME_LABEL[o]}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div>
-            <label htmlFor={`cc-fu-${chat.id}`}>Follow-up date</label>
-            <input
-              id={`cc-fu-${chat.id}`}
-              type="date"
-              value={chat.follow_up_date ?? ""}
-              disabled={busy}
-              onChange={(e) =>
-                run(() =>
-                  saveCoffeeChat({
-                    data: {
-                      id: chat.id,
-                      contact_name: chat.contact_name,
-                      company: chat.company,
-                      date: chat.date,
-                      follow_up_date: e.target.value || null,
-                      notes: chat.notes,
-                      outcome: chat.outcome,
-                    },
-                  }),
-                )
-              }
-            />
-          </div>
-        </div>
+        <Link to="/coffee-chats" className="btn btn-outline btn-sm">
+          View history →
+        </Link>
       </div>
-      <div className="mt-3 grid gap-3 sm:grid-cols-[10rem_1fr]">
-        <div>
-          <label htmlFor={`cc-ref-${chat.id}`}>Referral?</label>
-          <select
-            id={`cc-ref-${chat.id}`}
-            value={chat.referral === true ? "yes" : chat.referral === false ? "no" : ""}
-            disabled={busy}
-            onChange={(e) =>
-              patch({ referral: e.target.value === "" ? null : e.target.value === "yes" })
-            }
-          >
-            <option value="">Not yet</option>
-            <option value="yes">Yes</option>
-            <option value="no">No</option>
-          </select>
-        </div>
-        <div>
-          <label htmlFor={`cc-note-${chat.id}`}>Comment</label>
-          <textarea
-            id={`cc-note-${chat.id}`}
-            rows={2}
-            value={comment}
-            disabled={busy}
-            onChange={(e) => setComment(e.target.value)}
-            onBlur={() => comment !== chat.notes && patch({ notes: comment })}
-            placeholder="How did it go? AI can analyse this later."
-          />
-          <button
-            type="button"
-            className="mt-1 text-xs underline"
-            onClick={() => setAiNote((v) => !v)}
-          >
-            Analyse with AI
-          </button>
-          {aiNote && (
-            <p role="status" className="mt-1 text-xs text-muted-foreground">
-              AI comment analysis isn't connected yet — your comment is saved and will be analysed
-              once it is.
-            </p>
-          )}
-        </div>
-      </div>
-      {overdue && (
-        <p className="mt-2 text-xs text-destructive">
-          Follow-up overdue since {chat.follow_up_date}
-        </p>
-      )}
-      <div className="mt-2 flex items-center justify-between">
-        {error && (
-          <span role="alert" className="field-error">
-            {error}
-          </span>
-        )}
-        <button
-          className="ml-auto text-xs underline hover:text-destructive"
-          disabled={busy}
-          onClick={() => {
-            if (confirm("Remove this coffee chat?"))
-              run(() => deleteCoffeeChat({ data: { id: chat.id } }));
-          }}
-        >
-          Remove
-        </button>
-      </div>
-    </li>
+    </section>
   );
 }

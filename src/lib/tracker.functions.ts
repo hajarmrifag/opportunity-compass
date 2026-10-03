@@ -110,6 +110,61 @@ export const saveToTracker = createServerFn({ method: "POST" })
     return { created: true, id: row.id as string };
   });
 
+/**
+ * The student pressed "Apply" on a live listing: record it as Submitted.
+ * Only moves forward from saved/preparing; later stages are never downgraded.
+ */
+export const markApplied = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((data) =>
+    z
+      .object({
+        listingId: z.string().min(1),
+        company: z.string().min(1),
+        role: z.string().min(1),
+      })
+      .parse(data),
+  )
+  .handler(async ({ context, data }): Promise<{ id: string; status: string }> => {
+    const supabase = context.supabase as AnyClient;
+    const today = new Date().toISOString().slice(0, 10);
+    const { data: existing } = await supabase
+      .from("applications")
+      .select("id,status")
+      .eq("listing_id", data.listingId)
+      .maybeSingle();
+    let id: string;
+    if (existing) {
+      id = existing.id as string;
+      if (!["saved", "preparing"].includes(existing.status as string))
+        return { id, status: existing.status as string };
+      const { error } = await supabase
+        .from("applications")
+        .update({ status: "submitted", applied_date: today, updated_at: new Date().toISOString() })
+        .eq("id", id);
+      if (error) throw new Error(error.message);
+    } else {
+      const { data: row, error } = await supabase
+        .from("applications")
+        .insert({
+          listing_id: data.listingId,
+          company: data.company,
+          role: data.role,
+          status: "submitted",
+          source: "other",
+          applied_date: today,
+        })
+        .select("id")
+        .single();
+      if (error) throw new Error(error.message);
+      id = row.id as string;
+    }
+    await supabase
+      .from("application_events")
+      .insert({ application_id: id, status: "submitted", source: "apply_click" });
+    return { id, status: "submitted" };
+  });
+
 export const updateTrackerStatus = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((data) =>

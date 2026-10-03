@@ -22,6 +22,7 @@ import { Route as PlanTestsRouteImport } from './routes/plan-tests'
 import { Route as RecommendedRouteImport } from './routes/recommended'
 import { Route as SearchRouteImport } from './routes/search'
 import { Route as TrackerIoRouteImport } from './routes/tracker-io'
+import { Route as AuthenticatedCoffeeChatsRouteImport } from './routes/_authenticated/coffee-chats'
 import { Route as AuthenticatedResourcesRouteImport } from './routes/_authenticated/resources'
 import { Route as AuthenticatedTrackerRouteImport } from './routes/_authenticated/tracker'
 import { Route as OpportunitiesIdRouteImport } from './routes/opportunities.$id'
@@ -90,6 +91,12 @@ const TrackerIoRoute = TrackerIoRouteImport.update({
   path: '/tracker-io',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedCoffeeChatsRoute =
+  AuthenticatedCoffeeChatsRouteImport.update({
+    id: '/coffee-chats',
+    path: '/coffee-chats',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedResourcesRoute = AuthenticatedResourcesRouteImport.update({
   id: '/resources',
   path: '/resources',
@@ -119,6 +126,7 @@ export interface FileRoutesByFullPath {
   '/recommended': typeof RecommendedRoute
   '/search': typeof SearchRoute
   '/tracker-io': typeof TrackerIoRoute
+  '/coffee-chats': typeof AuthenticatedCoffeeChatsRoute
   '/resources': typeof AuthenticatedResourcesRoute
   '/tracker': typeof AuthenticatedTrackerRoute
   '/opportunities/$id': typeof OpportunitiesIdRoute
@@ -136,6 +144,7 @@ export interface FileRoutesByTo {
   '/recommended': typeof RecommendedRoute
   '/search': typeof SearchRoute
   '/tracker-io': typeof TrackerIoRoute
+  '/coffee-chats': typeof AuthenticatedCoffeeChatsRoute
   '/resources': typeof AuthenticatedResourcesRoute
   '/tracker': typeof AuthenticatedTrackerRoute
   '/opportunities/$id': typeof OpportunitiesIdRoute
@@ -155,6 +164,7 @@ export interface FileRoutesById {
   '/recommended': typeof RecommendedRoute
   '/search': typeof SearchRoute
   '/tracker-io': typeof TrackerIoRoute
+  '/_authenticated/coffee-chats': typeof AuthenticatedCoffeeChatsRoute
   '/_authenticated/resources': typeof AuthenticatedResourcesRoute
   '/_authenticated/tracker': typeof AuthenticatedTrackerRoute
   '/opportunities/$id': typeof OpportunitiesIdRoute
@@ -174,6 +184,7 @@ export interface FileRouteTypes {
     | '/recommended'
     | '/search'
     | '/tracker-io'
+    | '/coffee-chats'
     | '/resources'
     | '/tracker'
     | '/opportunities/$id'
@@ -191,6 +202,7 @@ export interface FileRouteTypes {
     | '/recommended'
     | '/search'
     | '/tracker-io'
+    | '/coffee-chats'
     | '/resources'
     | '/tracker'
     | '/opportunities/$id'
@@ -209,6 +221,7 @@ export interface FileRouteTypes {
     | '/recommended'
     | '/search'
     | '/tracker-io'
+    | '/_authenticated/coffee-chats'
     | '/_authenticated/resources'
     | '/_authenticated/tracker'
     | '/opportunities/$id'
@@ -324,6 +337,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof TrackerIoRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/coffee-chats': {
+      id: '/_authenticated/coffee-chats'
+      path: '/coffee-chats'
+      fullPath: '/coffee-chats'
+      preLoaderRoute: typeof AuthenticatedCoffeeChatsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/resources': {
       id: '/_authenticated/resources'
       path: '/resources'
@@ -349,11 +369,13 @@ declare module '@tanstack/react-router' {
 }
 
 interface AuthenticatedRouteRouteChildren {
+  AuthenticatedCoffeeChatsRoute: typeof AuthenticatedCoffeeChatsRoute
   AuthenticatedResourcesRoute: typeof AuthenticatedResourcesRoute
   AuthenticatedTrackerRoute: typeof AuthenticatedTrackerRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedCoffeeChatsRoute: AuthenticatedCoffeeChatsRoute,
   AuthenticatedResourcesRoute: AuthenticatedResourcesRoute,
   AuthenticatedTrackerRoute: AuthenticatedTrackerRoute,
 }

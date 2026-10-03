@@ -18,7 +18,7 @@
 - Persistence goes through the `Repository` interface in `src/data/storage.ts` (versioned localStorage now) — lets a remote backend replace it without UI changes.
 - Eligibility/relevance is computed only via an `EligibilityAdapter` (`src/adapters/`); missing data must yield "unknown", never "met" — honesty requirement.
 - App state is accessed via `useStore()` in `src/lib/store.tsx`, hydrated from storage in an effect — avoids SSR hydration mismatch.
-- Application status changes are user-initiated only; no code path may set "submitted" automatically.
+- Application status changes are user-initiated only; the single exception is the student pressing Apply on a live listing (`markApplied`), which moves a Tracker item forward to Submitted and never downgrades later stages.
 - Date-only deadlines are compared as local calendar days via `deadlineState` in `src/lib/validation.ts`; `DEADLINE_WINDOW_DAYS` is the single "approaching" window — keeps UI counts consistent.
 - URLs render only through `safeHttpUrl`; CSV output goes through `src/lib/csv.ts` (`escapeCell`) for quoting and formula-injection protection.
 - CSV import applies only after preview + explicit confirm, as one atomic `importTracker` commit — prevents partial or surprise writes.
@@ -35,3 +35,5 @@
 - Shared motion uses scoped CSS and the cmdk CommandCenter in AppShell; research trails render only returned agent stages — keeps presentation independent of teammate data contracts.
 
 - Tracker Insights shows only the AI feedback button — no status charts; account-backed queries still refresh through foreground polling every 15 seconds, and status changes stay user-initiated.
+
+- Coffee chat history lives on its own `/coffee-chats` page sharing `CoffeeChatRow`; the Tracker keeps the add form and Insights. Email results are shown passively (no manual scan button) with a last-updated time.
