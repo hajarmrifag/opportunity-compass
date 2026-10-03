@@ -38,7 +38,9 @@ export async function runRecommended(
     query: categoryRequest(input.category, h),
     category: input.category,
     location: "",
-    remoteOnly: h.remoteOk,
+    // remoteOk is a preference, not a hard filter: most listings never state a mode,
+    // so forcing it would hide nearly everything.
+    remoteOnly: false,
     subject: h.field,
     education: h.degreeLevel,
     fundedOnly: false,
