@@ -205,8 +205,7 @@ export function StepGaps({
 
       {nothingMissing && (
         <p className="mt-5 border border-border bg-teal-soft p-4 text-sm">
-          Your profile already covers the essentials — review or refine anything below, or
-          continue.
+          Your profile already covers the essentials — review or refine anything below, or continue.
         </p>
       )}
 
@@ -367,10 +366,7 @@ export function StepGaps({
           />
         </Question>
 
-        <Question
-          title="Languages"
-          why="Some opportunities require or prefer certain languages."
-        >
+        <Question title="Languages" why="Some opportunities require or prefer certain languages.">
           <div className="flex flex-wrap items-end gap-2">
             <F id="lang-name" label="Language" className="flex-1">
               <input

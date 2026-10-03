@@ -13,11 +13,7 @@ import { F, MultiSelect } from "@/components/passport/fields";
 import { fileBase64, type IntakeDocument } from "@/components/passport/shared";
 import { LANGUAGE_OPTIONS, LOCATION_OPTIONS, SKILL_OPTIONS } from "@/lib/curatedOptions";
 import { EMPTY_PROFILE } from "@/data/fixtures";
-import type {
-  DocumentExtractionResult,
-  EducationEntry,
-  Profile,
-} from "@/domain/types";
+import type { DocumentExtractionResult, EducationEntry, Profile } from "@/domain/types";
 import { DEGREE_LABELS, type DegreeLevel } from "@/domain/types";
 import { extractProfile, extractWebProfile } from "@/lib/profileExtraction.functions";
 import {
@@ -170,7 +166,11 @@ function Passport() {
         setDocuments((current) =>
           current.map((item) =>
             item.id === document.id
-              ? { ...item, state: result.error ? "error" : "done", error: result.error ?? undefined }
+              ? {
+                  ...item,
+                  state: result.error ? "error" : "done",
+                  error: result.error ?? undefined,
+                }
               : item,
           ),
         );
@@ -184,7 +184,9 @@ function Passport() {
         });
         setDocuments((current) =>
           current.map((item) =>
-            item.id === document.id ? { ...item, state: "error", error: "extraction failed" } : item,
+            item.id === document.id
+              ? { ...item, state: "error", error: "extraction failed" }
+              : item,
           ),
         );
       }
@@ -207,7 +209,9 @@ function Passport() {
   };
 
   const conflicts = useMemo(() => extractionConflicts(results), [results]);
-  const unresolvedConflicts = conflicts.filter((conflict) => !(conflict.field in choices) || choices[conflict.field] === undefined).length;
+  const unresolvedConflicts = conflicts.filter(
+    (conflict) => !(conflict.field in choices) || choices[conflict.field] === undefined,
+  ).length;
 
   const confirm = () => {
     const check = canConfirmProfile(draft, unresolvedConflicts);

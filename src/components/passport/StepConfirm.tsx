@@ -60,7 +60,10 @@ export function StepConfirm({
         <PreviewRow label="Education" onEdit={() => onEditStep(3)}>
           {education && (education.degreeName || education.school || education.field) ? (
             <>
-              {[education.degreeLevel ? DEGREE_LABELS[education.degreeLevel] : "", education.degreeName]
+              {[
+                education.degreeLevel ? DEGREE_LABELS[education.degreeLevel] : "",
+                education.degreeName,
+              ]
                 .filter(Boolean)
                 .join(" — ")}
               {education.school ? `, ${education.school}` : ""}

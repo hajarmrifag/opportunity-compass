@@ -48,7 +48,14 @@ export function StepUpload({
       } else if (file.size === 0) {
         errors.push(`${file.name}: file is empty.`);
       } else {
-        accepted.push({ id: uid(), name: file.name, label: "cv", kind: "pdf", file, state: "ready" });
+        accepted.push({
+          id: uid(),
+          name: file.name,
+          label: "cv",
+          kind: "pdf",
+          file,
+          state: "ready",
+        });
       }
     }
     if (incoming.length > available) errors.push(`You can add up to ${MAX_DOCUMENTS} documents.`);
