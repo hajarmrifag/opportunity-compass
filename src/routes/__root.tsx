@@ -119,6 +119,23 @@ function RootShell({ children }: { children: ReactNode }) {
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
 
+  // After a dev-server restart or new deploy, old page chunks vanish. Reload once to fetch fresh ones.
+  useEffect(() => {
+    const KEY = "oos-chunk-reload";
+    const onErr = (msg: string) => {
+      if (!/Failed to fetch dynamically imported module|Importing a module script failed/.test(msg)) return;
+      if (sessionStorage.getItem(KEY)) return;
+      sessionStorage.setItem(KEY, "1");
+      window.location.reload();
+    };
+    const a = (e: Event) => { e.preventDefault(); onErr("Failed to fetch dynamically imported module"); };
+    const b = (e: PromiseRejectionEvent) => onErr(String(e.reason?.message ?? e.reason));
+    window.addEventListener("vite:preloadError", a);
+    window.addEventListener("unhandledrejection", b);
+    const t = setTimeout(() => sessionStorage.removeItem(KEY), 10000);
+    return () => { window.removeEventListener("vite:preloadError", a); window.removeEventListener("unhandledrejection", b); clearTimeout(t); };
+  }, []);
+
   return (
     <QueryClientProvider client={queryClient}>
       <StoreProvider>
