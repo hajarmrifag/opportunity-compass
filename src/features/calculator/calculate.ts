@@ -90,7 +90,7 @@ function coverageFor(
   category: LineCategory,
   coverage: OpportunityCoverage[],
   defaultState: CoverageState,
-): { state: CoverageState; note?: string | null } {
+): { state: CoverageState; note?: string | null | undefined } {
   const specific = coverage.find((c) => c.coversCategory === category);
   const general = coverage.find((c) => c.coversCategory === "*");
   const entry = specific ?? general;
