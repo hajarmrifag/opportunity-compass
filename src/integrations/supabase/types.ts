@@ -134,6 +134,7 @@ export type Database = {
           created_at: string
           date: string | null
           follow_up_date: string | null
+          follow_up_done: boolean
           id: string
           notes: string
           outcome: string
@@ -146,6 +147,7 @@ export type Database = {
           created_at?: string
           date?: string | null
           follow_up_date?: string | null
+          follow_up_done?: boolean
           id?: string
           notes?: string
           outcome?: string
@@ -158,6 +160,7 @@ export type Database = {
           created_at?: string
           date?: string | null
           follow_up_date?: string | null
+          follow_up_done?: boolean
           id?: string
           notes?: string
           outcome?: string
