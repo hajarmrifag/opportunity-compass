@@ -169,9 +169,7 @@ function Passport() {
     const collected: DocumentExtractionResult[] = [];
     for (const document of documents) {
       setDocuments((current) =>
-        current.map((item) =>
-          item.id === document.id ? { ...item, state: "extracting" } : item,
-        ),
+        current.map((item) => (item.id === document.id ? { ...item, state: "extracting" } : item)),
       );
       try {
         const content =
@@ -190,7 +188,11 @@ function Passport() {
         setDocuments((current) =>
           current.map((item) =>
             item.id === document.id
-              ? { ...item, state: result.ok ? "done" : "error", ...(result.error ? { error: result.error } : {}) }
+              ? {
+                  ...item,
+                  state: result.ok ? "done" : "error",
+                  ...(result.error ? { error: result.error } : {}),
+                }
               : item,
           ),
         );

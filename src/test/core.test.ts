@@ -228,7 +228,12 @@ describe("profile document parsing", () => {
     ok: true,
     document: { name: "TEST-cv.txt", label: "cv" },
     candidates: [
-      { field: "school", value: "Test University", sourceFile: "TEST-cv.txt", snippet: "Student at Test University" },
+      {
+        field: "school",
+        value: "Test University",
+        sourceFile: "TEST-cv.txt",
+        snippet: "Student at Test University",
+      },
       { field: "gpaValue", value: "3.6", sourceFile: "TEST-cv.txt", snippet: "GPA 3.6" },
       { field: "skill", value: "Python", sourceFile: "TEST-cv.txt", snippet: "Skills: Python" },
     ],
@@ -239,7 +244,12 @@ describe("profile document parsing", () => {
     ok: true,
     document: { name: "TEST-transcript.txt", label: "transcript" },
     candidates: [
-      { field: "gpaValue", value: "3.4", sourceFile: "TEST-transcript.txt", snippet: "Cumulative GPA: 3.4" },
+      {
+        field: "gpaValue",
+        value: "3.4",
+        sourceFile: "TEST-transcript.txt",
+        snippet: "Cumulative GPA: 3.4",
+      },
       { field: "gpaScale", value: "4.0", sourceFile: "TEST-transcript.txt", snippet: "Scale: 4.0" },
     ],
     warnings: [],
