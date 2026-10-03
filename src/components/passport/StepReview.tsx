@@ -2,8 +2,13 @@ import { useState, type ReactNode } from "react";
 import { Pencil } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { Profile, ProfileValueSource } from "@/domain/types";
-import { DEGREE_LABELS } from "@/domain/types";
-import { fieldLabel, type ExtractionConflict } from "@/lib/profileExtraction";
+import { DEGREE_LABELS, WORK_TYPE_LABELS } from "@/domain/types";
+import {
+  acceptExperience,
+  dismissExperience,
+  fieldLabel,
+  type ExtractionConflict,
+} from "@/lib/profileExtraction";
 
 /** Small provenance label: extracted vs added by you. */
 export function SourceTag({ source }: { source: ProfileValueSource | undefined }) {
@@ -74,6 +79,7 @@ export function StepReview({
   preferencesEditor,
   experienceEditor,
   goalsEditor,
+  onDraftChange,
 }: {
   draft: Profile;
   conflicts: ExtractionConflict[];
@@ -85,11 +91,13 @@ export function StepReview({
   preferencesEditor: ReactNode;
   experienceEditor: ReactNode;
   goalsEditor: ReactNode;
+  onDraftChange: (next: Profile) => void;
 }) {
   const [open, setOpen] = useState<string | null>(null);
   const toggle = (key: string) => setOpen((current) => (current === key ? null : key));
   const education = draft.education[0];
   const provenance = draft.fieldProvenance;
+  const suggestions = draft.experienceSuggestions ?? [];
 
   return (
     <div>
@@ -233,19 +241,86 @@ export function StepReview({
           editing={open === "experience"}
           onToggle={() => toggle("experience")}
           summary={
-            draft.workExperience.length ? (
-              <ul className="grid gap-2">
-                {draft.workExperience.map((entry) => (
-                  <li key={entry.id} className="border border-border p-3">
-                    <p className="font-semibold">{entry.role}</p>
+            draft.workExperience.length || suggestions.length ? (
+              <div className="grid gap-4">
+                {suggestions.length > 0 && (
+                  <div>
                     <p className="text-sm text-muted-foreground">
-                      {entry.organization}
-                      {entry.type ? ` · ${entry.type}` : ""}
-                      {entry.location ? ` · ${entry.location}` : ""}
+                      We found {suggestions.length} role{suggestions.length === 1 ? "" : "s"} in
+                      your documents. Add the ones that are yours.
                     </p>
-                  </li>
-                ))}
-              </ul>
+                    <ul className="mt-2 grid gap-2">
+                      {suggestions.map((entry) => (
+                        <li
+                          key={entry.id}
+                          className="flex flex-wrap items-start justify-between gap-3 border border-dashed border-border p-3"
+                        >
+                          <div className="min-w-0 flex-1">
+                            <p className="font-semibold">{entry.role || "Untitled role"}</p>
+                            <p className="text-sm text-muted-foreground">
+                              {entry.organization}
+                              {entry.type ? ` · ${WORK_TYPE_LABELS[entry.type]}` : ""}
+                              {entry.location ? ` · ${entry.location}` : ""}
+                            </p>
+                            {entry.description && (
+                              <p className="mt-1 text-sm">{entry.description}</p>
+                            )}
+                            <span className="chip chip-muted mt-2 inline-block">
+                              From {entry.sourceFile || "your document"}
+                            </span>
+                          </div>
+                          <div className="flex gap-2">
+                            <Button
+                              size="sm"
+                              onClick={() => onDraftChange(acceptExperience(draft, entry.id))}
+                            >
+                              Add
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              onClick={() => onDraftChange(dismissExperience(draft, entry.id))}
+                            >
+                              Not mine
+                            </Button>
+                          </div>
+                        </li>
+                      ))}
+                    </ul>
+                    {suggestions.length > 1 && (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="mt-2"
+                        onClick={() =>
+                          onDraftChange(
+                            suggestions.reduce(
+                              (profile, entry) => acceptExperience(profile, entry.id),
+                              draft,
+                            ),
+                          )
+                        }
+                      >
+                        Add all {suggestions.length}
+                      </Button>
+                    )}
+                  </div>
+                )}
+                {draft.workExperience.length > 0 && (
+                  <ul className="grid gap-2">
+                    {draft.workExperience.map((entry) => (
+                      <li key={entry.id} className="border border-border p-3">
+                        <p className="font-semibold">{entry.role}</p>
+                        <p className="text-sm text-muted-foreground">
+                          {entry.organization}
+                          {entry.type ? ` · ${WORK_TYPE_LABELS[entry.type]}` : ""}
+                          {entry.location ? ` · ${entry.location}` : ""}
+                        </p>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
             ) : (
               <NotProvided />
             )

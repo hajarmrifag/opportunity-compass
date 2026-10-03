@@ -539,6 +539,7 @@ function Passport() {
             skillsEditor={skillsEditor}
             preferencesEditor={preferencesEditor}
             experienceEditor={<ExperienceEditor profile={draft} onChange={persistDraft} />}
+            onDraftChange={persistDraft}
             goalsEditor={goalsEditor}
           />
         )}

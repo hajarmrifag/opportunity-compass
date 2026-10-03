@@ -45,7 +45,8 @@ export function ExtractionSummary({
     const education = draft.education.filter(
       (entry) => entry.degreeName || entry.school || entry.field,
     );
-    const experience = draft.workExperience.length;
+    const experience =
+      draft.workExperience.length + (draft.experienceSuggestions?.length ?? 0);
     const skills = draft.skills.length;
     const languages = draft.languages.length;
     const missing: string[] = [];
@@ -79,7 +80,7 @@ export function ExtractionSummary({
         <li className="flex items-center gap-2">
           <CircleCheck className="size-4 text-primary" aria-hidden="true" />
           {found.experience
-            ? `${found.experience} experience suggestion${found.experience === 1 ? "" : "s"}`
+            ? `${found.experience} experience role${found.experience === 1 ? "" : "s"} (work, research or volunteer)`
             : "No experience found yet"}
         </li>
       </ul>
