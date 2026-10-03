@@ -111,6 +111,7 @@ function Dashboard() {
             <MagneticLine text="opportunity" delay={0.18} />
             <MagneticLine text="has a source." delay={0.28} italic />
           </h1>
+
           <motion.div
             className="atlas-hero-cta"
             initial={reduced ? { opacity: 0 } : { opacity: 0, y: 16 }}
@@ -123,10 +124,12 @@ function Dashboard() {
             </Link>
             <p className="atlas-hero-go-note">Sixty seconds. Every page. Every keep and cut.</p>
           </motion.div>
+
           <p className="atlas-hero-deck">
             Search the open web for funding, fellowships and roles. Every fact is traced to the page
             it came from. When a page doesn’t say, we show “unknown” instead of guessing.
           </p>
+
           <motion.form
             className="atlas-cover-search"
             initial={reduced ? { opacity: 0 } : { opacity: 0, y: 14 }}
@@ -137,30 +140,91 @@ function Dashboard() {
               submitSearch();
             }}
           >
-            <label htmlFor="dq" className="sr-only">What are you looking for?</label>
+            <label htmlFor="dq" className="sr-only">
+              What are you looking for?
+            </label>
             <Search aria-hidden className="size-5 shrink-0" />
-            <input id="dq" value={q} maxLength={200} onChange={(event) => setQ(event.target.value)} placeholder="Or describe the opportunity you want…" />
-            <Button className="atlas-search-submit" type="submit" disabled={[q.trim(), goal].filter(Boolean).length === 0} aria-label="Search the public web" size="icon">
+            <input
+              id="dq"
+              value={q}
+              maxLength={200}
+              onChange={(event) => setQ(event.target.value)}
+              placeholder="Or describe the opportunity you want…"
+            />
+            <Button
+              className="atlas-search-submit"
+              type="submit"
+              disabled={[q.trim(), goal].filter(Boolean).length === 0}
+              aria-label="Search the public web"
+              size="icon"
+            >
               <ArrowRight aria-hidden />
             </Button>
           </motion.form>
         </div>
       </section>
+
       <section className="band zone zone-bone" aria-labelledby="start-title">
         <div className="band-inner atlas-home-next">
           <div>
-            <h2 id="start-title">What are you <em>looking for?</em></h2>
+            <h2 id="start-title">
+              What are you <em>looking for?</em>
+            </h2>
             <p>
               {standing
                 ? `${standing.open} listings in the demo field don’t rule you out. Search the live web for real ones.`
                 : "Pick a direction, or confirm your Passport first so we can be honest about eligibility."}
             </p>
             <div className="atlas-home-actions">
-              <Link to="/search" search={{ demo: true }} className="btn">Watch a research run</Link>
-              <Link to="/search" className="btn btn-outline">Search the web</Link>
-              <Link to="/passport" className="btn btn-ghost">{profile ? "Review Passport" : "Create Passport"}</Link>
+              <Link to="/search" search={{ demo: true }} className="btn">
+                Watch a research run
+              </Link>
+              <Link to="/search" className="btn btn-outline">
+                Search the web
+              </Link>
+              <Link to="/passport" className="btn btn-ghost">
+                {profile ? "Review Passport" : "Create Passport"}
+              </Link>
             </div>
           </div>
+
+          <motion.div
+            className="atlas-direction-list"
+            role="group"
+            aria-label="Choose a goal"
+            variants={staggerContainer(0.05)}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, amount: 0.2 }}
+          >
+            {GOALS.map((item) => (
+              <motion.div
+                key={item.value}
+                variants={{
+                  hidden: reduced ? { opacity: 0 } : { opacity: 0, y: 12 },
+                  visible: { opacity: 1, y: 0 },
+                }}
+                transition={spring.arrive}
+              >
+                <Button
+                  type="button"
+                  variant="ghost"
+                  aria-pressed={goal === item.value}
+                  onClick={() => setGoal(goal === item.value ? null : item.value)}
+                  className={`atlas-direction-row ${goal === item.value ? "atlas-direction-active" : ""}`}
+                >
+                  <span className="atlas-direction-glyph" aria-hidden>
+                    <item.icon />
+                  </span>
+                  <span className="atlas-direction-copy">
+                    <strong>{item.label}</strong>
+                    <small>{item.description}</small>
+                  </span>
+                  <ArrowRight className="atlas-direction-arrow" aria-hidden />
+                </Button>
+              </motion.div>
+            ))}
+          </motion.div>
         </div>
       </section>
     </div>

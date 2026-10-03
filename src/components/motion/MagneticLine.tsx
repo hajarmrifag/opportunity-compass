@@ -2,6 +2,10 @@ import { useEffect, useRef } from "react";
 import { motion, useReducedMotion } from "motion/react";
 import { ATLAS_EASE } from "@/lib/motion";
 
+/**
+ * Display type that arrives from a mask, then each letter leans toward the
+ * pointer — the Instagram-landing-page trick, scoped to one headline.
+ */
 export function MagneticLine({
   text,
   delay = 0,
@@ -23,10 +27,12 @@ export function MagneticLine({
     let frame = 0;
     let px = -9999;
     let py = -9999;
+
     const onMove = (event: PointerEvent) => {
       px = event.clientX;
       py = event.clientY;
     };
+
     const tick = () => {
       for (const letter of letters) {
         const box = letter.getBoundingClientRect();
@@ -43,6 +49,7 @@ export function MagneticLine({
       }
       frame = requestAnimationFrame(tick);
     };
+
     window.addEventListener("pointermove", onMove, { passive: true });
     frame = requestAnimationFrame(tick);
     return () => {
@@ -64,7 +71,9 @@ export function MagneticLine({
           char === " " ? (
             <span key={`sp-${index}`}>{"\u00A0"}</span>
           ) : (
-            <span key={`${char}-${index}`} data-letter="">{char}</span>
+            <span key={`${char}-${index}`} data-letter="">
+              {char}
+            </span>
           ),
         )}
       </motion.span>
