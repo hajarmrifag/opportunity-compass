@@ -238,3 +238,216 @@ export const isAdmin = createServerFn({ method: "GET" })
       .maybeSingle();
     return !!data;
   });
+
+// --- Coffee chats ---
+
+export const COFFEE_CHAT_OUTCOMES = [
+  "planned",
+  "responded",
+  "ghosted",
+  "follow_up_ghosted",
+  "successful_referral",
+] as const;
+export type CoffeeChatOutcome = (typeof COFFEE_CHAT_OUTCOMES)[number];
+
+export interface CoffeeChat {
+  id: string;
+  contact_name: string;
+  company: string;
+  date: string | null;
+  follow_up_date: string | null;
+  notes: string;
+  outcome: "" | CoffeeChatOutcome;
+  created_at: string;
+}
+
+export const listCoffeeChats = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }): Promise<CoffeeChat[]> => {
+    const { data, error } = await (context.supabase as AnyClient)
+      .from("coffee_chats")
+      .select("*")
+      .order("created_at", { ascending: false });
+    if (error) throw new Error(error.message);
+    return (data ?? []) as CoffeeChat[];
+  });
+
+export const saveCoffeeChat = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((data) =>
+    z
+      .object({
+        id: z.string().uuid().optional(),
+        contact_name: z.string().min(1).max(200),
+        company: z.string().max(200).default(""),
+        date: z.string().nullable().optional(),
+        follow_up_date: z.string().nullable().optional(),
+        notes: z.string().max(5000).default(""),
+        outcome: z.enum(["", ...COFFEE_CHAT_OUTCOMES]).default(""),
+      })
+      .parse(data),
+  )
+  .handler(async ({ context, data }) => {
+    const supabase = context.supabase as AnyClient;
+    const { id, ...fields } = data;
+    const query = id
+      ? supabase.from("coffee_chats").update(fields).eq("id", id)
+      : supabase.from("coffee_chats").insert(fields);
+    const { error } = await query;
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  });
+
+export const deleteCoffeeChat = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((data) => z.object({ id: z.string().uuid() }).parse(data))
+  .handler(async ({ context, data }) => {
+    const { error } = await (context.supabase as AnyClient)
+      .from("coffee_chats")
+      .delete()
+      .eq("id", data.id);
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  });
+
+// --- Email suggestions (Gmail scan proposals; nothing is applied until accepted) ---
+
+export interface EmailSuggestion {
+  id: string;
+  kind: "application" | "coffee_chat";
+  gmail_message_id: string;
+  company: string | null;
+  role: string | null;
+  email_type: string | null;
+  event_datetime: string | null;
+  confidence: number | null;
+  evidence: string | null;
+  state: "pending" | "accepted" | "dismissed";
+  created_at: string;
+}
+
+export const listEmailSuggestions = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }): Promise<EmailSuggestion[]> => {
+    const { data, error } = await (context.supabase as AnyClient)
+      .from("email_suggestions")
+      .select("*")
+      .eq("state", "pending")
+      .order("created_at", { ascending: false });
+    if (error) throw new Error(error.message);
+    return (data ?? []) as EmailSuggestion[];
+  });
+
+export const updateEmailSuggestion = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((data) =>
+    z
+      .object({ id: z.string().uuid(), state: z.enum(["accepted", "dismissed"]) })
+      .parse(data),
+  )
+  .handler(async ({ context, data }) => {
+    const { error } = await (context.supabase as AnyClient)
+      .from("email_suggestions")
+      .update({ state: data.state })
+      .eq("id", data.id)
+      .eq("state", "pending");
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  });
+
+// Gmail scanning needs each student to connect their own mailbox, which
+// requires the workspace Google sign-in registration. Until that exists,
+// report honestly instead of pretending to scan.
+export const scanGmail = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .handler(async (): Promise<{ connected: boolean; message: string; found: number }> => {
+    return {
+      connected: false,
+      message:
+        "Gmail connection is not set up yet. Once it is, scanning will propose status updates here for you to accept or dismiss — nothing changes automatically.",
+      found: 0,
+    };
+  });
+
+// --- AI advice: counts computed from the database, suggestions from resources ---
+
+export interface AdviceResult {
+  advice: string;
+  resources: Resource[];
+}
+
+export const generateAdvice = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }): Promise<AdviceResult> => {
+    const supabase = context.supabase as AnyClient;
+    const [{ data: apps }, { data: chats }, { data: resources }] = await Promise.all([
+      supabase.from("applications").select("status"),
+      supabase.from("coffee_chats").select("outcome, date"),
+      supabase.from("resources").select("*"),
+    ]);
+    const stats = {
+      applications: (apps ?? []).reduce(
+        (acc: Record<string, number>, a: { status: string }) => {
+          acc[a.status] = (acc[a.status] ?? 0) + 1;
+          return acc;
+        },
+        {},
+      ),
+      coffeeChats: (chats ?? []).reduce(
+        (acc: Record<string, number>, c: { outcome: string }) => {
+          const key = c.outcome || "planned";
+          acc[key] = (acc[key] ?? 0) + 1;
+          return acc;
+        },
+        {},
+      ),
+    };
+    const allResources = (resources ?? []) as Resource[];
+
+    const apiKey = process.env["LOVABLE_API_KEY"];
+    if (!apiKey) {
+      return {
+        advice:
+          "AI suggestions are not configured in this workspace yet. Your numbers above are still up to date.",
+        resources: [],
+      };
+    }
+
+    const { createOpenAI } = await import("@ai-sdk/openai");
+    const { generateText } = await import("ai");
+    const provider = createOpenAI({
+      baseURL: "https://ai.gateway.lovable.dev/v1",
+      apiKey,
+      headers: { "Lovable-API-Key": apiKey, "X-Lovable-AIG-SDK": "vercel-ai-sdk" },
+    });
+    const resourceList = allResources
+      .map((r) => `- id:${r.id} | ${r.title} | tag:${r.tag} | ${r.notes}`)
+      .join("\n");
+    const prompt = `You are advising a student on their internship search. These are their real numbers, counted from their own records (never invent others): ${JSON.stringify(stats)}. Write 3-5 short, honest, encouraging sentences: what the numbers say, one concrete next step for applications, and one for coffee chats. Then, from this curated resource list, pick up to 3 that genuinely fit the situation (e.g. a course when many applications stall before interview, a coffee-chat workshop when chats are ghosted). Return ONLY JSON: {"advice":"...","resourceIds":["..."]}. If none fit, use an empty array. Resources:\n${resourceList || "(none)"}`;
+
+    let advice = "";
+    let picked: Resource[] = [];
+    try {
+      const result = await generateText({
+        model: provider.responses("openai/gpt-6-astra"),
+        prompt,
+      });
+      const parsed = JSON.parse(result.text.replace(/```json|```/g, "").trim()) as {
+        advice?: string;
+        resourceIds?: string[];
+      };
+      advice = (parsed.advice ?? "").trim();
+      const ids = new Set(parsed.resourceIds ?? []);
+      picked = allResources.filter((r) => ids.has(r.id));
+    } catch {
+      advice =
+        "The AI suggestion could not be generated right now. Your numbers above are still accurate — try again in a moment.";
+    }
+
+    await supabase.from("advice_log").insert({
+      stats,
+      advice,
+      resource_ids: picked.map((r) => r.id),
+    });
+    return { advice, resources: picked };
+  });
