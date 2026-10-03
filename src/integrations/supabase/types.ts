@@ -223,6 +223,168 @@ export type Database = {
         }
         Relationships: []
       }
+      plan_notices: {
+        Row: {
+          evidence_quote: string | null
+          id: string
+          opportunity_id: string
+          source_url: string | null
+          text: string
+        }
+        Insert: {
+          evidence_quote?: string | null
+          id: string
+          opportunity_id: string
+          source_url?: string | null
+          text: string
+        }
+        Update: {
+          evidence_quote?: string | null
+          id?: string
+          opportunity_id?: string
+          source_url?: string | null
+          text?: string
+        }
+        Relationships: []
+      }
+      plan_opportunity_dates: {
+        Row: {
+          application_deadline: string | null
+          application_url: string | null
+          opportunity_id: string
+          start_date: string | null
+        }
+        Insert: {
+          application_deadline?: string | null
+          application_url?: string | null
+          opportunity_id: string
+          start_date?: string | null
+        }
+        Update: {
+          application_deadline?: string | null
+          application_url?: string | null
+          opportunity_id?: string
+          start_date?: string | null
+        }
+        Relationships: []
+      }
+      plan_progress: {
+        Row: {
+          id: string
+          item_key: string
+          opportunity_id: string
+          status: string
+          submitted_at: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          item_key: string
+          opportunity_id: string
+          status: string
+          submitted_at?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Update: {
+          id?: string
+          item_key?: string
+          opportunity_id?: string
+          status?: string
+          submitted_at?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      plan_requirements: {
+        Row: {
+          created_at: string
+          due_after: string | null
+          due_after_days: number | null
+          due_date: string | null
+          evidence_quote: string | null
+          id: string
+          kind: string
+          label: string
+          note: string | null
+          opportunity_id: string
+          required: boolean
+          source: string
+          source_url: string | null
+          stage: string
+          status: string
+        }
+        Insert: {
+          created_at?: string
+          due_after?: string | null
+          due_after_days?: number | null
+          due_date?: string | null
+          evidence_quote?: string | null
+          id: string
+          kind: string
+          label: string
+          note?: string | null
+          opportunity_id: string
+          required?: boolean
+          source?: string
+          source_url?: string | null
+          stage: string
+          status?: string
+        }
+        Update: {
+          created_at?: string
+          due_after?: string | null
+          due_after_days?: number | null
+          due_date?: string | null
+          evidence_quote?: string | null
+          id?: string
+          kind?: string
+          label?: string
+          note?: string | null
+          opportunity_id?: string
+          required?: boolean
+          source?: string
+          source_url?: string | null
+          stage?: string
+          status?: string
+        }
+        Relationships: []
+      }
+      plan_user_requirements: {
+        Row: {
+          created_at: string
+          id: string
+          kind: string
+          label: string
+          opportunity_id: string
+          required: boolean
+          stage: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          kind: string
+          label: string
+          opportunity_id: string
+          required?: boolean
+          stage?: string
+          user_id?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          kind?: string
+          label?: string
+          opportunity_id?: string
+          required?: boolean
+          stage?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       resources: {
         Row: {
           created_at: string
