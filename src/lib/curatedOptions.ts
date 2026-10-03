@@ -1,0 +1,80 @@
+/** Curated option lists for the Passport wizard. Students can always add their own free-text value. */
+
+export const SKILL_OPTIONS = [
+  "Data analysis",
+  "Python",
+  "R",
+  "SQL",
+  "Excel",
+  "Machine learning",
+  "Statistics",
+  "Laboratory techniques",
+  "Qualitative research",
+  "Academic writing",
+  "Public speaking",
+  "Project management",
+  "JavaScript",
+  "GIS mapping",
+  "Financial modelling",
+  "Survey design",
+  "Teaching",
+  "Translation",
+  "Graphic design",
+  "Video editing",
+] as const;
+
+export const LANGUAGE_OPTIONS = [
+  "English",
+  "French",
+  "Spanish",
+  "Arabic",
+  "Swahili",
+  "Portuguese",
+  "German",
+  "Mandarin Chinese",
+  "Hindi",
+  "Russian",
+  "Japanese",
+  "Italian",
+  "Dutch",
+  "Korean",
+  "Turkish",
+] as const;
+
+export const LANGUAGE_LEVELS = ["Native", "Fluent", "Advanced", "Intermediate", "Basic"] as const;
+
+export const LOCATION_OPTIONS = [
+  "Kenya",
+  "Nairobi",
+  "East Africa",
+  "United Kingdom",
+  "United States",
+  "Canada",
+  "Germany",
+  "Netherlands",
+  "France",
+  "Sweden",
+  "Australia",
+  "Japan",
+  "Singapore",
+  "South Africa",
+  "Remote",
+] as const;
+
+export const FIELD_OPTIONS = [
+  "Computer science",
+  "Engineering",
+  "Mathematics",
+  "Biology",
+  "Medicine",
+  "Public health",
+  "Economics",
+  "Business",
+  "Law",
+  "Education",
+  "Environmental science",
+  "Social sciences",
+  "Arts and humanities",
+  "Data science",
+  "Agriculture",
+] as const;
