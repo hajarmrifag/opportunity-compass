@@ -25,6 +25,7 @@ export function AppShell({ children }: { children: ReactNode }) {
           ))}
         </nav>
         <Link to="/add" className="btn btn-outline mt-4">+ Add opportunity</Link>
+        <Link to="/tracker-io" className="nav-link mt-1" activeProps={{ className: "nav-link-active" }}>Import / export CSV</Link>
         <p className="mt-auto text-xs text-muted-foreground">Data stays in this browser. Demo opportunities are fictional.</p>
       </aside>
       <div className="flex min-w-0 flex-1 flex-col pb-20 md:pb-0">

@@ -66,6 +66,8 @@ function Passport() {
     setMsg(confirm ? "Passport confirmed. Eligibility checks now use it." : "Draft saved (not confirmed).");
   };
 
+  const dirty = !!profile && JSON.stringify(build()) !== JSON.stringify(profile);
+
   const toggleCat = (c: Category) =>
     setP((x) => ({ ...x, preferences: { ...x.preferences, categories: x.preferences.categories.includes(c) ? x.preferences.categories.filter((y) => y !== c) : [...x.preferences.categories, c] } }));
 
@@ -80,6 +82,7 @@ function Passport() {
         {profile?.confirmed
           ? <span className="chip chip-met">✓ Confirmed {profile.confirmedAt ? new Date(profile.confirmedAt).toLocaleDateString() : ""}</span>
           : <span className="chip chip-unknown">Not confirmed</span>}
+        {profile?.confirmed && dirty && <span className="chip chip-unknown" role="status">Unsaved edits — confirm again to use them</span>}
         {p.source === "demo" && <span className="chip chip-demo">Demo profile</span>}
       </div>
       {msg && <p role="status" className="mb-4 rounded-lg bg-teal-soft p-3 text-sm">{msg}</p>}

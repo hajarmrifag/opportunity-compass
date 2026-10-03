@@ -4,6 +4,7 @@ import { z } from "zod";
 import { useStore } from "@/lib/store";
 import { CATEGORY_LABELS, type Category, type Opportunity } from "@/domain/types";
 import { PageHeader } from "@/components/ui-bits";
+import { isValidIsoDate, oppKey } from "@/lib/validation";
 
 export const Route = createFileRoute("/add")({
   head: () => ({
@@ -22,13 +23,13 @@ const schema = z.object({
   organization: z.string().trim().min(1, "Organization is required").max(150),
   category: z.enum(["internship", "scholarship", "research", "exchange", "fellowship"]),
   location: z.string().trim().max(100),
-  deadline: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).or(z.literal("")),
+  deadline: z.string().refine((d) => d === "" || isValidIsoDate(d), "Enter a real date"),
   link: z.string().trim().url("Enter a full URL starting with https://").refine((u) => /^https?:\/\//.test(u), "Must start with http(s)://").or(z.literal("")),
   summary: z.string().trim().max(1000),
 });
 
 function AddPage() {
-  const { addManualOpportunity, saveOpportunity } = useStore();
+  const { addManualOpportunity, saveOpportunity, opportunities } = useStore();
   const nav = useNavigate();
   const [v, setV] = useState({ title: "", organization: "", category: "internship" as Category, location: "", deadline: "", link: "", summary: "" });
   const [errors, setErrors] = useState<Partial<Record<string, string>>>({});
@@ -44,6 +45,12 @@ function AddPage() {
       return;
     }
     const d = r.data;
+    const dup = opportunities.find((o) => oppKey(o.title, o.organization) === oppKey(d.title, d.organization));
+    if (dup) {
+      saveOpportunity(dup.id); // idempotent: track the existing one instead of creating a copy
+      nav({ to: "/journey" });
+      return;
+    }
     const opp: Opportunity = {
       id: `user-${Date.now().toString(36)}`,
       title: d.title, organization: d.organization, category: d.category,
@@ -74,7 +81,7 @@ function AddPage() {
         <div><label htmlFor="d">Deadline</label><input id="d" type="date" value={v.deadline} onChange={set("deadline")} />{err("deadline")}</div>
         <div><label htmlFor="u">Link (optional)</label><input id="u" type="url" placeholder="https://" value={v.link} onChange={set("link")} aria-invalid={!!errors["link"]} />{err("link")}</div>
         <div className="md:col-span-2"><label htmlFor="s">Notes / summary</label><textarea id="s" rows={3} value={v.summary} onChange={set("summary")} /></div>
-        <p className="text-xs text-muted-foreground md:col-span-2">Eligibility and funding will show as Unknown until verified data is available.</p>
+        <p className="text-xs text-muted-foreground md:col-span-2">If the same title and organization already exist, the existing item is tracked instead of creating a duplicate. Eligibility and funding will show as Unknown until verified data is available.</p>
         <div className="md:col-span-2"><button type="submit" className="btn">Add & track</button></div>
       </form>
     </>

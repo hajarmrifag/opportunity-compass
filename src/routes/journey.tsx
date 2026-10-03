@@ -24,7 +24,7 @@ function Journey() {
 
   return (
     <>
-      <PageHeader title="My Journey" sub="Update statuses yourself — nothing is marked Submitted automatically." right={<Link to="/add" className="btn btn-outline">+ Add opportunity</Link>} />
+      <PageHeader title="My Journey" sub="Update statuses yourself — nothing is marked Submitted automatically." right={<div className="flex flex-wrap gap-2"><Link to="/tracker-io" className="btn btn-ghost">Import / export</Link><Link to="/add" className="btn btn-outline">+ Add opportunity</Link></div>} />
       {applications.length === 0 ? (
         <EmptyState title="Your journey starts here" body="Save an opportunity from Discover, or add one you found elsewhere." action={<Link to="/discover" className="btn">Go to Discover</Link>} />
       ) : (

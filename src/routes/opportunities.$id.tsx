@@ -1,5 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useStore } from "@/lib/store";
+import { deadlineState, safeHttpUrl } from "@/lib/validation";
 import { demoEligibilityAdapter } from "@/adapters/demoEligibility";
 import { STATUS_LABELS } from "@/domain/types";
 import { CategoryChip, CoverageChip, DeadlineText, EmptyState, Loading, ReqStatus, SourceBadge } from "@/components/ui-bits";
@@ -33,6 +34,9 @@ function Detail() {
   const app = getApplication(opp.id);
   const o = OVERALL[result.overall];
   const f = opp.funding;
+  const timing = deadlineState(opp.deadline);
+  const applyUrl = safeHttpUrl(opp.applyUrl);
+  const sourceUrl = safeHttpUrl(opp.sourceUrl);
 
   return (
     <>
@@ -42,6 +46,11 @@ function Detail() {
         <h1 className="font-display text-3xl md:text-4xl">{opp.title}</h1>
         <p className="text-muted-foreground">{opp.organization} · {opp.location} · {opp.mode.replace("_", " ")}</p>
         <p className="mt-2 text-sm"><DeadlineText iso={opp.deadline} /></p>
+        {(timing.state === "expired" || timing.state === "invalid") && (
+          <p role="note" className="mt-3 rounded-lg bg-warning-soft p-3 text-sm">
+            {timing.state === "expired" ? "This deadline has passed." : "The listed deadline is not a valid date."} This is about timing only — it does not change the eligibility results below.
+          </p>
+        )}
       </header>
 
       <div className="grid gap-6 lg:grid-cols-[1fr_320px]">
@@ -106,8 +115,8 @@ function Detail() {
             ) : (
               <button className="btn w-full" onClick={() => saveOpportunity(opp.id)}>Save to My Journey</button>
             )}
-            {opp.applyUrl ? (
-              <a href={opp.applyUrl} target="_blank" rel="noopener noreferrer" className="btn btn-outline w-full">Open application site ↗</a>
+            {applyUrl ? (
+              <a href={applyUrl} target="_blank" rel="noopener noreferrer" className="btn btn-outline w-full">Open application site ↗</a>
             ) : (
               <p className="text-sm text-muted-foreground">No application link available{opp.isDemo ? " for demo data" : ""}.</p>
             )}
@@ -115,7 +124,7 @@ function Detail() {
           </div>
           <div className="card p-5 text-sm">
             <h2 className="mb-2 text-base">Source & verification</h2>
-            <p>Source: {opp.sourceUrl ? <a className="underline" href={opp.sourceUrl} target="_blank" rel="noopener noreferrer">link</a> : "None"}</p>
+            <p>Source: {sourceUrl ? <a className="underline" href={sourceUrl} target="_blank" rel="noopener noreferrer">link</a> : "None"}</p>
             <p>Last verified: {opp.lastVerified ?? "Never — unverified"}</p>
             {opp.isDemo && <p className="mt-2 text-demo">Fictional demo listing for testing only.</p>}
           </div>

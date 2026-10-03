@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 import type { CoverageStatus, Opportunity, RequirementStatus } from "@/domain/types";
 import { CATEGORY_LABELS } from "@/domain/types";
-import { daysUntil } from "@/lib/store";
+import { deadlineState } from "@/lib/validation";
 
 export function DemoBadge() {
   return <span className="chip chip-demo" title="Fictional demo data, not verified">Demo data</span>;
@@ -18,11 +18,13 @@ export function CategoryChip({ opp }: { opp: Opportunity }) {
 }
 
 export function DeadlineText({ iso }: { iso: string | null }) {
-  const d = daysUntil(iso);
-  if (!iso || d === null) return <span className="text-muted-foreground">Deadline unknown</span>;
-  const label = d < 0 ? "Passed" : d === 0 ? "Today" : `${d} day${d === 1 ? "" : "s"} left`;
+  const { state, days } = deadlineState(iso);
+  if (state === "unknown") return <span className="text-muted-foreground">Deadline unknown</span>;
+  if (state === "invalid") return <span className="text-destructive">Invalid deadline — check date</span>;
+  const label = state === "expired" ? "Closed" : days === 0 ? "Closes today" : `${days} day${days === 1 ? "" : "s"} left`;
+  const cls = state === "expired" ? "text-muted-foreground line-through" : state === "closing_soon" ? "font-semibold text-warning-strong" : "text-muted-foreground";
   return (
-    <span className={d >= 0 && d <= 14 ? "font-semibold text-warning-strong" : "text-muted-foreground"}>
+    <span className={cls}>
       {new Date(iso + "T00:00:00").toLocaleDateString(undefined, { day: "numeric", month: "short", year: "numeric" })} · {label}
     </span>
   );
