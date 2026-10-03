@@ -180,23 +180,7 @@ function TrackerPage() {
         />
       </div>
 
-      {isEmpty ? (
-        <div className="mt-6">
-          <EmptyState
-            title="Nothing tracked yet"
-            body="Save a listing, add an application you found elsewhere, or log a coffee chat and your dashboard fills in here."
-          />
-          <div className="mt-3 flex gap-2">
-            <Link to="/search" className="btn">
-              Browse listings
-            </Link>
-            <Link to="/add" className="btn btn-outline">
-              Add an application
-            </Link>
-          </div>
-        </div>
-      ) : (
-        <>
+      <>
           {/* 2. Due today */}
           <section className="card mt-6 p-5" aria-labelledby="due-today">
             <h2 id="due-today" className="text-lg font-semibold">
