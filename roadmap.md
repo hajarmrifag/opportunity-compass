@@ -1,13 +1,13 @@
 # Roadmap
-- [ ] Audit current files/contracts; preserve teammate changes
-- [ ] Profile edits invalidate confirmation; unknown never passes
-- [ ] Expiry distinct from eligibility; invalid deadlines/URLs handled
-- [ ] Keyboard/mobile audit
-- [ ] CSV tracker import/export (template, mapping, preview, validation, dupes, confirm, quoting, formula-injection guard)
-- [ ] docs/TEAM_INTEGRATION.md
-- [ ] docs/QA_CHECKLIST.md
-- [ ] docs/DEMO_SCRIPT.md
-- [ ] docs/AUTH_DB_PLAN.md (per-user RLS, provenance, migration/rollback, isolation tests, approvals) — plan only, no backend
-- [ ] Typecheck, unit tests, browser tests (core + mobile); final report
-- [ ] Fix off-by-one days-left (calendar-day diff in local tz, no hardcoded today); test it
-- [ ] Dashboard: deadline list window = 14-day count; record in QA
+- [x] Audit current files/contracts; preserve teammate changes
+- [x] Profile edits invalidate confirmation; unknown never passes
+- [x] Expiry distinct from eligibility; invalid deadlines/URLs handled
+- [x] Keyboard/mobile audit
+- [x] CSV tracker import/export (template, mapping, preview, validation, dupes, confirm, quoting, formula-injection guard)
+- [x] docs/TEAM_INTEGRATION.md
+- [x] docs/QA_CHECKLIST.md
+- [x] docs/DEMO_SCRIPT.md
+- [x] docs/AUTH_DB_PLAN.md (per-user RLS, provenance, migration/rollback, isolation tests, approvals) — plan only, no backend
+- [x] Typecheck, unit tests, browser tests (core + mobile); final report
+- [x] Fix off-by-one days-left (calendar-day diff in local tz, no hardcoded today); test it
+- [x] Dashboard: deadline list window = 14-day count; record in QA

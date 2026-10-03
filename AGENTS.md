@@ -17,3 +17,6 @@
 - Eligibility/relevance is computed only via an `EligibilityAdapter` (`src/adapters/`); missing data must yield "unknown", never "met" — honesty requirement.
 - App state is accessed via `useStore()` in `src/lib/store.tsx`, hydrated from storage in an effect — avoids SSR hydration mismatch.
 - Application status changes are user-initiated only; no code path may set "submitted" automatically.
+- Date-only deadlines are compared as local calendar days via `deadlineState` in `src/lib/validation.ts`; `DEADLINE_WINDOW_DAYS` is the single "approaching" window — keeps UI counts consistent.
+- URLs render only through `safeHttpUrl`; CSV output goes through `src/lib/csv.ts` (`escapeCell`) for quoting and formula-injection protection.
+- CSV import applies only after preview + explicit confirm, as one atomic `importTracker` commit — prevents partial or surprise writes.
