@@ -9,6 +9,7 @@ import { StepExtract } from "@/components/passport/StepExtract";
 import { StepReview } from "@/components/passport/StepReview";
 import { StepGaps } from "@/components/passport/StepGaps";
 import { ProfileCreated, StepConfirm } from "@/components/passport/StepConfirm";
+import { PassportActions } from "@/components/passport/PassportActions";
 import { F, MultiSelect } from "@/components/passport/fields";
 import { fileBase64, type IntakeDocument } from "@/components/passport/shared";
 import { LANGUAGE_OPTIONS, LOCATION_OPTIONS, SKILL_OPTIONS } from "@/lib/curatedOptions";
@@ -56,13 +57,22 @@ export const Route = createFileRoute("/passport")({
 });
 
 function Passport() {
-  const { ready, profile, saveProfile, loadDemoProfile, profileDraft, setProfileDraft } =
-    useStore();
+  const {
+    ready,
+    profile,
+    saveProfile,
+    loadDemoProfile,
+    profileDraft,
+    setProfileDraft,
+    deleteProfile,
+    pendingProfileEdits,
+  } = useStore();
   const runExtractionFn = useServerFn(extractProfile);
   const runWebExtraction = useServerFn(extractWebProfile);
 
   const [step, setStep] = useState(0);
   const [created, setCreated] = useState(false);
+  const [deletedNotice, setDeletedNotice] = useState(false);
   const [documents, setDocuments] = useState<IntakeDocument[]>([]);
   const [results, setResults] = useState<DocumentExtractionResult[]>([]);
   const [choices, setChoices] = useState<Record<string, string>>({});
@@ -254,15 +264,32 @@ function Passport() {
 
   if (!ready) return null;
 
+  const handleDelete = () => {
+    const failure = deleteProfile();
+    if (failure) return failure;
+    setCreated(false);
+    setDocuments([]);
+    setResults([]);
+    setChoices({});
+    setSavedAt(null);
+    setStep(0);
+    setMessage("");
+    setDeletedNotice(true);
+    return null;
+  };
+
   if (created) {
     return (
       <div className="mx-auto max-w-[760px]">
         <ProfileCreated name={draft.fullName} />
-        <div className="mt-4 flex justify-center gap-3">
-          <Button variant="outline" onClick={() => setCreated(false)}>
-            Edit my profile
-          </Button>
-        </div>
+        <PassportActions
+          canRecommend={Boolean(profile?.confirmed) && !pendingProfileEdits}
+          onEdit={() => {
+            setCreated(false);
+            setStep(2);
+          }}
+          onDelete={handleDelete}
+        />
       </div>
     );
   }
@@ -548,6 +575,12 @@ function Passport() {
           </Button>
         )}
       </header>
+
+      {deletedNotice && (
+        <p role="status" className="mt-4 border border-border bg-card p-3 text-sm">
+          Your Passport was deleted. Saved opportunities and applications are unchanged.
+        </p>
+      )}
 
       <ol className="mt-6 flex flex-wrap gap-2" aria-label="Profile steps">
         {STEPS.map((label, index) => (
