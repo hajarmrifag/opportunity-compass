@@ -6,6 +6,7 @@ import { routeTree } from "@/routeTree.gen";
 it("dbg", async () => {
   const errs: string[] = []; const oe = console.error; console.error = (...a) => { errs.push(a.map(String).join(" ").slice(0, 400)); };
   const router = createRouter({ routeTree, context: { queryClient: new QueryClient() }, history: createMemoryHistory({ initialEntries: ["/"] }) });
+  await router.load(); console.log("STATUS", router.state.status, router.state.matches.map(m=>m.routeId+":"+m.status).join(","));
   render(<RouterProvider router={router} />, { container: document as unknown as HTMLElement, baseElement: document.documentElement });
   await new Promise((r) => setTimeout(r, 1500));
   console.error = oe;
