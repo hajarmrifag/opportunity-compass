@@ -44,10 +44,10 @@ function Journey() {
       {applications.length === 0 ? (
         <EmptyState
           title="Your journey starts here"
-          body="Find real opportunities with Live search, or add one you found elsewhere."
+          body="Find real opportunities with Search, or add one you found elsewhere."
           action={
             <Link to="/search" className="btn">
-              Go to Live search
+              Go to Search
             </Link>
           }
         />

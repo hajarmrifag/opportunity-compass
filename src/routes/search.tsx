@@ -292,13 +292,13 @@ function LiveSearchPage() {
       />
       {configured === false && !demo && trail.state.phase === "idle" && (
         <div role="status" className="card mb-6 border-l-4 border-l-primary p-5 text-sm">
-          <strong>Live search is not connected yet.</strong> A project admin needs to link the web
+          <strong>Web search is not connected yet.</strong> A project admin needs to link the web
           search connector before searches can run. Until then, nothing is searched and no example
           results are shown.{" "}
           <Link to="/discover" className="underline">
-            Demo listings
+            Browse
           </Link>{" "}
-          are kept separately for testing.
+          keeps demo listings for testing.
         </div>
       )}
 
