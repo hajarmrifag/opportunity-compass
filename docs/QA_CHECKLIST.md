@@ -117,3 +117,11 @@ $ bun run build      -> exit 0
 ```
 **Live re-run (real Firecrawl):** "software engineering internships Hong Kong" → 2 listings, 6 skipped: citadelsecurities.com/careers/details/software-engineer-intern-asia/ and janestreet.com/join-jane-street/position/8617298002/. No intrack.hk or Indeed result. "MSc data science scholarship" (Master's) → UChicago, UC Irvine and Miami programme pages kept.
 **Trade-off:** fewer results, because board pages are skipped rather than resolved. A detail-URL resolver (follow the board link, then extract the detail page) is a possible later step and would cost extra Firecrawl credits.
+
+## Evidence — live search abort/timeout fix (3 Oct 2026, 07:32 UTC)
+- Fixed: AbortError thrown from `liveSearch.server.ts` fetch after Cancel/navigation. The server now returns a typed result `cancelled` (user abort) or `timeout` (upstream exceeded `UPSTREAM_TIMEOUT_MS`, 55 s) and no longer throws. Aborts while reading the response body are handled the same way. Cancelled and timed-out results are never cached.
+- Page: results from a stale or unmounted search are ignored, and loading always clears. Cancelled shows "Search again"; errors (including timeout) show "Retry".
+- My Journey empty state now links to Live search.
+- `bunx vitest run`: 3 files, 39 tests passed. New tests cover user cancel, already-aborted request (no provider call), navigating away mid-search followed by a successful uncached search with no unhandled rejection, upstream timeout followed by success, abort during body read, and that a plain network failure stays a `provider_error`.
+- `tsgo --noEmit`: clean. `bun run build`: success.
+- Not done: live provider search (needs the connector; no new connections were made). No publishing.
