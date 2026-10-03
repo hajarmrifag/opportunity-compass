@@ -24,7 +24,7 @@ import {
   type TrackerEvent,
 } from "@/lib/tracker.functions";
 import { TrackerInsights } from "@/features/tracker/Insights";
-import { EmptyState, Loading, PageHeader } from "@/components/ui-bits";
+import { Loading, PageHeader } from "@/components/ui-bits";
 
 export const Route = createFileRoute("/_authenticated/tracker")({
   head: () => ({
@@ -145,7 +145,6 @@ function TrackerPage() {
 
   if (appsQuery.isLoading || chatsQuery.isLoading) return <Loading />;
 
-  const isEmpty = apps.length === 0 && chats.length === 0;
 
   return (
     <>
@@ -180,23 +179,7 @@ function TrackerPage() {
         />
       </div>
 
-      {isEmpty ? (
-        <div className="mt-6">
-          <EmptyState
-            title="Nothing tracked yet"
-            body="Save a listing, add an application you found elsewhere, or log a coffee chat and your dashboard fills in here."
-          />
-          <div className="mt-3 flex gap-2">
-            <Link to="/search" className="btn">
-              Browse listings
-            </Link>
-            <Link to="/add" className="btn btn-outline">
-              Add an application
-            </Link>
-          </div>
-        </div>
-      ) : (
-        <>
+      <>
           {/* 2. Due today */}
           <section className="card mt-6 p-5" aria-labelledby="due-today">
             <h2 id="due-today" className="text-lg font-semibold">
@@ -286,8 +269,7 @@ function TrackerPage() {
               </ul>
             )}
           </section>
-        </>
-      )}
+      </>
 
       {/* Coffee chats — always available, even before anything is tracked */}
       <CoffeeChatSection chats={chats} onChanged={refresh} />
