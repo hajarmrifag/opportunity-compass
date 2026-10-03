@@ -127,7 +127,7 @@ export function PageHeader({
   return (
     <header className="atlas-page-header mb-8 grid grid-cols-[minmax(0,1fr)_auto] items-end gap-4 border-b border-border pb-5">
       <div className="min-w-0">
-        <p className="atlas-kicker">Opportunity Atlas</p>
+        <p className="atlas-kicker">Source</p>
         <h1 className="font-display text-4xl md:text-6xl">{title}</h1>
         {sub && <p className="mt-1 text-muted-foreground">{sub}</p>}
       </div>

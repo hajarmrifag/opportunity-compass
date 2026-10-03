@@ -14,7 +14,7 @@ import {
 import { DialogDescription, DialogTitle } from "@/components/ui/dialog";
 
 const destinations = [
-  { label: "Opportunity Atlas", to: "/" },
+  { label: "Source", to: "/" },
   { label: "Live search", to: "/search" },
   { label: "Demo listings", to: "/discover" },
   { label: "My Journey", to: "/journey" },

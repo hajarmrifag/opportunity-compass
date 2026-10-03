@@ -19,12 +19,12 @@ import { DeadlineText, EmptyState, Loading } from "@/components/ui-bits";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Opportunity Atlas — Source" },
+      { title: "Source — Find your next opportunity" },
       {
         name: "description",
         content: "Search, compare and map your next student opportunity with Source.",
       },
-      { property: "og:title", content: "Opportunity Atlas — Source" },
+      { property: "og:title", content: "Source — Find your next opportunity" },
       {
         property: "og:description",
         content: "Search, compare and map your next student opportunity with Source.",
