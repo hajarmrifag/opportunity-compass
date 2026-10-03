@@ -2,6 +2,8 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { liveSearch, liveSearchStatus } from "@/lib/liveSearch.functions";
+import { agentSearch } from "@/lib/agentSearch.functions";
+import type { AgentSearchResponse } from "@/lib/agentSearch";
 import {
   liveSearchInput,
   categoryKnown,
@@ -38,6 +40,8 @@ export const Route = createFileRoute("/search")({
         content:
           "Search the web for internships, fellowships, master's programmes and jobs, with original sources.",
       },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: LiveSearchPage,
@@ -57,6 +61,11 @@ const EMPTY: LiveSearchInput = {
 
 function LiveSearchPage() {
   const search = useServerFn(liveSearch);
+  const agent = useServerFn(agentSearch);
+  const [mode, setMode] = useState<"basic" | "agent">("basic");
+  const [agentResp, setAgentResp] = useState<AgentSearchResponse | null>(null);
+  const [agentFailed, setAgentFailed] = useState(false);
+  const [usedMode, setUsedMode] = useState<"basic" | "agent">("basic");
   const status$ = useServerFn(liveSearchStatus);
   const [configured, setConfigured] = useState<boolean | null>(null);
   const { q } = Route.useSearch();
@@ -94,9 +103,9 @@ function LiveSearchPage() {
 
   const submit = (e: FormEvent) => {
     e.preventDefault();
-    void run(form);
+    void run(form, mode);
   };
-  const run = async (input: LiveSearchInput) => {
+  const run = async (input: LiveSearchInput, runMode: "basic" | "agent" = "basic") => {
     const parsed = liveSearchInput.safeParse(input);
     if (!parsed.success) {
       setError(parsed.error.issues[0]?.message ?? "Check your search");
@@ -110,8 +119,33 @@ function LiveSearchPage() {
     setStatus("loading");
     setError("");
     setResp(null);
+    setAgentResp(null);
+    setAgentFailed(false);
+    setUsedMode(runMode);
     const stale = () => !mounted.current || abortRef.current !== ac;
     try {
+      if (runMode === "agent") {
+        const a = await agent({ data: parsed.data, signal: ac.signal });
+        if (stale()) return;
+        if (!a.ok) {
+          if (a.error.code === "cancelled") return setStatus("cancelled");
+          setAgentFailed(a.error.code === "model_error" || a.error.code === "timeout");
+          setError(a.error.message);
+          setStatus("error");
+          return;
+        }
+        setAgentResp(a);
+        setResp({
+          ok: true,
+          results: a.results,
+          dropped: Math.max(0, a.pagesRead - a.results.length),
+          cached: a.cached,
+          retrievedAt: a.retrievedAt,
+          queryUsed: a.queries.join(" | "),
+        });
+        setStatus("done");
+        return;
+      }
       const r = await search({ data: parsed.data, signal: ac.signal });
       if (stale()) return;
       if (ac.signal.aborted) {
@@ -144,7 +178,7 @@ function LiveSearchPage() {
     <>
       <PageHeader
         title="Live search"
-        sub="Searches the public web and extracts details from each original page. Results are not human-verified."
+        sub="Search the public web, then review every result against its original source."
       />
       {configured === false && (
         <div role="status" className="card mb-6 border-l-4 border-l-primary p-5 text-sm">
@@ -158,7 +192,11 @@ function LiveSearchPage() {
         </div>
       )}
 
-      <form onSubmit={submit} className="card mb-6 grid gap-4 p-5 md:grid-cols-4" noValidate>
+      <form
+        onSubmit={submit}
+        className="atlas-search-workbench mb-8 grid gap-5 border-y border-border py-6 md:grid-cols-4"
+        noValidate
+      >
         <div className="md:col-span-4">
           <label htmlFor="lq">What are you looking for?</label>
           <input
@@ -169,6 +207,36 @@ function LiveSearchPage() {
             onChange={(e) => set("query", e.target.value)}
           />
         </div>
+        <fieldset className="atlas-agent-mode md:col-span-4">
+          <legend className="sr-only">Search mode</legend>
+          <div className="flex flex-wrap gap-2" role="radiogroup" aria-label="Search mode">
+            {(
+              [
+                ["basic", "Basic search", "One web search, rule-checked"],
+                ["agent", "Research agent", "AI plans, reads up to 8 pages, reviews evidence"],
+              ] as const
+            ).map(([m, label, hint]) => (
+              <button
+                key={m}
+                type="button"
+                role="radio"
+                aria-checked={mode === m}
+                className={`atlas-mode-option ${mode === m ? "is-active" : ""}`}
+                onClick={() => setMode(m)}
+              >
+                <strong>{label}</strong>
+                <span>{hint}</span>
+              </button>
+            ))}
+          </div>
+          {mode === "agent" && (
+            <p className="mt-2 text-xs text-muted-foreground">
+              The agent sends only this form to the built-in AI and the web search service, and
+              reads public source pages. It never sends your Passport, CV, name, email or notes.
+              Each run uses workspace credits (up to 3 searches, 8 pages, 3 short AI steps).
+            </p>
+          )}
+        </fieldset>
         <div className="md:col-span-4">
           <button
             type="button"
@@ -176,7 +244,7 @@ function LiveSearchPage() {
             aria-expanded={showGuidance}
             onClick={() => setShowGuidance((value) => !value)}
           >
-            {showGuidance ? "Hide guided filters" : "Add guided filters"}
+            {showGuidance ? "Hide filters" : "More filters"}
           </button>
         </div>
         {showGuidance && (
@@ -263,7 +331,11 @@ function LiveSearchPage() {
                 type="submit"
                 disabled={status === "loading" || configured === false}
               >
-                {status === "loading" ? "Searching…" : "Search the web"}
+                {status === "loading"
+                  ? "Searching…"
+                  : mode === "agent"
+                    ? "Start research"
+                    : "Search the web"}
               </button>
               {status === "loading" && (
                 <button
@@ -277,8 +349,9 @@ function LiveSearchPage() {
             </div>
           </>
         )}
-        <div className="md:col-span-4 rounded-md bg-muted p-3 text-sm">
-          <strong>Search summary:</strong> {searchSummary(form)}
+        <div className="atlas-search-summary md:col-span-4 p-4 text-sm">
+          <span className="atlas-card-index">Query brief</span>
+          <strong className="ml-3">{searchSummary(form)}</strong>
           {hasFilters(form) && (
             <div className="mt-2 flex flex-wrap gap-2" aria-label="Active filters">
               {activeFilters(form).map((filter) => (
@@ -303,7 +376,11 @@ function LiveSearchPage() {
               type="submit"
               disabled={status === "loading" || configured === false}
             >
-              {status === "loading" ? "Searching…" : "Search the web"}
+              {status === "loading"
+                ? "Searching…"
+                : mode === "agent"
+                  ? "Start research"
+                  : "Search the web"}
             </button>
             {status === "loading" && (
               <button
@@ -326,7 +403,9 @@ function LiveSearchPage() {
       <div aria-live="polite">
         {status === "loading" && (
           <p className="text-sm text-muted-foreground" role="status">
-            Searching and reading source pages… this can take up to a minute.
+            {usedMode === "agent"
+              ? "Research agent working: planning, searching, reading pages and reviewing evidence. This can take up to two minutes; completed steps appear when it finishes."
+              : "Searching and reading source pages… this can take up to a minute."}
           </p>
         )}
         {status === "cancelled" && (
@@ -336,7 +415,7 @@ function LiveSearchPage() {
               <button
                 type="button"
                 className="btn btn-outline btn-sm"
-                onClick={() => lastInput.current && void run(lastInput.current)}
+                onClick={() => lastInput.current && void run(lastInput.current, usedMode)}
               >
                 Search again
               </button>
@@ -353,15 +432,30 @@ function LiveSearchPage() {
               <button
                 type="button"
                 className="btn btn-outline btn-sm"
-                onClick={() => lastInput.current && void run(lastInput.current)}
+                onClick={() => lastInput.current && void run(lastInput.current, usedMode)}
               >
                 Retry
+              </button>
+            )}
+            {agentFailed && lastInput.current && (
+              <button
+                type="button"
+                className="btn btn-outline btn-sm"
+                onClick={() => lastInput.current && void run(lastInput.current, "basic")}
+              >
+                Use basic search instead
               </button>
             )}
           </div>
         )}
         {status === "done" && resp && (
           <>
+            {agentResp && <AgentActivity a={agentResp} />}
+            {usedMode === "basic" && lastInput.current && resp && (
+              <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                Basic search (no AI review)
+              </p>
+            )}
             <p className="mb-3 text-sm text-muted-foreground">
               {resp.results.length} listing{resp.results.length === 1 ? "" : "s"} · retrieved{" "}
               {new Date(resp.retrievedAt).toLocaleString()}
@@ -374,11 +468,11 @@ function LiveSearchPage() {
                 body="Try broader words or fewer filters. We don't fill gaps with made-up results."
               />
             ) : (
-              <ul className="space-y-4">
-                {resp.results.map((o) => (
-                  <LiveResult key={o.id} opp={o} />
+              <ol className="atlas-result-list space-y-5">
+                {resp.results.map((o, index) => (
+                  <LiveResult key={o.id} opp={o} index={index + 1} />
                 ))}
-              </ul>
+              </ol>
             )}
           </>
         )}
@@ -387,7 +481,53 @@ function LiveSearchPage() {
   );
 }
 
-function LiveResult({ opp }: { opp: Opportunity }) {
+function AgentActivity({ a }: { a: AgentSearchResponse }) {
+  const by = { model: "AI model", search_tool: "Web search", rules: "Rules" } as const;
+  return (
+    <section
+      className="atlas-agent-panel mb-6 border border-border p-5"
+      aria-label="Research agent activity"
+    >
+      <div className="flex flex-wrap items-baseline justify-between gap-2">
+        <h2 className="text-xl">Research agent</h2>
+        <span className="atlas-card-index">
+          {a.pagesRead} pages read · {a.queries.length} quer{a.queries.length === 1 ? "y" : "ies"}
+          {a.cached ? " · cached" : ""}
+        </span>
+      </div>
+      <ol className="mt-3 space-y-2 text-sm">
+        {a.stages.map((s, i) => (
+          <li key={i} className="flex flex-wrap gap-x-3 gap-y-1">
+            <span className={`chip ${s.ok ? "chip-met" : "chip-notmet"}`}>
+              {s.ok ? "Done" : "Failed"}
+            </span>
+            <strong>{s.label}</strong>
+            <span className="text-muted-foreground">{s.detail}</span>
+            <span className="atlas-card-index">{by[s.by]}</span>
+          </li>
+        ))}
+      </ol>
+      <details className="mt-3 text-sm">
+        <summary className="cursor-pointer">Queries used</summary>
+        <ul className="mt-2 list-disc pl-5">
+          {a.queries.map((q) => (
+            <li key={q}>{q}</li>
+          ))}
+        </ul>
+      </details>
+      <p className="mt-3 text-xs text-muted-foreground">
+        Facts come only from each source page; the AI model ({a.model}) planned queries and kept or
+        rejected candidates but cannot add facts.{" "}
+        {a.reviewed
+          ? ""
+          : "AI review did not complete for some results — those passed rule checks only. "}
+        Not an exhaustive search. Verify every detail on the official source.
+      </p>
+    </section>
+  );
+}
+
+function LiveResult({ opp, index }: { opp: Opportunity; index: number }) {
   const { profile, getApplication, getOpportunity, addManualOpportunity, saveOpportunity } =
     useStore();
   const [open, setOpen] = useState(false);
@@ -401,23 +541,28 @@ function LiveResult({ opp }: { opp: Opportunity }) {
     saveOpportunity(opp.id);
   };
   return (
-    <li className="card p-5">
-      <div className="mb-2 flex flex-wrap gap-2">
-        <span className="chip chip-teal">
-          {categoryKnown(opp) ? CATEGORY_LABELS[opp.category] : "Category unknown"}
-        </span>
-        <span className="chip chip-unknown">From live web · unverified</span>
-        <span
-          className={`chip ${timing === "Open" ? "chip-met" : timing === "Closed" ? "chip-notmet" : "chip-muted"}`}
-        >
-          {timing}
-        </span>
+    <li
+      className={`atlas-live-result atlas-category-${opp.category} border border-border p-5 md:p-7`}
+    >
+      <div className="mb-4 flex items-start justify-between gap-3">
+        <span className="atlas-result-number">{String(index).padStart(2, "0")}</span>
+        <div className="flex flex-wrap justify-end gap-2">
+          <span className="chip chip-teal">
+            {categoryKnown(opp) ? CATEGORY_LABELS[opp.category] : "Category unknown"}
+          </span>
+          <span className="chip chip-unknown">From live web · unverified</span>
+          <span
+            className={`chip ${timing === "Open" ? "chip-met" : timing === "Closed" ? "chip-notmet" : "chip-muted"}`}
+          >
+            {timing}
+          </span>
+        </div>
       </div>
-      <h3 className="text-lg">{opp.title}</h3>
+      <h3 className="max-w-4xl text-2xl leading-tight md:text-4xl">{opp.title}</h3>
       <p className="text-sm text-muted-foreground">
         {opp.organization} · {opp.location} · {opp.mode.replace("_", " ")}
       </p>
-      <p className="mt-2 text-sm">{opp.summary}</p>
+      <p className="mt-4 max-w-4xl text-sm leading-relaxed">{opp.summary}</p>
       <p className="mt-2 text-sm">
         <DeadlineText iso={opp.deadline} />
       </p>
@@ -432,7 +577,7 @@ function LiveResult({ opp }: { opp: Opportunity }) {
         )}{" "}
         · retrieved {opp.retrievedAt ? new Date(opp.retrievedAt).toLocaleString() : "unknown"}
       </p>
-      <div className="mt-3 flex flex-wrap gap-2">
+      <div className="mt-5 flex flex-wrap gap-2 border-t border-border pt-4">
         <button className="btn btn-sm" disabled={saved} onClick={save} aria-pressed={saved}>
           {saved ? "✓ Saved" : "Save to My Journey"}
         </button>

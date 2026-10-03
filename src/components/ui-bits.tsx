@@ -4,13 +4,26 @@ import { CATEGORY_LABELS } from "@/domain/types";
 import { deadlineState } from "@/lib/validation";
 
 export function DemoBadge() {
-  return <span className="chip chip-demo" title="Fictional demo data, not verified">Demo data</span>;
+  return (
+    <span className="chip chip-demo" title="Fictional demo data, not verified">
+      Demo data
+    </span>
+  );
 }
 
 export function SourceBadge({ opp }: { opp: Opportunity }) {
   if (opp.isDemo) return <DemoBadge />;
-  if (opp.verification === "user_entered") return <span className="chip chip-muted">Added by you</span>;
-  if (opp.verification === "web_retrieved") return <span className="chip chip-unknown" title="Extracted from the source page; not human-verified">From live web · unverified</span>;
+  if (opp.verification === "user_entered")
+    return <span className="chip chip-muted">Added by you</span>;
+  if (opp.verification === "web_retrieved")
+    return (
+      <span
+        className="chip chip-unknown"
+        title="Extracted from the source page; not human-verified"
+      >
+        From live web · unverified
+      </span>
+    );
   return <span className="chip chip-met">Verified</span>;
 }
 
@@ -21,12 +34,28 @@ export function CategoryChip({ opp }: { opp: Opportunity }) {
 export function DeadlineText({ iso }: { iso: string | null }) {
   const { state, days } = deadlineState(iso);
   if (state === "unknown") return <span className="text-muted-foreground">Deadline unknown</span>;
-  if (state === "invalid") return <span className="text-destructive">Invalid deadline — check date</span>;
-  const label = state === "expired" ? "Closed" : days === 0 ? "Closes today" : `${days} day${days === 1 ? "" : "s"} left`;
-  const cls = state === "expired" ? "text-muted-foreground line-through" : state === "closing_soon" ? "font-semibold text-warning-strong" : "text-muted-foreground";
+  if (state === "invalid")
+    return <span className="text-destructive">Invalid deadline — check date</span>;
+  const label =
+    state === "expired"
+      ? "Closed"
+      : days === 0
+        ? "Closes today"
+        : `${days} day${days === 1 ? "" : "s"} left`;
+  const cls =
+    state === "expired"
+      ? "text-muted-foreground line-through"
+      : state === "closing_soon"
+        ? "font-semibold text-warning-strong"
+        : "text-muted-foreground";
   return (
     <span className={cls}>
-      {new Date(iso + "T00:00:00").toLocaleDateString(undefined, { day: "numeric", month: "short", year: "numeric" })} · {label}
+      {new Date(iso + "T00:00:00").toLocaleDateString(undefined, {
+        day: "numeric",
+        month: "short",
+        year: "numeric",
+      })}{" "}
+      · {label}
     </span>
   );
 }
@@ -38,7 +67,11 @@ const REQ: Record<RequirementStatus, { label: string; cls: string; icon: string 
 };
 export function ReqStatus({ s }: { s: RequirementStatus }) {
   const r = REQ[s];
-  return <span className={`chip ${r.cls}`}><span aria-hidden>{r.icon}</span> {r.label}</span>;
+  return (
+    <span className={`chip ${r.cls}`}>
+      <span aria-hidden>{r.icon}</span> {r.label}
+    </span>
+  );
 }
 
 const COV: Record<CoverageStatus, { label: string; cls: string }> = {
@@ -51,12 +84,22 @@ export function CoverageChip({ s }: { s: CoverageStatus }) {
   return <span className={`chip ${COV[s].cls}`}>{COV[s].label}</span>;
 }
 
-export function EmptyState({ title, body, action }: { title: string; body: string; action?: ReactNode }) {
+export function EmptyState({
+  title,
+  body,
+  action,
+}: {
+  title: string;
+  body: string;
+  action?: ReactNode;
+}) {
   return (
-    <div className="card flex flex-col items-center gap-3 p-10 text-center">
-      <div aria-hidden className="h-10 w-10 rounded-full bg-teal-soft" />
-      <h3 className="font-display text-xl">{title}</h3>
-      <p className="max-w-md text-sm text-muted-foreground">{body}</p>
+    <div className="atlas-empty flex flex-col items-start gap-3 py-10 text-left">
+      <div aria-hidden className="atlas-empty-mark">
+        ∅
+      </div>
+      <h3 className="font-display text-2xl">{title}</h3>
+      <p className="max-w-md text-base text-muted-foreground">{body}</p>
       {action}
     </div>
   );
@@ -72,11 +115,20 @@ export function Loading() {
   );
 }
 
-export function PageHeader({ title, sub, right }: { title: string; sub?: string; right?: ReactNode }) {
+export function PageHeader({
+  title,
+  sub,
+  right,
+}: {
+  title: string;
+  sub?: string;
+  right?: ReactNode;
+}) {
   return (
-    <header className="mb-6 flex flex-wrap items-end justify-between gap-4">
-      <div>
-        <h1 className="font-display text-3xl md:text-4xl">{title}</h1>
+    <header className="atlas-page-header mb-8 grid grid-cols-[minmax(0,1fr)_auto] items-end gap-4 border-b border-border pb-5">
+      <div className="min-w-0">
+        <p className="atlas-kicker">Opportunity Atlas</p>
+        <h1 className="font-display text-4xl md:text-6xl">{title}</h1>
         {sub && <p className="mt-1 text-muted-foreground">{sub}</p>}
       </div>
       {right}

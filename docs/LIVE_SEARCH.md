@@ -43,3 +43,6 @@ No language model generates listings from memory. If the search returns nothing,
 
 ## Rollback
 Unlink the connector. The page then returns to "not connected". To remove the feature entirely, delete `src/routes/search.tsx`, the three `liveSearch*` files and the menu entry. Saved live items remain as ordinary tracker entries.
+
+## Research agent (3 Oct 2026, draft)
+Mode toggle on `/search`. Model (`openai/gpt-6-astra`, built-in AI) plans 1–2 queries → Firecrawl search+extraction (rule mapping, aggregate/private-URL rejection, dedupe, filters) → model keeps/rejects candidates and may request ONE refinement query. Bounds: 3 queries, 8 pages, 110 s deadline, 40 s per model step, shared rate limiter, 10-min cache. Failures: planner error → Retry or "Use basic search instead"; review error → rule-checked results labelled. Only form fields are sent. Verified live: 2 queries, 6 pages, 4 kept, save+compare persisted.

@@ -36,6 +36,15 @@ export function isConfigured(): boolean {
   return !!process.env["FIRECRAWL_API_KEY"] && !!process.env["LOVABLE_API_KEY"];
 }
 
+/** Shared per-isolate limiter: the agent consumes one slot per web search it runs. */
+export function reserveSearchSlot(): boolean {
+  const now = Date.now();
+  while (hits.length && now - hits[0]! > WINDOW_MS) hits.shift();
+  if (hits.length >= MAX_PER_WINDOW) return false;
+  hits.push(now);
+  return true;
+}
+
 type Result = LiveSearchResponse | { ok: false; error: LiveSearchError };
 
 /** Never throws for cancellation/timeout: returns a typed error so nothing becomes an unhandled rejection. */

@@ -27,6 +27,8 @@ export const Route = createFileRoute("/opportunities/$id")({
         property: "og:description",
         content: "Eligibility, relevance and funding coverage for an opportunity.",
       },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: Detail,
@@ -76,12 +78,14 @@ function Detail() {
       <Link to="/discover" className="text-sm text-muted-foreground hover:underline">
         ← Discover
       </Link>
-      <header className="mt-3 mb-6">
+      <header className="atlas-detail-hero mt-3 mb-8 border-b border-border pb-8">
         <div className="mb-2 flex flex-wrap gap-2">
           <CategoryChip opp={opp} />
           <SourceBadge opp={opp} />
         </div>
-        <h1 className="font-display text-3xl md:text-4xl">{opp.title}</h1>
+        <h1 className="mt-4 max-w-5xl font-display text-4xl leading-[0.95] uppercase md:text-7xl">
+          {opp.title}
+        </h1>
         <p className="text-muted-foreground">
           {opp.organization} · {opp.location} · {opp.mode.replace("_", " ")}
         </p>
@@ -98,13 +102,16 @@ function Detail() {
         )}
       </header>
 
-      <div className="grid gap-6 lg:grid-cols-[1fr_320px]">
+      <div className="atlas-detail-grid grid gap-8 lg:grid-cols-[minmax(0,1fr)_340px]">
         <div className="space-y-6">
-          <section className="card p-5">
-            <p>{opp.summary}</p>
+          <section className="atlas-detail-summary border-y border-foreground py-7">
+            <p className="max-w-4xl font-editorial text-2xl leading-relaxed">{opp.summary}</p>
           </section>
 
-          <section className="card p-5" aria-labelledby="elig">
+          <section
+            className="atlas-fact-section border-t border-border pt-6"
+            aria-labelledby="elig"
+          >
             <div className="flex flex-wrap items-baseline justify-between gap-2">
               <h2 id="elig" className="text-xl">
                 Eligibility
@@ -155,7 +162,7 @@ function Detail() {
             </ul>
           </section>
 
-          <section className="card p-5" aria-labelledby="rel">
+          <section className="atlas-fact-section border-t border-border pt-6" aria-labelledby="rel">
             <h2 id="rel" className="text-xl">
               Relevance to you{" "}
               <span className="chip chip-teal ml-2 align-middle capitalize">
@@ -172,7 +179,10 @@ function Detail() {
             </ul>
           </section>
 
-          <section className="card p-5" aria-labelledby="fund">
+          <section
+            className="atlas-fact-section border-t border-border pt-6"
+            aria-labelledby="fund"
+          >
             <h2 id="fund" className="text-xl">
               Funding coverage
             </h2>
@@ -201,8 +211,8 @@ function Detail() {
           </section>
         </div>
 
-        <aside className="space-y-4">
-          <div className="card space-y-3 p-5">
+        <aside className="space-y-4 lg:sticky lg:top-8 lg:self-start">
+          <div className="atlas-detail-actions space-y-3 border border-foreground bg-acid p-5">
             {app ? (
               <>
                 <p className="text-sm">
@@ -236,7 +246,7 @@ function Detail() {
               Opening a link never marks you as Submitted — set that yourself in My Journey.
             </p>
           </div>
-          <div className="card p-5 text-sm">
+          <div className="border border-foreground bg-card p-5 text-sm">
             <h2 className="mb-2 text-base">Source & verification</h2>
             <p>
               Source:{" "}

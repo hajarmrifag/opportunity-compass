@@ -9,7 +9,7 @@ export function CompareTray() {
   return (
     <aside
       aria-label="Comparison shortlist"
-      className="fixed inset-x-3 bottom-20 z-30 mx-auto max-w-3xl border border-border bg-card p-3 shadow-xl md:bottom-5"
+      className="atlas-compare-tray fixed inset-x-3 bottom-20 z-30 mx-auto max-w-3xl border border-foreground bg-acid p-3 md:bottom-5"
     >
       <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3">
         <div className="min-w-0">
@@ -30,7 +30,7 @@ export function CompareTray() {
             ))}
           </div>
         </div>
-        <div className="flex shrink-0 gap-2">
+        <div className="atlas-compare-actions flex shrink-0 gap-2">
           <Button variant="ghost" size="sm" onClick={clearCompare}>
             Clear
           </Button>
