@@ -30,6 +30,8 @@ interface Store {
   getOpportunity: (id: string) => Opportunity | undefined;
   getApplication: (oppId: string) => Application | undefined;
   saveProfile: (p: Profile) => void;
+  /** Removes only the confirmed profile and review draft. Returns an error message on failure (nothing deleted). */
+  deleteProfile: () => string | null;
   loadDemoProfile: () => void;
   saveOpportunity: (oppId: string) => Application;
   updateApplication: (
@@ -145,6 +147,13 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       })),
     saveProfile: (p) => {
       commit((s) => ({ ...s, profile: p, profileDraft: null }));
+    },
+    deleteProfile: () => {
+      const next: PersistedState = { ...state, profile: null, profileDraft: null };
+      const e = localRepository.save(next);
+      if (e) return e;
+      setState((prev) => ({ ...prev, profile: null, profileDraft: null }));
+      return null;
     },
     loadDemoProfile: () => {
       commit((s) => ({ ...s, profile: { ...DEMO_PROFILE }, profileDraft: null }));
