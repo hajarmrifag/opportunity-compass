@@ -18,7 +18,7 @@
 - Persistence goes through the `Repository` interface in `src/data/storage.ts` (versioned localStorage now) — lets a remote backend replace it without UI changes.
 - Eligibility/relevance is computed only via an `EligibilityAdapter` (`src/adapters/`); missing data must yield "unknown", never "met" — honesty requirement.
 - App state is accessed via `useStore()` in `src/lib/store.tsx`, hydrated from storage in an effect — avoids SSR hydration mismatch.
-- Application status changes are user-initiated only; the single exception is the student pressing Apply on a live listing (`markApplied`), which moves a Tracker item forward to Submitted and never downgrades later stages.
+- Application status changes are user-initiated, except: pressing Apply on a live listing (`markApplied`) moves an item to Submitted, and a confident Gmail email matching exactly one tracked application moves it forward (`scanGmailInbox`); neither ever downgrades or changes final states (offer, rejected, withdrawn).
 - Date-only deadlines are compared as local calendar days via `deadlineState` in `src/lib/validation.ts`; `DEADLINE_WINDOW_DAYS` is the single "approaching" window — keeps UI counts consistent.
 - URLs render only through `safeHttpUrl`; CSV output goes through `src/lib/csv.ts` (`escapeCell`) for quoting and formula-injection protection.
 - CSV import applies only after preview + explicit confirm, as one atomic `importTracker` commit — prevents partial or surprise writes.

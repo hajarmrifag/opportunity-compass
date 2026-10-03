@@ -294,8 +294,21 @@ export const scanGmailInbox = createServerFn({ method: "POST" })
       };
     }
 
+    // Auto-apply: a confident email about exactly one tracked application moves
+    // that application forward (never backwards; rejected/withdrawn/offer are
+    // final). Anything uncertain stays a pending suggestion for the student.
+    const { data: fullApps } = await supabase
+      .from("applications")
+      .select("id, company, role, status");
+    const tracked = (fullApps ?? []) as { id: string; company: string; role: string; status: string }[];
+
     let inserted = 0;
+    let applied = 0;
     for (const item of items) {
+      const target = emailTypeToStatus(item.type);
+      const match = target && item.confidence >= 0.6 ? matchApplication(tracked, item) : null;
+      const canMove = match && target ? isForwardMove(match.status, target) : false;
+
       const { error } = await supabase.from("email_suggestions").insert({
         kind: "application",
         gmail_message_id: item.id,
@@ -304,17 +317,93 @@ export const scanGmailInbox = createServerFn({ method: "POST" })
         email_type: item.type,
         confidence: item.confidence,
         evidence: item.evidence?.slice(0, 300) ?? null,
-        state: "pending",
+        state: canMove ? "accepted" : "pending",
       });
-      if (!error) inserted += 1;
+      if (error) continue;
+      inserted += 1;
+
+      if (canMove && match && target) {
+        const { error: updErr } = await supabase
+          .from("applications")
+          .update({ status: target, updated_at: new Date().toISOString() })
+          .eq("id", match.id);
+        if (!updErr) {
+          await supabase
+            .from("application_events")
+            .insert({ application_id: match.id, status: target, source: "gmail" });
+          match.status = target;
+          applied += 1;
+        }
+      }
     }
 
+    const pending = inserted - applied;
     return {
       connected: true,
       message:
-        inserted > 0
-          ? `Found ${inserted} possible update${inserted === 1 ? "" : "s"} — review them below. Nothing changes until you accept.`
-          : "Scanned your inbox but found no new application updates.",
+        inserted === 0
+          ? "Checked your inbox — no new application updates."
+          : `From your email: ${applied} application${applied === 1 ? "" : "s"} updated automatically${
+              pending > 0 ? `, ${pending} possible update${pending === 1 ? "" : "s"} need your review below` : ""
+            }.`,
       found: inserted,
     };
   });
+
+const STATUS_RANK: Record<string, number> = {
+  saved: 0,
+  preparing: 1,
+  submitted: 2,
+  assessment: 3,
+  interview: 4,
+  offer: 5,
+};
+
+export function emailTypeToStatus(type: string): string | null {
+  switch (type) {
+    case "confirmation":
+      return "submitted";
+    case "assessment":
+      return "assessment";
+    case "interview":
+      return "interview";
+    case "offer":
+      return "offer";
+    case "rejection":
+      return "rejected";
+    default:
+      return null;
+  }
+}
+
+/** Forward-only: final states (offer, rejected, withdrawn) never change. */
+export function isForwardMove(current: string, target: string): boolean {
+  if (current === "rejected" || current === "withdrawn" || current === "offer") return false;
+  if (target === "rejected") return true;
+  const c = STATUS_RANK[current];
+  const t = STATUS_RANK[target];
+  return c !== undefined && t !== undefined && t > c;
+}
+
+const norm = (s: string | null | undefined) => (s ?? "").toLowerCase().replace(/[^a-z0-9]/g, "");
+
+/** Exactly one tracked application must match the company (and role if several). */
+export function matchApplication<T extends { company: string; role: string }>(
+  apps: T[],
+  item: { company: string | null; role: string | null },
+): T | null {
+  const company = norm(item.company);
+  if (company.length < 2) return null;
+  const byCompany = apps.filter((a) => {
+    const c = norm(a.company);
+    return c.length >= 2 && (c.includes(company) || company.includes(c));
+  });
+  if (byCompany.length === 1) return byCompany[0] ?? null;
+  const role = norm(item.role);
+  if (!role) return null;
+  const byRole = byCompany.filter((a) => {
+    const r = norm(a.role);
+    return r && (r.includes(role) || role.includes(r));
+  });
+  return byRole.length === 1 ? (byRole[0] ?? null) : null;
+}

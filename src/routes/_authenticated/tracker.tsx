@@ -714,9 +714,14 @@ function GmailSection({
   const reconnect = status?.reconnectRequired === true;
   const autoScanned = useRef(false);
   useEffect(() => {
-    if (!connected || autoScanned.current) return;
-    autoScanned.current = true;
-    void scan();
+    if (!connected) return;
+    if (!autoScanned.current) {
+      autoScanned.current = true;
+      void scan().then(onChanged);
+    }
+    // Keep checking every 10 minutes while the Tracker is open.
+    const timer = window.setInterval(() => void scan().then(onChanged), 10 * 60 * 1000);
+    return () => window.clearInterval(timer);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [connected]);
 
@@ -746,10 +751,10 @@ function GmailSection({
       </div>
       <p className="mt-1 text-sm text-muted-foreground">
         {connected
-          ? `Reading ${status?.inboxEmail ?? "your inbox"} (read-only). Scanning suggests status updates for you to accept or dismiss — nothing changes automatically.`
+          ? `Reading ${status?.inboxEmail ?? "your inbox"} (read-only). Clear emails from companies — confirmations, assessments, interviews, offers, rejections — update the matching application automatically; unclear ones wait for you below. Checked when you open the Tracker and every 10 minutes while it's open.`
           : reconnect
-            ? "Your Gmail access needs to be renewed. Reconnect to keep scanning."
-            : "Connect your Gmail to get status-update suggestions from your inbox. Read-only: we never send, delete or change your email."}
+            ? "Your Gmail access needs to be renewed. Reconnect to keep updates coming."
+            : "Connect your Gmail so emails from companies update your application statuses. Read-only: we never send, delete or change your email."}
       </p>
       <p className="mt-2 text-xs text-muted-foreground" role="status">
         {busy === "scan"
