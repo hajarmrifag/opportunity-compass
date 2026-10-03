@@ -157,10 +157,15 @@ function Passport() {
             ? {
                 name: document.name,
                 label: document.label,
-                mime: "application/pdf" as const,
-                dataBase64: await fileBase64(document.file),
+                mimeType: "application/pdf" as const,
+                content: await fileBase64(document.file),
               }
-            : { name: document.name, label: document.label, text: document.text ?? "" };
+            : {
+                name: document.name,
+                label: document.label,
+                mimeType: "text/plain" as const,
+                content: document.text ?? "",
+              };
         const result = await runExtractionFn({ data: input });
         all.push(result);
         setDocuments((current) =>
