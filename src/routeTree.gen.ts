@@ -19,6 +19,7 @@ import { Route as JourneyRouteImport } from './routes/journey'
 import { Route as PassportRouteImport } from './routes/passport'
 import { Route as PlanDemoRouteImport } from './routes/plan-demo'
 import { Route as PlanTestsRouteImport } from './routes/plan-tests'
+import { Route as RecommendedRouteImport } from './routes/recommended'
 import { Route as SearchRouteImport } from './routes/search'
 import { Route as TrackerIoRouteImport } from './routes/tracker-io'
 import { Route as AuthenticatedResourcesRouteImport } from './routes/_authenticated/resources'
@@ -74,6 +75,11 @@ const PlanTestsRoute = PlanTestsRouteImport.update({
   path: '/plan-tests',
   getParentRoute: () => rootRouteImport,
 } as any)
+const RecommendedRoute = RecommendedRouteImport.update({
+  id: '/recommended',
+  path: '/recommended',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SearchRoute = SearchRouteImport.update({
   id: '/search',
   path: '/search',
@@ -110,6 +116,7 @@ export interface FileRoutesByFullPath {
   '/passport': typeof PassportRoute
   '/plan-demo': typeof PlanDemoRoute
   '/plan-tests': typeof PlanTestsRoute
+  '/recommended': typeof RecommendedRoute
   '/search': typeof SearchRoute
   '/tracker-io': typeof TrackerIoRoute
   '/resources': typeof AuthenticatedResourcesRoute
@@ -126,6 +133,7 @@ export interface FileRoutesByTo {
   '/passport': typeof PassportRoute
   '/plan-demo': typeof PlanDemoRoute
   '/plan-tests': typeof PlanTestsRoute
+  '/recommended': typeof RecommendedRoute
   '/search': typeof SearchRoute
   '/tracker-io': typeof TrackerIoRoute
   '/resources': typeof AuthenticatedResourcesRoute
@@ -144,6 +152,7 @@ export interface FileRoutesById {
   '/passport': typeof PassportRoute
   '/plan-demo': typeof PlanDemoRoute
   '/plan-tests': typeof PlanTestsRoute
+  '/recommended': typeof RecommendedRoute
   '/search': typeof SearchRoute
   '/tracker-io': typeof TrackerIoRoute
   '/_authenticated/resources': typeof AuthenticatedResourcesRoute
@@ -162,6 +171,7 @@ export interface FileRouteTypes {
     | '/passport'
     | '/plan-demo'
     | '/plan-tests'
+    | '/recommended'
     | '/search'
     | '/tracker-io'
     | '/resources'
@@ -178,6 +188,7 @@ export interface FileRouteTypes {
     | '/passport'
     | '/plan-demo'
     | '/plan-tests'
+    | '/recommended'
     | '/search'
     | '/tracker-io'
     | '/resources'
@@ -195,6 +206,7 @@ export interface FileRouteTypes {
     | '/passport'
     | '/plan-demo'
     | '/plan-tests'
+    | '/recommended'
     | '/search'
     | '/tracker-io'
     | '/_authenticated/resources'
@@ -213,6 +225,7 @@ export interface RootRouteChildren {
   PassportRoute: typeof PassportRoute
   PlanDemoRoute: typeof PlanDemoRoute
   PlanTestsRoute: typeof PlanTestsRoute
+  RecommendedRoute: typeof RecommendedRoute
   SearchRoute: typeof SearchRoute
   TrackerIoRoute: typeof TrackerIoRoute
   OpportunitiesIdRoute: typeof OpportunitiesIdRoute
@@ -290,6 +303,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PlanTestsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/recommended': {
+      id: '/recommended'
+      path: '/recommended'
+      fullPath: '/recommended'
+      preLoaderRoute: typeof RecommendedRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/search': {
       id: '/search'
       path: '/search'
@@ -352,6 +372,7 @@ const rootRouteChildren: RootRouteChildren = {
   PassportRoute: PassportRoute,
   PlanDemoRoute: PlanDemoRoute,
   PlanTestsRoute: PlanTestsRoute,
+  RecommendedRoute: RecommendedRoute,
   SearchRoute: SearchRoute,
   TrackerIoRoute: TrackerIoRoute,
   OpportunitiesIdRoute: OpportunitiesIdRoute,
