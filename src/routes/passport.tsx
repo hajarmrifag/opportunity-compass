@@ -656,6 +656,13 @@ function Passport() {
             onSaveLater={() => persistDraft(draft)}
           />
         )}
+        {step === 4 && (
+          <PassportActions
+            canRecommend={Boolean(profile?.confirmed) && !pendingProfileEdits}
+            onEdit={() => setStep(2)}
+            onDelete={handleDelete}
+          />
+        )}
       </main>
 
       {message && step !== 0 && (

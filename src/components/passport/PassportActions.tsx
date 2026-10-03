@@ -62,7 +62,9 @@ export function PassportActions({
 
       <div className="border border-destructive/40 bg-card p-4">
         <h3 className="text-base font-semibold text-destructive">Delete profile</h3>
-        <p className="mt-1 text-sm text-muted-foreground">Removes your Passport from this browser.</p>
+        <p className="mt-1 text-sm text-muted-foreground">
+          Removes your Passport from this browser.
+        </p>
         <Button
           variant="destructive"
           className="mt-3 w-full"
@@ -81,10 +83,14 @@ export function PassportActions({
       </div>
 
       <AlertDialog open={open} onOpenChange={setOpen}>
-        <AlertDialogContent onOpenAutoFocus={(e) => {
-          e.preventDefault();
-          (document.getElementById("passport-delete-cancel") as HTMLButtonElement | null)?.focus();
-        }}>
+        <AlertDialogContent
+          onOpenAutoFocus={(e) => {
+            e.preventDefault();
+            (
+              document.getElementById("passport-delete-cancel") as HTMLButtonElement | null
+            )?.focus();
+          }}
+        >
           <AlertDialogHeader>
             <AlertDialogTitle>Delete your Passport?</AlertDialogTitle>
             <AlertDialogDescription>
