@@ -12,7 +12,13 @@ function renderAt(path: string) {
     context: { queryClient },
     history: createMemoryHistory({ initialEntries: [path] }),
   });
-  return render(<RouterProvider router={router} />);
+  // The root route's shellComponent renders <html>/<head>/<body>, as in production SSR.
+  // Mount into the document itself (React 19 supports document as a root) instead of
+  // nesting <html> inside a <div>, which React refuses to render.
+  return render(<RouterProvider router={router} />, {
+    container: document as unknown as HTMLElement,
+    baseElement: document.documentElement,
+  });
 }
 
 afterEach(() => {
@@ -27,6 +33,7 @@ describe("App routing", () => {
     const { container } = renderAt("/");
 
     await waitFor(() => expect(container.firstChild).not.toBeNull());
+    await waitFor(() => expect(document.body.querySelector("main")).not.toBeNull());
   });
 
   it("renders the not-found route", async () => {
@@ -35,5 +42,6 @@ describe("App routing", () => {
     const { container } = renderAt("/this-route-does-not-exist");
 
     await waitFor(() => expect(container.firstChild).not.toBeNull());
+    await waitFor(() => expect(document.body.textContent).toContain("Page not found"));
   });
 });
