@@ -66,3 +66,5 @@
 - [x] Reuse the editable action plan without changing status behavior
 - [x] Add typed local affordability scenarios and pure transparent calculations
 - [x] Verify required numeric cases, existing regressions, desktop/mobile/keyboard and refresh persistence
+
+- [x] Integrate finance handoff rules into Brief Affordability (re-verify after syncing Main)
