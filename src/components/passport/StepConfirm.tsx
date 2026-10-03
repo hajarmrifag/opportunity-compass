@@ -2,8 +2,7 @@ import type { ReactNode } from "react";
 import { CircleCheck, Pencil } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { Profile } from "@/domain/types";
-import { CATEGORY_LABELS } from "@/domain/types";
-import { WORK_TYPE_LABELS } from "@/domain/types";
+import { CATEGORY_LABELS, DEGREE_LABELS, WORK_TYPE_LABELS } from "@/domain/types";
 
 function PreviewRow({
   label,
@@ -61,16 +60,20 @@ export function StepConfirm({
         <PreviewRow label="Education" onEdit={() => onEditStep(3)}>
           {education && (education.degreeName || education.school || education.field) ? (
             <>
-              {[education.degreeLevel, education.degreeName].filter(Boolean).join(" — ")}
+              {[education.degreeLevel ? DEGREE_LABELS[education.degreeLevel] : "", education.degreeName]
+                .filter(Boolean)
+                .join(" — ")}
               {education.school ? `, ${education.school}` : ""}
               {education.field ? ` (${education.field})` : ""}
-              {education.gpaValue != null
-                ? ` · GPA ${education.gpaValue}${education.gpaScale != null ? `/${education.gpaScale}` : ""}`
-                : ""}
             </>
           ) : (
             <Empty />
           )}
+        </PreviewRow>
+        <PreviewRow label="GPA" onEdit={() => onEditStep(2)}>
+          {draft.gpaValue.trim()
+            ? `${draft.gpaValue}${draft.gpaScale.trim() ? ` / ${draft.gpaScale}` : ""}`
+            : "Not provided"}
         </PreviewRow>
         <PreviewRow label="Graduation" onEdit={() => onEditStep(3)}>
           {draft.graduationDate || <Empty />}
@@ -79,8 +82,10 @@ export function StepConfirm({
           {draft.skills.length ? draft.skills.join(", ") : <Empty />}
         </PreviewRow>
         <PreviewRow label="Languages" onEdit={() => onEditStep(3)}>
-          {draft.languages.length
-            ? draft.languages.map((lang) => `${lang.name} (${lang.level})`).join(", ")
+          {draft.languageDetails.length
+            ? draft.languageDetails
+                .map((lang) => (lang.level ? `${lang.name} (${lang.level})` : lang.name))
+                .join(", ")
             : "Not provided"}
         </PreviewRow>
         <PreviewRow label="Opportunity types" onEdit={() => onEditStep(3)}>
@@ -139,7 +144,9 @@ export function ProfileCreated({ name }: { name: string }) {
   return (
     <div className="border border-border bg-card p-8 text-center" role="status">
       <CircleCheck className="mx-auto size-12 text-primary" aria-hidden="true" />
-      <h2 className="mt-4 text-2xl">Your profile is ready{name ? `, ${name.split(" ")[0]}` : ""}</h2>
+      <h2 className="mt-4 text-2xl">
+        Your profile is ready{name ? `, ${name.split(" ")[0]}` : ""}
+      </h2>
       <p className="mx-auto mt-2 max-w-md text-muted-foreground">
         Your Opportunity Passport is saved in this browser. Discover and Live search now use it to
         explain why each opportunity fits you — relevance only, never a promise of eligibility.
