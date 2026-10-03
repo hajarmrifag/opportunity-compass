@@ -12,7 +12,7 @@ const corsHeaders = {
 const AI_URL = Deno.env.get("AI_GATEWAY_URL") ?? "https://ai.gateway.lovable.dev/v1/chat/completions";
 const AI_MODEL = Deno.env.get("AI_MODEL") ?? "google/gemini-2.5-flash";
 
-const norm = (s: string) => s.toLowerCase().replace(/[‘’]/g, "'").replace(/[“”]/g, '"').replace(/[•\u2022]/g, " ").replace(/\s+/g, " ").trim();
+const norm = (s: string) => s.toLowerCase().replace(/[‘’]/g, "'").replace(/[“”]/g, '"').replace(/[••]/g, " ").replace(/\s+/g, " ").trim();
 let n = 0;
 const id = (p: string) => `${p}-${Date.now().toString(36)}-${(n++).toString(36)}`;
 
