@@ -17,6 +17,8 @@ import { Route as CompareRouteImport } from './routes/compare'
 import { Route as DiscoverRouteImport } from './routes/discover'
 import { Route as JourneyRouteImport } from './routes/journey'
 import { Route as PassportRouteImport } from './routes/passport'
+import { Route as PlanDemoRouteImport } from './routes/plan-demo'
+import { Route as PlanTestsRouteImport } from './routes/plan-tests'
 import { Route as SearchRouteImport } from './routes/search'
 import { Route as TrackerIoRouteImport } from './routes/tracker-io'
 import { Route as AuthenticatedResourcesRouteImport } from './routes/_authenticated/resources'
@@ -62,6 +64,16 @@ const PassportRoute = PassportRouteImport.update({
   path: '/passport',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PlanDemoRoute = PlanDemoRouteImport.update({
+  id: '/plan-demo',
+  path: '/plan-demo',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PlanTestsRoute = PlanTestsRouteImport.update({
+  id: '/plan-tests',
+  path: '/plan-tests',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SearchRoute = SearchRouteImport.update({
   id: '/search',
   path: '/search',
@@ -96,6 +108,8 @@ export interface FileRoutesByFullPath {
   '/discover': typeof DiscoverRoute
   '/journey': typeof JourneyRoute
   '/passport': typeof PassportRoute
+  '/plan-demo': typeof PlanDemoRoute
+  '/plan-tests': typeof PlanTestsRoute
   '/search': typeof SearchRoute
   '/tracker-io': typeof TrackerIoRoute
   '/resources': typeof AuthenticatedResourcesRoute
@@ -110,6 +124,8 @@ export interface FileRoutesByTo {
   '/discover': typeof DiscoverRoute
   '/journey': typeof JourneyRoute
   '/passport': typeof PassportRoute
+  '/plan-demo': typeof PlanDemoRoute
+  '/plan-tests': typeof PlanTestsRoute
   '/search': typeof SearchRoute
   '/tracker-io': typeof TrackerIoRoute
   '/resources': typeof AuthenticatedResourcesRoute
@@ -126,6 +142,8 @@ export interface FileRoutesById {
   '/discover': typeof DiscoverRoute
   '/journey': typeof JourneyRoute
   '/passport': typeof PassportRoute
+  '/plan-demo': typeof PlanDemoRoute
+  '/plan-tests': typeof PlanTestsRoute
   '/search': typeof SearchRoute
   '/tracker-io': typeof TrackerIoRoute
   '/_authenticated/resources': typeof AuthenticatedResourcesRoute
@@ -142,6 +160,8 @@ export interface FileRouteTypes {
     | '/discover'
     | '/journey'
     | '/passport'
+    | '/plan-demo'
+    | '/plan-tests'
     | '/search'
     | '/tracker-io'
     | '/resources'
@@ -156,6 +176,8 @@ export interface FileRouteTypes {
     | '/discover'
     | '/journey'
     | '/passport'
+    | '/plan-demo'
+    | '/plan-tests'
     | '/search'
     | '/tracker-io'
     | '/resources'
@@ -171,6 +193,8 @@ export interface FileRouteTypes {
     | '/discover'
     | '/journey'
     | '/passport'
+    | '/plan-demo'
+    | '/plan-tests'
     | '/search'
     | '/tracker-io'
     | '/_authenticated/resources'
@@ -187,6 +211,8 @@ export interface RootRouteChildren {
   DiscoverRoute: typeof DiscoverRoute
   JourneyRoute: typeof JourneyRoute
   PassportRoute: typeof PassportRoute
+  PlanDemoRoute: typeof PlanDemoRoute
+  PlanTestsRoute: typeof PlanTestsRoute
   SearchRoute: typeof SearchRoute
   TrackerIoRoute: typeof TrackerIoRoute
   OpportunitiesIdRoute: typeof OpportunitiesIdRoute
@@ -250,6 +276,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PassportRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/plan-demo': {
+      id: '/plan-demo'
+      path: '/plan-demo'
+      fullPath: '/plan-demo'
+      preLoaderRoute: typeof PlanDemoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/plan-tests': {
+      id: '/plan-tests'
+      path: '/plan-tests'
+      fullPath: '/plan-tests'
+      preLoaderRoute: typeof PlanTestsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/search': {
       id: '/search'
       path: '/search'
@@ -310,6 +350,8 @@ const rootRouteChildren: RootRouteChildren = {
   DiscoverRoute: DiscoverRoute,
   JourneyRoute: JourneyRoute,
   PassportRoute: PassportRoute,
+  PlanDemoRoute: PlanDemoRoute,
+  PlanTestsRoute: PlanTestsRoute,
   SearchRoute: SearchRoute,
   TrackerIoRoute: TrackerIoRoute,
   OpportunitiesIdRoute: OpportunitiesIdRoute,
