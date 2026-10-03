@@ -222,18 +222,16 @@ describe("live search server", () => {
   it("maps provider data, caches, rate-limits and surfaces provider errors", async () => {
     vi.stubEnv("FIRECRAWL_API_KEY", "lovc_test");
     vi.stubEnv("LOVABLE_API_KEY", "k");
-    const f = vi
-      .spyOn(globalThis, "fetch")
-      .mockImplementation(
-        async () =>
-          new Response(
-            JSON.stringify({
-              data: {
-                web: [hit(), hit({ is_opportunity_listing: false }, "https://news.example/x")],
-              },
-            }),
-          ),
-      );
+    const f = vi.spyOn(globalThis, "fetch").mockImplementation(
+      async () =>
+        new Response(
+          JSON.stringify({
+            data: {
+              web: [hit(), hit({ is_opportunity_listing: false }, "https://news.example/x")],
+            },
+          }),
+        ),
+    );
     const { runLiveSearch } = await import("@/lib/liveSearch.server");
     const r1 = await runLiveSearch(base);
     expect(r1).toMatchObject({ ok: true, cached: false, dropped: 1 });

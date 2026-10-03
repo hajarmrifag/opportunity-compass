@@ -254,16 +254,14 @@ export function mapHit(hit: RawSearchHit, retrievedAt: string): Opportunity | nu
       label: `Field: ${d.fields_of_study!.join(", ")}`.slice(0, 150),
       values: d.fields_of_study!.map((x) => x.toLowerCase()).slice(0, 15),
     });
-  (d.languages ?? [])
-    .slice(0, 5)
-    .forEach((l, i) =>
-      reqs.push({
-        id: `lang${i}`,
-        kind: "language",
-        label: clip(l, 60),
-        values: [l.toLowerCase()],
-      }),
-    );
+  (d.languages ?? []).slice(0, 5).forEach((l, i) =>
+    reqs.push({
+      id: `lang${i}`,
+      kind: "language",
+      label: clip(l, 60),
+      values: [l.toLowerCase()],
+    }),
+  );
   (d.skills ?? [])
     .slice(0, 8)
     .forEach((s, i) =>
