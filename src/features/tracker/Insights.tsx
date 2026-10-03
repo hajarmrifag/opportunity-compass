@@ -1,93 +1,8 @@
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import type { AdviceResult, CoffeeChat, TrackerApplication } from "@/lib/tracker.functions";
 
 import { Button } from "@/components/ui/button";
-import { ChartPie, Sparkles } from "lucide-react";
-
-const BUCKETS = [
-  { key: "saved", label: "Saved", color: "var(--muted-foreground)" },
-  { key: "preparing", label: "Preparing", color: "var(--navy)" },
-  { key: "submitted", label: "Submitted", color: "var(--primary)" },
-  { key: "assessment", label: "Assessment", color: "var(--demo)" },
-  { key: "interview", label: "Interview", color: "var(--warning-strong)" },
-  { key: "offer", label: "Offer", color: "var(--success)" },
-  { key: "rejected", label: "Rejected", color: "var(--destructive)" },
-  { key: "withdrawn", label: "Withdrawn", color: "var(--vermilion)" },
-];
-
-function StatusDonut({ apps }: { apps: TrackerApplication[] }) {
-  const total = apps.length;
-  const circumference = 2 * Math.PI * 86;
-  let offset = 0;
-  const segments = BUCKETS.map((bucket) => {
-    const count = apps.filter((app) => app.status === bucket.key).length;
-    const length = total ? (count / total) * circumference : 0;
-    const segment = { ...bucket, count, length, offset };
-    offset += length;
-    return segment;
-  });
-
-  return (
-    <div>
-      <svg
-        viewBox="0 0 240 240"
-        className="mx-auto w-full max-w-64"
-        role="img"
-        aria-label={`Application status chart: ${total} tracked applications. ${segments.map((s) => `${s.label}: ${s.count}`).join(", ")}`}
-      >
-        <circle cx="120" cy="120" r="86" fill="none" stroke="var(--muted)" strokeWidth="28" />
-        {segments
-          .filter((s) => s.count > 0)
-          .map((s) => (
-            <circle
-              key={s.key}
-              cx="120"
-              cy="120"
-              r="86"
-              fill="none"
-              stroke={s.color}
-              strokeWidth="28"
-              strokeDasharray={`${s.length} ${circumference - s.length}`}
-              strokeDashoffset={-s.offset}
-              transform="rotate(-90 120 120)"
-            >
-              <title>
-                {s.label}: {s.count} ({Math.round((s.count / total) * 100)}%)
-              </title>
-            </circle>
-          ))}
-        <text
-          x="120"
-          y="117"
-          textAnchor="middle"
-          className="fill-foreground text-3xl font-semibold"
-        >
-          {total}
-        </text>
-        <text x="120" y="140" textAnchor="middle" className="fill-muted-foreground text-xs">
-          Applications
-        </text>
-      </svg>
-      <ul
-        className="mt-3 grid grid-cols-2 gap-x-5 gap-y-2 text-sm"
-        aria-label="Application status totals"
-      >
-        {segments.map((s) => (
-          <li key={s.key} className="flex items-center gap-2">
-            <svg width="10" height="10" aria-hidden="true" className="shrink-0">
-              <circle cx="5" cy="5" r="5" fill={s.color} />
-            </svg>
-            <span>{s.label}</span>
-            <span className="ml-auto font-semibold tabular-nums">{s.count}</span>
-          </li>
-        ))}
-      </ul>
-      {total === 0 && (
-        <p className="mt-3 text-sm text-muted-foreground">No applications tracked yet.</p>
-      )}
-    </div>
-  );
-}
+import { Sparkles } from "lucide-react";
 
 const DEMO_COURSES = [
   {
@@ -111,20 +26,15 @@ const DEMO_COURSES = [
 export function TrackerInsights({
   apps,
   chats,
-  suggestionsCount,
   onAdvice,
 }: {
   apps: TrackerApplication[];
   chats: CoffeeChat[];
-  suggestionsCount: number;
   onAdvice: () => Promise<AdviceResult>;
 }) {
-  const [showGraph, setShowGraph] = useState(true);
   const [advice, setAdvice] = useState<AdviceResult | null>(null);
   const [preview, setPreview] = useState(false);
   const [busy, setBusy] = useState(false);
-
-  const rejected = useMemo(() => apps.filter((app) => app.status === "rejected"), [apps]);
 
   const runAdvice = async () => {
     setBusy(true);
@@ -139,8 +49,6 @@ export function TrackerInsights({
     }
   };
 
-  const referrals = chats.filter((c) => c.referral === true).length;
-
   return (
     <section className="card mt-6 p-5" aria-labelledby="insights">
       <div className="flex flex-wrap items-center justify-between gap-3">
@@ -149,67 +57,14 @@ export function TrackerInsights({
             Insights
           </h2>
           <p className="text-sm text-muted-foreground">
-            Current tracked statuses · refreshes every 15 seconds while this page is open.
+            Personal feedback based on your tracked applications and coffee chats.
           </p>
         </div>
-        <div className="flex gap-2">
-          <Button
-            variant="outline"
-            onClick={() => setShowGraph((v) => !v)}
-            aria-expanded={showGraph}
-            aria-controls="tracker-graphs"
-          >
-            <ChartPie aria-hidden="true" />
-            {showGraph ? "Hide chart" : "Show chart"}
-          </Button>
-          <Button disabled={busy} onClick={runAdvice}>
-            <Sparkles aria-hidden="true" />
-            {busy ? "Thinking…" : "AI feedback"}
-          </Button>
-        </div>
+        <Button disabled={busy} onClick={runAdvice}>
+          <Sparkles aria-hidden="true" />
+          {busy ? "Thinking…" : "AI feedback"}
+        </Button>
       </div>
-
-      {showGraph && (
-        <div id="tracker-graphs" className="mt-5" aria-live="polite">
-          <div className="grid gap-8 lg:grid-cols-2">
-            <div className="min-w-0">
-              <h3 className="text-sm font-semibold">Application outcomes</h3>
-              <StatusDonut apps={apps} />
-            </div>
-            <div className="min-w-0 lg:border-l lg:border-border lg:pl-8">
-              <div className="flex items-center justify-between gap-3">
-                <h3 className="text-sm font-semibold">Rejected applications</h3>
-                <span className="text-sm font-semibold text-destructive">{rejected.length}</span>
-              </div>
-              {rejected.length === 0 ? (
-                <p className="mt-4 text-sm text-muted-foreground">No rejections recorded.</p>
-              ) : (
-                <ul
-                  className="mt-3 max-h-96 overflow-y-auto divide-y divide-border"
-                  aria-label="Rejected internships and other applications"
-                >
-                  {rejected.map((app) => (
-                    <li key={app.id} className="py-3">
-                      <p className="break-words text-sm font-semibold">{app.role}</p>
-                      <p className="break-words text-sm text-muted-foreground">{app.company}</p>
-                      <p className="mt-1 text-xs text-muted-foreground">
-                        Status updated {new Date(app.updated_at).toLocaleDateString()}
-                      </p>
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </div>
-          </div>
-          <p className="mt-5 border-t border-border pt-3 text-xs text-muted-foreground">
-            Gmail is not connected.{" "}
-            {suggestionsCount > 0
-              ? `${suggestionsCount} pending email suggestions are excluded from these counts. `
-              : ""}
-            Coffee chats: {chats.length} · Referrals: {referrals}
-          </p>
-        </div>
-      )}
 
       {advice && (
         <div className="mt-4">

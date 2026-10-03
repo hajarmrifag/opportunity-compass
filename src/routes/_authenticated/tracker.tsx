@@ -292,13 +292,8 @@ function TrackerPage() {
       {/* Coffee chats — always available, even before anything is tracked */}
       <CoffeeChatSection chats={chats} onChanged={refresh} />
 
-      {/* Insights: flow graph + AI feedback */}
-      <TrackerInsights
-        apps={apps}
-        chats={chats}
-        suggestionsCount={suggestions.length}
-        onAdvice={() => generateAdvice()}
-      />
+      {/* Insights: AI feedback */}
+      <TrackerInsights apps={apps} chats={chats} onAdvice={() => generateAdvice()} />
     </>
   );
 }
