@@ -81,7 +81,7 @@ function Detail() {
             <dl className="mt-3 divide-y divide-border">
               {(["tuition", "living", "travel"] as const).map((k) => (
                 <div key={k} className="flex flex-wrap items-center justify-between gap-2 py-3">
-                  <dt className="font-medium capitalize">{k === "living" ? "Living costs" : k}
+                  <dt className="font-medium">{k === "living" ? "Living costs" : k === "tuition" ? "Tuition" : "Travel"}
                     {profile?.fundingNeeds[k] && <span className="ml-2 text-xs text-primary">(you need this)</span>}
                     {f[k].note && <div className="text-sm font-normal text-muted-foreground">{f[k].note}</div>}
                   </dt>
