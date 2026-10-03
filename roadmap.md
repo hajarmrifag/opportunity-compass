@@ -12,6 +12,6 @@
 - [x] Fix off-by-one days-left (calendar-day diff in local tz, no hardcoded today); test it
 - [x] Dashboard: deadline list window = 14-day count; record in QA
 - [x] Fix 'useStore outside StoreProvider' blank screen (HMR context identity); verify reload + direct routes
-- [ ] Repair template routing tests' setup (no skip/weakening)
-- [ ] Unsaved Passport edits: label eligibility as based on last confirmed Passport
-- [ ] Full tests, typecheck, prod build; record in QA doc
+- [x] Repair template routing tests' setup (no skip/weakening)
+- [x] Unsaved Passport edits: label eligibility as based on last confirmed Passport
+- [x] Full tests, typecheck, prod build; record in QA doc
