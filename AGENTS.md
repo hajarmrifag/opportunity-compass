@@ -33,6 +33,9 @@
 - The finance teammate's pure calculator lives in `src/features/calculator/` (no DB access); `reviewedData.ts` feeds it only reviewed, non-demo rows and otherwise the Brief uses the local `calculateAffordability` — eligibility never counts as an award.
 
 - Shared motion uses scoped CSS and the cmdk CommandCenter in AppShell; research trails render only returned agent stages — keeps presentation independent of teammate data contracts.
+- Shared animation easing is exported from src/lib/motion.ts for motion/react components — keeps animation timing consistent without altering supplied components.
+- Cinema replay uses the deterministic researchReplay driver and researchTrail event contract with invented fixtures only — keeps recorded demonstrations independent of live retrieval and teammate modules.
+- Campaign atmosphere is isolated in the shell's presentation-only AmbientField and VibeCursor and disabled for reduced motion — protects teammate behavior and accessibility.
 
 - Tracker Insights shows only the AI feedback button — no status charts; account-backed queries still refresh through foreground polling every 15 seconds, and status changes stay user-initiated.
 

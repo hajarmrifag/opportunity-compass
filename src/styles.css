@@ -1412,3 +1412,618 @@
     transform: none !important;
   }
 }
+
+/* Sourced homepage handoff: additive, preserving teammate styles. */
+:root { --signal: oklch(0.885 0.21 122); --ink-900: oklch(0.126 0.014 268); --acid: var(--signal); --font-display: "Archivo Black", "Arial Black", sans-serif; }
+.atlas-hero-title { font-family: var(--font-display); font-size: clamp(3.4rem, 11vw, 8.5rem); line-height: 0.84; letter-spacing: -0.04em; text-transform: uppercase; }
+.atlas-hero-line { display: block; overflow: hidden; }
+.atlas-hero-line.is-italic { font-family: "DM Serif Display", Georgia, serif; font-style: italic; text-transform: none; color: var(--signal); }
+.atlas-kicker { font-family: ui-monospace, monospace; letter-spacing: 0.14em; text-transform: uppercase; color: var(--signal); }
+.atlas-hero-go { display: inline-flex; align-items: center; gap: 0.85rem; background: var(--signal); color: var(--ink-900); padding: 1.05rem 1.45rem; font-family: var(--font-display); font-size: clamp(1.2rem, 2.4vw, 1.85rem); letter-spacing: -0.03em; text-transform: uppercase; }
+.atlas-hero-go-note { margin-top: 0.7rem; font-family: ui-monospace, monospace; font-size: 0.68rem; letter-spacing: 0.12em; text-transform: uppercase; }
+.atlas-magnetic-row { display: inline-block; }
+.atlas-magnetic-row [data-letter] { display: inline-block; }
+.zone-ink { background: #0c0d12; color: #f4f1ea; }
+.zone-bone { background: #f3efe6; color: #14161c; }
+.atlas-hero-band { min-height: 70vh; }
+.band-inner { width: min(1480px, calc(100% - 2rem)); margin-inline: auto; }
+
+.atlas-sourced-mark { display: inline-flex; align-items: baseline; justify-content: center; line-height: 1.2; }
+.atlas-sourced-mark em { color: var(--signal); font-family: var(--font-editorial); }
+.atlas-campaign-main { position: relative; z-index: 1; }
+.atlas-hero { padding-block: 3rem; }
+.atlas-hero-title { margin-block: 1.5rem 2rem; font-size: 5.8rem; letter-spacing: 0; }
+.atlas-hero-go { max-width: 100%; font-size: 1.85rem; letter-spacing: 0; }
+.atlas-hero-go svg { width: 1.5rem; height: 1.5rem; flex-shrink: 0; }
+.atlas-hero-deck { max-width: 42rem; margin-top: 1.75rem; line-height: 1.65; }
+.atlas-home-next { padding-block: 3rem; }
+.atlas-home-next h2 { font-size: 2rem; }
+.atlas-home-next h2 em { font-family: var(--font-editorial); }
+.atlas-home-next p { margin-block: 1rem; max-width: 42rem; }
+.atlas-home-actions { display: flex; flex-wrap: wrap; gap: 0.75rem; }
+.atlas-field, .atlas-vibe { position: fixed; inset: 0; pointer-events: none; }
+.atlas-canvas { width: 100%; height: 100%; }
+@media (min-width: 1440px) { .atlas-hero-title { font-size: 7rem; } }
+@media (min-width: 768px) and (max-width: 1100px) { .atlas-hero-title { font-size: 4.5rem; } }
+@media (max-width: 767px) {
+  .atlas-hero-title { font-size: 3.4rem; }
+  .atlas-hero-go { font-size: 1.2rem; padding: 1rem; gap: 0.6rem; }
+  .atlas-hero { padding-block: 2rem; }
+}
+@media (max-width: 480px) { .atlas-hero-title { font-size: 2.4rem; } }
+@media (max-width: 359px) { .atlas-hero-title { font-size: 2rem; } }
+@media (prefers-reduced-motion: reduce) { .atlas-field, .atlas-vibe { display: none; } }
+
+/* Cinema and Evidence Trail imported from e7dd172. */
+
+/* Cinema tokens are scoped: homepage and teammate surfaces stay unchanged. */
+.atlas-campaign-main .atlas-cinema, .atlas-trail-stage {
+  --ink-850: oklch(0.152 0.016 268);
+  --ink-700: oklch(0.213 0.02 268);
+  --instrument: oklch(0.72 0.19 262);
+  --ember: oklch(0.73 0.195 30);
+  --violet: oklch(0.76 0.13 305);
+  --fg: oklch(0.965 0.005 90);
+  --fg-dim: oklch(0.755 0.015 268);
+  --fg-faint: oklch(0.6 0.018 268);
+  --background: var(--ink-900);
+  --foreground: var(--fg);
+  --muted-foreground: var(--fg-dim);
+  --border: oklch(1 0 0 / 0.14);
+  --card: var(--ink-700);
+  --card-foreground: var(--fg);
+  --lift: 0 18px 40px -22px oklch(0 0 0 / 0.9);
+  background: var(--background);
+}
+.atlas-trail-stage {
+  margin-top: 1.5rem;
+  margin-bottom: 2rem;
+  padding: clamp(1.25rem, 3vw, 2.25rem);
+  background: var(--ink-850);
+  color: oklch(0.965 0.005 90);
+  --background: var(--ink-850);
+  --foreground: oklch(0.965 0.005 90);
+  --fg: oklch(0.965 0.005 90);
+  --fg-dim: oklch(0.755 0.015 268);
+  --muted-foreground: oklch(0.755 0.015 268);
+  --border: oklch(1 0 0 / 0.14);
+  --card: var(--ink-700);
+}
+.atlas-atmosphere-paper .atlas-trail-stage {
+  margin-inline: calc(-1 * clamp(1rem, 3vw, 3rem));
+  padding-inline: clamp(1.25rem, 4vw, 3rem);
+}
+
+.atlas-cinema {
+  min-height: 100svh;
+  padding-bottom: 5rem;
+  color: oklch(0.965 0.005 90);
+}
+.atlas-cinema-bar {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.85rem clamp(1.1rem, 3vw, 2.5rem);
+  border-bottom: 1px solid oklch(1 0 0 / 0.12);
+  background: color-mix(in oklab, var(--ink-900) 86%, transparent);
+  backdrop-filter: blur(14px);
+  color: var(--fg-dim);
+  font-family: var(--font-mono);
+  font-size: 0.66rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.atlas-cinema-bar-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+.atlas-cinema-cue {
+  display: grid;
+  align-content: end;
+  min-height: min(62vh, 34rem);
+  padding: 2rem clamp(1.1rem, 3vw, 2.5rem) 1rem;
+}
+.atlas-cinema-cue h2 {
+  margin-top: 0.4rem;
+  font-size: clamp(3.2rem, 11vw, 9rem);
+  line-height: 0.82;
+  letter-spacing: -0.045em;
+  text-transform: uppercase;
+}
+.atlas-phase-billboard {
+  display: grid;
+  align-items: end;
+  min-height: clamp(8rem, 24vw, 15rem);
+  overflow: hidden;
+  padding: 1.6rem clamp(1.1rem, 3vw, 2.5rem) 0.4rem;
+}
+.atlas-phase-billboard h2 {
+  font-size: clamp(2.8rem, 9vw, 8.2rem);
+  line-height: 0.82;
+  letter-spacing: -0.045em;
+  text-transform: uppercase;
+}
+.atlas-verdict-flash {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  display: grid;
+  place-items: center;
+  pointer-events: none;
+  font-family: var(--font-display);
+  font-size: clamp(5rem, 18vw, 16rem);
+  line-height: 0.8;
+  letter-spacing: -0.05em;
+  text-transform: uppercase;
+}
+.atlas-verdict-flash.is-kept {
+  color: var(--signal);
+  background: color-mix(in oklab, var(--signal) 10%, transparent);
+}
+.atlas-verdict-flash.is-rejected {
+  color: var(--ember);
+  background: color-mix(in oklab, var(--ember) 12%, transparent);
+}
+.atlas-cinema .atlas-trail-results {
+  padding: 2rem clamp(1.1rem, 3vw, 2.5rem) 0;
+}
+
+/* ===========================================================================
+   Evidence Trail
+   =========================================================================== */
+.atlas-trail {
+  position: relative;
+  margin-bottom: 2.5rem;
+  border: 1px solid var(--border);
+  background: color-mix(in oklab, var(--ink-850) 82%, transparent);
+  backdrop-filter: blur(10px);
+  box-shadow: var(--lift);
+}
+.atlas-trail.is-cinema {
+  margin-bottom: 0;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+  backdrop-filter: none;
+}
+.atlas-trail.is-cinema .atlas-trail-head {
+  padding-top: 0.4rem;
+}
+.atlas-trail-head {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: start;
+  gap: 1.25rem;
+  border-bottom: 1px solid var(--border);
+  padding: clamp(1.1rem, 2.5vw, 1.75rem);
+}
+.atlas-trail-heading h2 {
+  margin-top: 0.35rem;
+  font-size: clamp(1.9rem, 3.4vw, 3rem);
+  line-height: 1;
+  text-transform: uppercase;
+  overflow: hidden;
+}
+.atlas-trail-query {
+  margin-top: 0.6rem;
+  max-width: 46rem;
+  color: var(--fg-dim);
+  font-family: var(--font-editorial);
+  font-size: 1.1rem;
+}
+.atlas-trail-tally {
+  display: grid;
+  grid-auto-flow: column;
+  gap: 1.75rem;
+}
+.atlas-trail-tally-item dt {
+  color: var(--fg-faint);
+  font-family: var(--font-mono);
+  font-size: 0.58rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.atlas-trail-tally-item dd {
+  font-family: var(--font-display);
+  font-size: 2.2rem;
+  line-height: 1;
+}
+.atlas-trail-tally-item.is-kept dd {
+  color: var(--signal);
+}
+.atlas-trail-tally-item.is-rejected dd {
+  color: var(--ember);
+}
+.atlas-trail-stop {
+  grid-column: 2;
+  justify-self: end;
+}
+.atlas-trail-pulse {
+  position: relative;
+  height: 2px;
+  overflow: hidden;
+  background: oklch(1 0 0 / 0.07);
+}
+.atlas-trail-pulse > span {
+  display: block;
+  width: 22%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, var(--signal), transparent);
+}
+.atlas-trail-disclaimer {
+  border-bottom: 1px solid var(--border);
+  background: color-mix(in oklab, var(--violet) 10%, transparent);
+  padding: 0.65rem clamp(1.1rem, 2.5vw, 1.75rem);
+  color: var(--violet);
+  font-family: var(--font-mono);
+  font-size: 0.66rem;
+  line-height: 1.6;
+}
+.atlas-trail-queries {
+  border-bottom: 1px solid var(--border);
+  padding: clamp(1.1rem, 2.5vw, 1.75rem);
+}
+.atlas-trail-queries ol {
+  margin-top: 0.7rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+.atlas-trail-query-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  border: 1px solid var(--border);
+  background: oklch(1 0 0 / 0.03);
+  padding: 0.42rem 0.75rem;
+  color: var(--fg-dim);
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+}
+.atlas-trail-query-chip.is-active {
+  border-color: var(--instrument);
+  background: color-mix(in oklab, var(--instrument) 16%, transparent);
+  color: var(--fg);
+}
+.atlas-trail-query-chip.is-refinement {
+  border-style: dashed;
+}
+.atlas-trail-refine-tag {
+  background: var(--signal);
+  color: var(--ink-900);
+  padding: 0.05rem 0.35rem;
+  font-size: 0.56rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.atlas-source-board {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0;
+}
+.atlas-source-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+  border-right: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  background: oklch(1 0 0 / 0.012);
+  padding: clamp(0.95rem, 2vw, 1.3rem);
+  transition:
+    background-color 300ms ease,
+    box-shadow 300ms ease;
+}
+.atlas-source-card:nth-child(2n) {
+  border-right: 0;
+}
+.atlas-source-card.is-fetching,
+.atlas-source-card.is-extracting {
+  background: color-mix(in oklab, var(--instrument) 7%, transparent);
+}
+.atlas-source-card.is-failed {
+  background: oklch(0 0 0 / 0.18);
+  color: var(--fg-faint);
+}
+.atlas-source-card.is-kept {
+  background: color-mix(in oklab, var(--signal) 9%, transparent);
+  box-shadow: inset 3px 0 0 var(--signal);
+}
+.atlas-source-card.is-rejected {
+  background: color-mix(in oklab, var(--ember) 8%, transparent);
+}
+.atlas-source-head {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 0.6rem;
+}
+.atlas-source-index {
+  color: var(--instrument);
+  font-family: var(--font-display);
+  font-size: 1.15rem;
+  line-height: 1;
+}
+.atlas-source-url {
+  display: flex;
+  min-width: 0;
+  align-items: baseline;
+  gap: 0.1rem;
+  font-family: var(--font-mono);
+  font-size: 0.66rem;
+}
+.atlas-source-host {
+  flex: none;
+  color: var(--fg-dim);
+  font-weight: 700;
+}
+.atlas-source-path {
+  overflow: hidden;
+  color: var(--fg-faint);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.atlas-source-status {
+  flex: none;
+  border: 1px solid currentColor;
+  padding: 0.05rem 0.4rem;
+  color: var(--fg-faint);
+  font-family: var(--font-mono);
+  font-size: 0.56rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+.atlas-source-status.is-fetching,
+.atlas-source-status.is-extracting {
+  color: var(--instrument);
+}
+.atlas-source-status.is-kept {
+  color: var(--signal);
+}
+.atlas-source-status.is-rejected,
+.atlas-source-status.is-failed {
+  color: var(--ember);
+}
+.atlas-source-title {
+  font-size: 1rem;
+  font-weight: 600;
+  line-height: 1.3;
+}
+.atlas-source-card.is-failed .atlas-source-title {
+  text-decoration: line-through;
+  text-decoration-thickness: 1px;
+}
+.atlas-source-scan {
+  position: relative;
+  height: 2px;
+  overflow: hidden;
+  background: oklch(1 0 0 / 0.07);
+}
+.atlas-source-scan > span {
+  display: block;
+  width: 30%;
+  height: 100%;
+  background: var(--instrument);
+}
+.atlas-source-failure {
+  color: var(--ember);
+  font-family: var(--font-mono);
+  font-size: 0.66rem;
+}
+.atlas-evidence-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  border-left: 1px solid var(--border);
+  padding-left: 0.8rem;
+}
+.atlas-evidence-fact {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.45rem;
+}
+.atlas-evidence-field {
+  color: var(--fg-faint);
+  font-family: var(--font-mono);
+  font-size: 0.56rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+.atlas-evidence-fact strong {
+  color: var(--signal);
+  font-size: 0.85rem;
+}
+.atlas-evidence-sentence {
+  margin-top: 0.1rem;
+  color: var(--fg-faint);
+  font-size: 0.76rem;
+  line-height: 1.6;
+}
+.atlas-evidence-mark {
+  position: relative;
+  display: inline;
+  padding: 0 0.15rem;
+  color: var(--ink-900);
+  font-weight: 600;
+}
+.atlas-evidence-wipe {
+  position: absolute;
+  inset: -0.05rem -0.15rem;
+  z-index: 0;
+  background: var(--signal);
+  transform-origin: left center;
+}
+.atlas-evidence-text {
+  position: relative;
+  z-index: 1;
+}
+.atlas-source-candidate {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 0.75rem;
+  margin-top: auto;
+  border-top: 1px solid var(--border);
+  padding-top: 0.7rem;
+}
+.atlas-source-candidate .atlas-card-index {
+  display: block;
+  font-size: 0.56rem;
+}
+.atlas-source-candidate strong {
+  display: block;
+  font-size: 0.92rem;
+  line-height: 1.25;
+}
+.atlas-source-candidate > div > span:last-child {
+  color: var(--fg-faint);
+  font-size: 0.72rem;
+}
+.atlas-source-reason {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  color: var(--fg-dim);
+  font-size: 0.74rem;
+}
+.atlas-stamp-slot {
+  position: relative;
+  display: grid;
+  place-items: center;
+  flex: none;
+}
+.atlas-stamp {
+  display: inline-block;
+  border: 2px solid currentColor;
+  padding: 0.2rem 0.6rem;
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.atlas-stamp.is-kept {
+  color: var(--signal);
+  background: color-mix(in oklab, var(--signal) 14%, transparent);
+}
+.atlas-stamp.is-rejected {
+  color: var(--ember);
+  background: color-mix(in oklab, var(--ember) 14%, transparent);
+}
+.atlas-stamp-ring {
+  position: absolute;
+  inset: -0.35rem;
+  border: 2px solid currentColor;
+  pointer-events: none;
+}
+.atlas-stamp-ring.is-kept {
+  color: var(--signal);
+}
+.atlas-stamp-ring.is-rejected {
+  color: var(--ember);
+}
+.atlas-trail-results {
+  margin-bottom: 2.5rem;
+}
+.atlas-provenance {
+  margin-top: 1rem;
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--signal);
+  background: oklch(1 0 0 / 0.025);
+}
+.atlas-provenance-toggle {
+  display: grid;
+  width: 100%;
+  grid-template-columns: auto auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0.6rem 0.8rem;
+  text-align: left;
+}
+.atlas-provenance-toggle:hover {
+  background: oklch(1 0 0 / 0.03);
+}
+.atlas-provenance-host {
+  color: var(--fg-dim);
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  font-weight: 700;
+}
+.atlas-provenance-count {
+  color: var(--fg-faint);
+  font-size: 0.72rem;
+}
+.atlas-provenance-toggle [aria-hidden] {
+  color: var(--fg-faint);
+  transition: transform 220ms ease;
+}
+.atlas-provenance-toggle [aria-hidden].is-open {
+  transform: rotate(180deg);
+}
+.atlas-provenance-list {
+  overflow: hidden;
+  border-top: 1px solid var(--border);
+}
+.atlas-provenance-list > li {
+  display: grid;
+  gap: 0.2rem;
+  border-bottom: 1px solid var(--border);
+  padding: 0.65rem 0.8rem;
+}
+.atlas-provenance-list > li:last-child {
+  border-bottom: 0;
+}
+.atlas-provenance-list strong {
+  color: var(--signal);
+  font-size: 0.85rem;
+}
+.atlas-provenance-list q {
+  color: var(--fg-faint);
+  font-size: 0.76rem;
+  line-height: 1.55;
+}
+
+@media (max-width: 900px) {
+  .atlas-source-board {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .atlas-source-card {
+    border-right: 0;
+  }
+  .atlas-trail-head {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .atlas-trail-tally {
+    grid-auto-flow: row;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 0.75rem;
+  }
+  .atlas-trail-stop {
+    grid-column: 1;
+    justify-self: start;
+  }
+  .atlas-trail-tally-item dd {
+    font-size: 1.6rem;
+  }
+}
+@media (max-width: 640px) {
+  .atlas-provenance-toggle {
+    grid-template-columns: auto minmax(0, 1fr) auto;
+  }
+  .atlas-provenance-count {
+    grid-column: 1 / -1;
+  }
+}
