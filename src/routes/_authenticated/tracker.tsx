@@ -637,6 +637,7 @@ function GmailSection({
     setBusy("connect");
     try {
       const { authorizationUrl } = await startGmailConnect();
+      popup.location.href = authorizationUrl;
       const code = await new Promise<string | null>((resolve, reject) => {
         let poll: number | undefined;
         const cleanup = () => {
@@ -667,7 +668,6 @@ function GmailSection({
           reject(new Error("The sign-in window was closed before finishing."));
         }, 500);
       });
-      popup.location.href = authorizationUrl;
       const finishedCode = await code;
       if (finishedCode) await completeGmailConnection({ data: { code: finishedCode } });
       setNote("Gmail connected. Checking your inbox for updates…");
