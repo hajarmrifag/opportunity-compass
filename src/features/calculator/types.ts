@@ -52,10 +52,10 @@ export interface OpportunityCost {
   currency: string;
   timing: Timing;
   status: Status;
-  evidenceQuote?: string | null;
-  sourceUrl?: string | null;
-  checkedDate?: string | null;
-  note?: string | null;
+  evidenceQuote?: string | null | undefined;
+  sourceUrl?: string | null | undefined;
+  checkedDate?: string | null | undefined;
+  note?: string | null | undefined;
 }
 
 /** calc_opportunity_coverage: what the organiser/employer covers. */
@@ -63,9 +63,9 @@ export interface OpportunityCoverage {
   opportunityId: string;
   coversCategory: LineCategory | "*";
   covered: "yes" | "no" | "unknown";
-  note?: string | null;
-  evidenceQuote?: string | null;
-  sourceUrl?: string | null;
+  note?: string | null | undefined;
+  evidenceQuote?: string | null | undefined;
+  sourceUrl?: string | null | undefined;
   status: Status;
 }
 
@@ -80,9 +80,9 @@ export interface DestinationBenchmark {
   amountMax: number;
   currency: string;
   status: Status;
-  sourceUrl?: string | null;
-  checkedDate?: string | null;
-  note?: string | null;
+  sourceUrl?: string | null | undefined;
+  checkedDate?: string | null | undefined;
+  note?: string | null | undefined;
 }
 
 /** calc_visa_rules */
@@ -94,8 +94,8 @@ export interface VisaRule {
   currency: string;
   leadTimeNote?: string | null;
   status: Status;
-  sourceUrl?: string | null;
-  checkedDate?: string | null;
+  sourceUrl?: string | null | undefined;
+  checkedDate?: string | null | undefined;
 }
 
 export interface FundingRules {
@@ -126,9 +126,9 @@ export interface FundingOption {
   sharedAllowance: boolean;
   applyDeadline?: string | null;
   status: Status;
-  sourceUrl?: string | null;
-  checkedDate?: string | null;
-  note?: string | null;
+  sourceUrl?: string | null | undefined;
+  checkedDate?: string | null | undefined;
+  note?: string | null | undefined;
 }
 
 /** calc_fx_rates: 1 base = rate × quote */
@@ -188,11 +188,11 @@ export interface LineResult {
   coverage: CoverageState;
   includedInTotal: boolean;
   timing: Timing;
-  unknownReason?: string;
-  sourceUrl?: string | null;
-  checkedDate?: string | null;
-  evidenceQuote?: string | null;
-  note?: string | null;
+  unknownReason?: string | undefined;
+  sourceUrl?: string | null | undefined;
+  checkedDate?: string | null | undefined;
+  evidenceQuote?: string | null | undefined;
+  note?: string | null | undefined;
 }
 
 export type Eligibility = "eligible" | "needs_confirmation" | "not_eligible";
