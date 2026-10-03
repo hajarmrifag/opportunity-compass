@@ -23,6 +23,7 @@ import {
   type TrackerApplication,
   type TrackerEvent,
 } from "@/lib/tracker.functions";
+import { TrackerInsights } from "@/features/tracker/Insights";
 import { EmptyState, Loading, PageHeader } from "@/components/ui-bits";
 
 export const Route = createFileRoute("/_authenticated/tracker")({
@@ -200,7 +201,7 @@ function TrackerPage() {
         <div className="mt-6">
           <EmptyState
             title="Nothing tracked yet"
-            body="Save a listing or log a coffee chat and your dashboard comes to life here."
+            body="Save a listing, add an application you found elsewhere, or log a coffee chat and your dashboard fills in here."
           />
           <div className="mt-3 flex gap-2">
             <Link to="/search" className="btn">
@@ -274,74 +275,6 @@ function TrackerPage() {
             )}
           </section>
 
-          {/* 4. Chart + AI advice */}
-          <section className="card mt-6 p-5" aria-labelledby="insights">
-            <div className="flex flex-wrap items-center justify-between gap-3">
-              <h2 id="insights" className="text-lg font-semibold">
-                Insights
-              </h2>
-              <div className="flex gap-2">
-                <button className="btn btn-outline" onClick={() => setShowChart((v) => !v)}>
-                  {showChart ? "Hide chart" : "Generate graph"}
-                </button>
-                <button className="btn" disabled={adviceBusy} onClick={runAdvice}>
-                  {adviceBusy ? "Thinking…" : "Get AI advice"}
-                </button>
-              </div>
-            </div>
-            {showChart && (
-              <div className="mt-4 space-y-2" role="img" aria-label="Applications by status bar chart">
-                {statusCounts.map((s) => (
-                  <div key={s.status} className="flex items-center gap-3 text-sm">
-                    <span className="w-24 shrink-0 text-muted-foreground">{s.label}</span>
-                    <div className="h-4 flex-1 rounded bg-muted">
-                      <div
-                        className="h-4 rounded bg-primary"
-                        style={{ width: `${(s.count / maxStatusCount) * 100}%` }}
-                      />
-                    </div>
-                    <span className="w-8 text-right tabular-nums">{s.count}</span>
-                  </div>
-                ))}
-              </div>
-            )}
-            {adviceError && (
-              <p role="alert" className="field-error mt-3">
-                {adviceError}
-              </p>
-            )}
-            {advice && (
-              <div className="mt-4">
-                <p className="text-sm leading-relaxed">{advice.advice}</p>
-                {advice.resources.length > 0 && (
-                  <ul className="mt-3 space-y-2">
-                    {advice.resources.map((r) => (
-                      <li key={r.id} className="rounded-md border border-border p-3 text-sm">
-                        <span className="font-medium">{r.title}</span>
-                        {r.tag && (
-                          <span className="ml-2 text-xs text-muted-foreground">{r.tag}</span>
-                        )}
-                        {r.notes && (
-                          <p className="mt-1 text-xs text-muted-foreground">{r.notes}</p>
-                        )}
-                        {r.url && (
-                          <a
-                            href={r.url}
-                            target="_blank"
-                            rel="noreferrer"
-                            className="mt-1 inline-block text-xs underline"
-                          >
-                            Open resource
-                          </a>
-                        )}
-                      </li>
-                    ))}
-                  </ul>
-                )}
-              </div>
-            )}
-          </section>
-
           {/* 5. Applications */}
           <section className="mt-8" aria-labelledby="apps-heading">
             <h2 id="apps-heading" className="text-lg font-semibold">
@@ -368,10 +301,19 @@ function TrackerPage() {
             )}
           </section>
 
-          {/* 6. Coffee chats */}
-          <CoffeeChatSection chats={chats} onChanged={refresh} />
         </>
       )}
+
+      {/* Coffee chats — always available, even before anything is tracked */}
+      <CoffeeChatSection chats={chats} onChanged={refresh} />
+
+      {/* Insights: flow graph + AI feedback */}
+      <TrackerInsights
+        apps={apps}
+        chats={chats}
+        suggestionsCount={suggestions.length}
+        onAdvice={() => generateAdvice()}
+      />
     </>
   );
 }
@@ -440,6 +382,25 @@ function TrackerRow({ app, onChanged }: { app: TrackerApplication; onChanged: ()
   const [error, setError] = useState("");
   const [showHistory, setShowHistory] = useState(false);
   const dirty = notes !== app.notes;
+
+  const [comment, setComment] = useState(chat.notes);
+  const [aiNote, setAiNote] = useState(false);
+  const patch = (changes: Partial<CoffeeChat>) =>
+    run(() =>
+      saveCoffeeChat({
+        data: {
+          id: chat.id,
+          contact_name: chat.contact_name,
+          company: chat.company,
+          date: chat.date,
+          follow_up_date: chat.follow_up_date,
+          notes: chat.notes,
+          outcome: chat.outcome,
+          referral: chat.referral ?? null,
+          ...changes,
+        } as never,
+      }),
+    );
 
   const run = async (fn: () => Promise<unknown>) => {
     setBusy(true);
@@ -597,6 +558,8 @@ function CoffeeChatSection({ chats, onChanged }: { chats: CoffeeChat[]; onChange
   const [name, setName] = useState("");
   const [company, setCompany] = useState("");
   const [date, setDate] = useState("");
+  const [referral, setReferral] = useState<"" | "yes" | "no">("");
+  const [comment, setComment] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
 
@@ -611,11 +574,15 @@ function CoffeeChatSection({ chats, onChanged }: { chats: CoffeeChat[]; onChange
           company: company.trim(),
           date: date || null,
           outcome: "planned",
+          referral: referral === "" ? null : referral === "yes",
+          notes: comment.trim(),
         },
       });
       setName("");
       setCompany("");
       setDate("");
+      setReferral("");
+      setComment("");
       onChanged();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Could not save.");
@@ -656,6 +623,28 @@ function CoffeeChatSection({ chats, onChanged }: { chats: CoffeeChat[]; onChange
               type="date"
               value={date}
               onChange={(e) => setDate(e.target.value)}
+            />
+          </div>
+          <div>
+            <label htmlFor="cc-ref">Referral?</label>
+            <select
+              id="cc-ref"
+              value={referral}
+              onChange={(e) => setReferral(e.target.value as "" | "yes" | "no")}
+            >
+              <option value="">Not yet</option>
+              <option value="yes">Yes</option>
+              <option value="no">No</option>
+            </select>
+          </div>
+          <div className="sm:col-span-2">
+            <label htmlFor="cc-comment">Comment</label>
+            <textarea
+              id="cc-comment"
+              rows={2}
+              value={comment}
+              onChange={(e) => setComment(e.target.value)}
+              placeholder="How did it go? What did you learn? AI can analyse this later."
             />
           </div>
         </div>
@@ -769,6 +758,48 @@ function CoffeeChatRow({ chat, onChanged }: { chat: CoffeeChat; onChanged: () =>
               }
             />
           </div>
+        </div>
+      </div>
+      <div className="mt-3 grid gap-3 sm:grid-cols-[10rem_1fr]">
+        <div>
+          <label htmlFor={`cc-ref-${chat.id}`}>Referral?</label>
+          <select
+            id={`cc-ref-${chat.id}`}
+            value={chat.referral === true ? "yes" : chat.referral === false ? "no" : ""}
+            disabled={busy}
+            onChange={(e) =>
+              patch({ referral: e.target.value === "" ? null : e.target.value === "yes" })
+            }
+          >
+            <option value="">Not yet</option>
+            <option value="yes">Yes</option>
+            <option value="no">No</option>
+          </select>
+        </div>
+        <div>
+          <label htmlFor={`cc-note-${chat.id}`}>Comment</label>
+          <textarea
+            id={`cc-note-${chat.id}`}
+            rows={2}
+            value={comment}
+            disabled={busy}
+            onChange={(e) => setComment(e.target.value)}
+            onBlur={() => comment !== chat.notes && patch({ notes: comment })}
+            placeholder="How did it go? AI can analyse this later."
+          />
+          <button
+            type="button"
+            className="mt-1 text-xs underline"
+            onClick={() => setAiNote((v) => !v)}
+          >
+            Analyse with AI
+          </button>
+          {aiNote && (
+            <p role="status" className="mt-1 text-xs text-muted-foreground">
+              AI comment analysis isn't connected yet — your comment is saved and will be analysed
+              once it is.
+            </p>
+          )}
         </div>
       </div>
       {overdue && (
