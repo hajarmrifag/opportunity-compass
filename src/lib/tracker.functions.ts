@@ -333,8 +333,6 @@ export interface CoffeeChat {
   date: string | null;
   follow_up_date: string | null;
   follow_up_done?: boolean;
-  /** Added by the referral migration; absent until it is applied. */
-  referral?: boolean;
   notes: string;
   outcome: "" | CoffeeChatOutcome;
   referral: boolean | null;
@@ -381,7 +379,6 @@ export const saveCoffeeChat = createServerFn({ method: "POST" })
         company: z.string().max(200).default(""),
         date: z.string().nullable().optional(),
         follow_up_date: z.string().nullable().optional(),
-        referral: z.boolean().optional(),
         notes: z.string().max(5000).default(""),
         outcome: z.enum(["", ...COFFEE_CHAT_OUTCOMES]).default(""),
         referral: z.boolean().nullable().optional(),
