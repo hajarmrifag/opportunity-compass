@@ -88,6 +88,11 @@ export function FinancePanel({ opportunityId }: { opportunityId: string }) {
             Manual planning only. These entries stay in this browser and never replace the
             provider's sourced funding facts.
           </p>
+          <p className="mt-1 max-w-3xl text-xs text-muted-foreground">
+            No reviewed cost rows exist for this opportunity yet, so your local scenario is used.
+            Being eligible is not the same as being awarded: only an actual award with a known
+            amount lowers the base case; everything else appears under "If awarded".
+          </p>
         </div>
         <Button
           onClick={() => {
@@ -174,8 +179,16 @@ export function FinancePanel({ opportunityId }: { opportunityId: string }) {
                 </div>
                 <dl className="mt-4 divide-y divide-border">
                   <Result
-                    label="Known cost subtotal"
+                    label="Known subtotal"
                     value={money(group.currency, group.knownCostSubtotal)}
+                  />
+                  <Result
+                    label="Total cost"
+                    value={
+                      group.totalUnknown
+                        ? "Unknown"
+                        : money(group.currency, group.knownCostSubtotal)
+                    }
                   />
                   <Result
                     label="Base case · eventual gap"
@@ -411,13 +424,13 @@ function SupportRow({
             <option value="reimbursement">Reimbursement</option>
           </select>
         </Field>
-        <Field label="Award state">
+        <Field label="Award status">
           <select
             value={item.award}
             onChange={(event) => onChange({ award: event.target.value as FinanceSupport["award"] })}
           >
-            <option value="confirmed">Confirmed</option>
-            <option value="conditional">Conditional / if awarded</option>
+            <option value="confirmed">Actual award I received</option>
+            <option value="conditional">Possible / competitive (if awarded)</option>
           </select>
         </Field>
         <label className="flex items-center gap-2 self-end normal-case">

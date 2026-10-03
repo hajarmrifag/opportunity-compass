@@ -24,8 +24,8 @@ const CITY_ALIASES: Record<string, string> = {
   hk: "hong kong",
   "hong kong sar": "hong kong",
   "hong kong s.a.r.": "hong kong",
-  "hksar": "hong kong",
-  "香港": "hong kong",
+  hksar: "hong kong",
+  香港: "hong kong",
   "london, uk": "london",
 };
 
@@ -97,15 +97,28 @@ function coverageFor(
   if (!entry) return { state: defaultState };
   // A scraped or unsourced "yes" is a lead to verify, not confirmed coverage.
   const verified = entry.status === "published" && Boolean(entry.sourceUrl);
-  const state: CoverageState = entry.covered === "yes" ? (verified ? "covered" : "unknown") : entry.covered === "no" ? "not_covered" : "unknown";
+  const state: CoverageState =
+    entry.covered === "yes"
+      ? verified
+        ? "covered"
+        : "unknown"
+      : entry.covered === "no"
+        ? "not_covered"
+        : "unknown";
   return { state, note: entry.note };
 }
 
 const sumRange = (lines: LineResult[]): Range =>
-  lines.reduce((acc, l) => ({ min: acc.min + (l.converted?.min ?? 0), max: acc.max + (l.converted?.max ?? 0) }), {
-    min: 0,
-    max: 0,
-  });
+  lines.reduce(
+    (acc, l) => ({
+      min: acc.min + (l.converted?.min ?? 0),
+      max: acc.max + (l.converted?.max ?? 0),
+    }),
+    {
+      min: 0,
+      max: 0,
+    },
+  );
 
 // ---------- Main calculation ----------
 
@@ -126,7 +139,12 @@ export function calculate(data: CalculatorData, inputs: StudentInputs): Calculat
   const fxSources = new Set<string>();
   let fxLatest: string | null = null;
 
-  const toRange = (min: number | null, max: number | null, from: string, mult: number): Range | null => {
+  const toRange = (
+    min: number | null,
+    max: number | null,
+    from: string,
+    mult: number,
+  ): Range | null => {
     if (min === null || max === null) return null;
     const a = convert(min * mult, from, currency, data.fxRates);
     const b = convert(max * mult, from, currency, data.fxRates);
@@ -148,7 +166,10 @@ export function calculate(data: CalculatorData, inputs: StudentInputs): Calculat
     const mult = multiplier(c.unit, nights, days);
     const isUnknown = c.status === "unknown" || c.amountMin === null || c.amountMax === null;
     const converted = isUnknown ? null : toRange(c.amountMin, c.amountMax, c.currency, mult);
-    const cov = c.direction === "pay" ? coverageFor(c.category, data.coverage, "not_covered") : { state: "not_covered" as CoverageState };
+    const cov =
+      c.direction === "pay"
+        ? coverageFor(c.category, data.coverage, "not_covered")
+        : { state: "not_covered" as CoverageState };
     const line: LineResult = {
       key: `cost-${c.id}`,
       group: c.direction === "receive" ? "receive" : "event",
@@ -162,7 +183,8 @@ export function calculate(data: CalculatorData, inputs: StudentInputs): Calculat
       },
       status: c.status,
       coverage: cov.state,
-      includedInTotal: !isUnknown && converted !== null && cov.state !== "covered" && c.direction === "pay",
+      includedInTotal:
+        !isUnknown && converted !== null && cov.state !== "covered" && c.direction === "pay",
       timing: c.timing,
       unknownReason: isUnknown ? "Not stated on the official page" : undefined,
       sourceUrl: c.sourceUrl,
@@ -192,7 +214,9 @@ export function calculate(data: CalculatorData, inputs: StudentInputs): Calculat
     );
     if (benchmarks.length === 0) {
       travelUnavailable = true;
-      unknownItems.push(`Travel estimates not yet available for ${data.opportunity.city ?? "this destination"}`);
+      unknownItems.push(
+        `Travel estimates not yet available for ${data.opportunity.city ?? "this destination"}`,
+      );
       requiredCostUnknown = true;
     } else {
       for (const category of ["flight", "accommodation", "food", "local_transport"] as const) {
@@ -228,7 +252,10 @@ export function calculate(data: CalculatorData, inputs: StudentInputs): Calculat
     const homeCountry = normalizeCountry(inputs.departureCountry);
     if (destCountry && destCountry !== homeCountry) {
       const passport = inputs.passport;
-      const checkWhere = destCountry === "united kingdom" ? "check gov.uk" : "check the official immigration website";
+      const checkWhere =
+        destCountry === "united kingdom"
+          ? "check gov.uk"
+          : "check the official immigration website";
       if (!passport || passport === "Other" || passport === "Prefer not to say") {
         unknownItems.push("Visa or travel authorisation: depends on your passport");
         requiredCostUnknown = true;
@@ -271,13 +298,19 @@ export function calculate(data: CalculatorData, inputs: StudentInputs): Calculat
     (l) => l.converted === null && l.original.min !== null && l.status !== "unknown",
   );
   const hasKnownCosts = costLines.length > 0 || eventLines.some((l) => l.coverage === "covered");
-  const cost: Range | null = blockedByConversion || mode === null || !hasKnownCosts ? null : sumRange(costLines);
-  const upfront: Range | null = cost === null ? null : sumRange(costLines.filter((l) => l.timing === "before_start"));
+  const cost: Range | null =
+    blockedByConversion || mode === null || !hasKnownCosts ? null : sumRange(costLines);
+  const upfront: Range | null =
+    cost === null ? null : sumRange(costLines.filter((l) => l.timing === "before_start"));
   const receive: Range | null =
-    receiveLines.length === 0 || receiveLines.some((l) => l.converted === null) ? null : sumRange(receiveLines);
+    receiveLines.length === 0 || receiveLines.some((l) => l.converted === null)
+      ? null
+      : sumRange(receiveLines);
 
   // 5) Funding
-  const relevantFunding = data.funding.filter((f) => f.opportunityId === null || f.opportunityId === data.opportunity.id);
+  const relevantFunding = data.funding.filter(
+    (f) => f.opportunityId === null || f.opportunityId === data.opportunity.id,
+  );
   const evaluated = relevantFunding.map((option) => {
     const { eligibility, reasons } = evaluateEligibility(option, inputs, meta);
     let capacity: Range | null = null;
@@ -288,8 +321,10 @@ export function calculate(data: CalculatorData, inputs: StudentInputs): Calculat
     } else if (option.percentCap === null) {
       notes.push("Amount not published");
     }
-    if (option.sharedAllowance) notes.push("Shared allowance: using it here reduces what is left for other activities");
-    if (option.paidWhen === "after_end") notes.push("Paid after the activity, so it does not reduce cash needed upfront");
+    if (option.sharedAllowance)
+      notes.push("Shared allowance: using it here reduces what is left for other activities");
+    if (option.paidWhen === "after_end")
+      notes.push("Paid after the activity, so it does not reduce cash needed upfront");
     return { option, eligibility, reasons, capacity, notes };
   });
 
@@ -382,20 +417,29 @@ function applySupport(
   const applied = new Map<string, Range>();
   if (cost === null) return { scenario: { cost: null, upfront: null }, applied };
 
-  const ordered = [...options].sort((a, b) => Number(a.option.competitive) - Number(b.option.competitive));
+  const ordered = [...options].sort(
+    (a, b) => Number(a.option.competitive) - Number(b.option.competitive),
+  );
 
   const run = (end: "min" | "max") => {
     const remaining = lines.map((l) => ({ line: l, value: l.converted ? l.converted[end] : 0 }));
-    const upfrontStart = remaining.filter((r) => r.line.timing === "before_start").reduce((s, r) => s + r.value, 0);
+    const upfrontStart = remaining
+      .filter((r) => r.line.timing === "before_start")
+      .reduce((s, r) => s + r.value, 0);
     let upfrontReduction = 0;
     const perOption = new Map<string, number>();
 
     for (const e of ordered) {
       const o = e.option;
       const covered = remaining
-        .filter((r) => o.coversCategories.includes("*") || o.coversCategories.includes(r.line.category))
+        .filter(
+          (r) => o.coversCategories.includes("*") || o.coversCategories.includes(r.line.category),
+        )
         // allocate to before_start lines first so upfront relief is shown where it applies
-        .sort((a, b) => Number(a.line.timing !== "before_start") - Number(b.line.timing !== "before_start"));
+        .sort(
+          (a, b) =>
+            Number(a.line.timing !== "before_start") - Number(b.line.timing !== "before_start"),
+        );
       const coveredTotal = covered.reduce((s, r) => s + r.value, 0);
 
       let capacity = 0;
@@ -409,13 +453,18 @@ function applySupport(
         const take = Math.min(left, r.value);
         r.value -= take;
         left -= take;
-        if (o.paidWhen === "before_start" && r.line.timing === "before_start") upfrontReduction += take;
+        if (o.paidWhen === "before_start" && r.line.timing === "before_start")
+          upfrontReduction += take;
       }
       perOption.set(o.id, used);
     }
 
     const after = remaining.reduce((s, r) => s + r.value, 0);
-    return { cost: Math.max(0, after), upfront: Math.max(0, upfrontStart - upfrontReduction), perOption };
+    return {
+      cost: Math.max(0, after),
+      upfront: Math.max(0, upfrontStart - upfrontReduction),
+      perOption,
+    };
   };
 
   const low = run("min");
@@ -426,7 +475,10 @@ function applySupport(
     applied.set(e.option.id, { min: Math.min(a, b), max: Math.max(a, b) });
   }
   return {
-    scenario: { cost: { min: low.cost, max: high.cost }, upfront: { min: low.upfront, max: high.upfront } },
+    scenario: {
+      cost: { min: low.cost, max: high.cost },
+      upfront: { min: low.upfront, max: high.upfront },
+    },
     applied,
   };
 }

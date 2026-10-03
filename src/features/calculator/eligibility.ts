@@ -19,13 +19,16 @@ export function evaluateEligibility(
   const r = option.rules ?? {};
 
   if (r.university) {
-    if (!inputs.university) unsure.push(`Confirm your university (only for ${r.university} students)`);
-    else if (norm(inputs.university) !== norm(r.university)) fails.push(`Only for ${r.university} students`);
+    if (!inputs.university)
+      unsure.push(`Confirm your university (only for ${r.university} students)`);
+    else if (norm(inputs.university) !== norm(r.university))
+      fails.push(`Only for ${r.university} students`);
   }
 
   if (r.level) {
     if (!inputs.level) unsure.push(`Confirm your level of study (${r.level} only)`);
-    else if (inputs.level !== r.level) fails.push(`Only for ${r.level === "UG" ? "undergraduate" : "postgraduate"} students`);
+    else if (inputs.level !== r.level)
+      fails.push(`Only for ${r.level === "UG" ? "undergraduate" : "postgraduate"} students`);
   }
 
   if (r.excludeFinalYear) {
@@ -35,19 +38,24 @@ export function evaluateEligibility(
 
   if (r.residencyStatus) {
     if (!inputs.residencyStatus || inputs.residencyStatus === "prefer_not")
-      unsure.push(`Depends on residency status (${r.residencyStatus === "local" ? "local" : "non-local"} students only)`);
+      unsure.push(
+        `Depends on residency status (${r.residencyStatus === "local" ? "local" : "non-local"} students only)`,
+      );
     else if (inputs.residencyStatus !== r.residencyStatus)
       fails.push(`Only for ${r.residencyStatus === "local" ? "local" : "non-local"} students`);
   }
 
   if (r.requiresEntryScholarship) {
     if (inputs.holdsEntryScholarship === "no") fails.push("Requires an academic Entry Scholarship");
-    else if (inputs.holdsEntryScholarship !== "yes") unsure.push("Confirm whether you hold an academic Entry Scholarship");
+    else if (inputs.holdsEntryScholarship !== "yes")
+      unsure.push("Confirm whether you hold an academic Entry Scholarship");
   }
 
   if (r.requiresCreditBearing) {
-    if (!meta || meta.creditBearing === null) unsure.push("Confirm whether this activity is credit-bearing");
-    else if (!meta.creditBearing) fails.push("Requires a credit-bearing or formally assessed activity");
+    if (!meta || meta.creditBearing === null)
+      unsure.push("Confirm whether this activity is credit-bearing");
+    else if (!meta.creditBearing)
+      fails.push("Requires a credit-bearing or formally assessed activity");
   }
 
   if (r.allowedActivityTypes && r.allowedActivityTypes.length > 0) {
@@ -55,7 +63,8 @@ export function evaluateEligibility(
     if (!activity) unsure.push("Confirm the type of activity");
     else if (!r.allowedActivityTypes.includes(activity)) {
       // An open-ended list ("other") means it might still qualify; a closed list is a clear failure.
-      if (r.allowedActivityTypes.includes("other")) unsure.push("This activity type is not explicitly listed; check with the provider");
+      if (r.allowedActivityTypes.includes("other"))
+        unsure.push("This activity type is not explicitly listed; check with the provider");
       else fails.push(`Only for: ${r.allowedActivityTypes.join(", ").replace(/_/g, " ")}`);
     }
   }
@@ -65,6 +74,13 @@ export function evaluateEligibility(
 
   if (fails.length > 0) return { eligibility: "not_eligible", reasons: fails };
   if (unsure.length > 0) return { eligibility: "needs_confirmation", reasons: unsure };
-  if (option.status !== "published") return { eligibility: "needs_confirmation", reasons: ["Amount is an estimate; confirm with the provider"] };
-  return { eligibility: "eligible", reasons: ["Meets all listed conditions based on the information you gave"] };
+  if (option.status !== "published")
+    return {
+      eligibility: "needs_confirmation",
+      reasons: ["Amount is an estimate; confirm with the provider"],
+    };
+  return {
+    eligibility: "eligible",
+    reasons: ["Meets all listed conditions based on the information you gave"],
+  };
 }

@@ -36,7 +36,9 @@ const knownAmount = (item: FinanceCost | FinanceSupport) =>
  * Estimated "confirmed" amounts and competitive/possible awards stay in the if-awarded scenario.
  */
 export function baseOrIfAwarded(support: FinanceSupport): "confirmed" | "conditional" {
-  return support.award === "confirmed" && support.knowledge === "known" ? "confirmed" : "conditional";
+  return support.award === "confirmed" && support.knowledge === "known"
+    ? "confirmed"
+    : "conditional";
 }
 
 function effectiveSupports(

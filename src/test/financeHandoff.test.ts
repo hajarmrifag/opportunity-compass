@@ -82,7 +82,9 @@ describe("finance handoff rules", () => {
   it("unverified organiser coverage does not reduce cost", () => {
     const r = calculate(
       base({
-        coverage: [{ opportunityId: "o", coversCategory: "fee", covered: "yes", status: "ai_extracted" }],
+        coverage: [
+          { opportunityId: "o", coversCategory: "fee", covered: "yes", status: "ai_extracted" },
+        ],
       }),
       inputs,
     );

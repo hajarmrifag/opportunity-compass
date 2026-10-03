@@ -8,14 +8,7 @@ export type Mode = "local" | "travel";
 
 export type TravelCategory = "flight" | "accommodation" | "food" | "local_transport";
 export type OpportunityCostCategory =
-  | "fee"
-  | "ticket"
-  | "deposit"
-  | "registration"
-  | "materials"
-  | "stipend"
-  | "salary"
-  | "other";
+  "fee" | "ticket" | "deposit" | "registration" | "materials" | "stipend" | "salary" | "other";
 export type LineCategory = TravelCategory | OpportunityCostCategory | "visa";
 
 export type ActivityType =
@@ -147,7 +140,8 @@ export interface FxRate {
   source: string;
 }
 
-export type PassportChoice = "Hong Kong SAR" | "Mainland China" | "Other" | "Prefer not to say" | null;
+export type PassportChoice =
+  "Hong Kong SAR" | "Mainland China" | "Other" | "Prefer not to say" | null;
 
 export interface StudentInputs {
   university: string | null;
