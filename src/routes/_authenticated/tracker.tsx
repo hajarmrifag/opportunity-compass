@@ -81,8 +81,6 @@ function TrackerPage() {
     queryFn: () => listEmailSuggestions(),
     refetchInterval: 15_000,
   });
-  const [search, setSearch] = useState("");
-
   const apps = useMemo(() => appsQuery.data ?? [], [appsQuery.data]);
   const chats = useMemo(() => chatsQuery.data ?? [], [chatsQuery.data]);
   const suggestions = useMemo(() => suggestionsQuery.data ?? [], [suggestionsQuery.data]);
@@ -125,25 +123,6 @@ function TrackerPage() {
         .sort((x, y) => (x.follow_up_date ?? "").localeCompare(y.follow_up_date ?? "")),
     [chats, weekAhead],
   );
-
-  const filtered = useMemo(() => {
-    const q = search.trim().toLowerCase();
-    if (!q) return apps;
-    return apps.filter((a) =>
-      [a.company, a.role, a.notes].some((field) => field.toLowerCase().includes(q)),
-    );
-  }, [apps, search]);
-
-  // The same search also matches coffee chats (person, company, comment).
-  const filteredChats = useMemo(() => {
-    const q = search.trim().toLowerCase();
-    if (!q) return [];
-    return chats.filter((c) =>
-      [c.contact_name, c.company ?? "", c.notes ?? ""].some((field) =>
-        field.toLowerCase().includes(q),
-      ),
-    );
-  }, [chats, search]);
 
   const lastEmailUpdate = suggestions.reduce<string | null>(
     (latest, x) => (!latest || x.created_at > latest ? x.created_at : latest),
@@ -250,38 +229,14 @@ function TrackerPage() {
           <h2 id="apps-heading" className="text-lg font-semibold">
             Applications
           </h2>
-          <div className="mb-4 mt-2 max-w-md">
-            <label htmlFor="tracker-search">Search company, role or notes</label>
-            <input
-              id="tracker-search"
-              type="search"
-              value={search}
-              placeholder="e.g. Google, internship, referral…"
-              onChange={(e) => setSearch(e.target.value)}
-            />
-          </div>
-          {filtered.length === 0 && filteredChats.length === 0 ? (
-            <p className="text-muted-foreground">No items match “{search}”.</p>
+          {apps.length === 0 ? (
+            <p className="mt-2 text-sm text-muted-foreground">No applications tracked yet.</p>
           ) : (
-            <>
-              <ul className="space-y-4">
-                {filtered.map((a) => (
-                  <TrackerRow key={a.id} app={a} onChanged={refresh} />
-                ))}
-              </ul>
-              {filteredChats.length > 0 && (
-                <>
-                  <h3 className="mt-6 text-sm font-semibold text-muted-foreground">
-                    Matching coffee chats
-                  </h3>
-                  <ul className="mt-2 space-y-4">
-                    {filteredChats.map((c) => (
-                      <CoffeeChatRow key={c.id} chat={c} onChanged={refresh} />
-                    ))}
-                  </ul>
-                </>
-              )}
-            </>
+            <ul className="mt-2 space-y-4">
+              {apps.map((a) => (
+                <TrackerRow key={a.id} app={a} onChanged={refresh} />
+              ))}
+            </ul>
           )}
         </section>
       </>
