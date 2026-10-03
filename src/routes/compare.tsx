@@ -96,7 +96,7 @@ function ComparePage() {
                   </Button>
                 </div>
                 <h2 className="atlas-compare-title mt-5 text-2xl leading-tight">
-                  <Link to="/opportunities/$id" params={{ id: opp.id }} className="hover:underline">
+                    <Link to="/opportunities/$id" params={{ id: opp.id }} className="hover:underline" aria-label={`View brief for ${opp.title}`}>
                     {opp.title}
                   </Link>
                 </h2>

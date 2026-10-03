@@ -589,11 +589,14 @@ function LiveResult({ opp, index }: { opp: Opportunity; index: number }) {
         >
           {open ? "Hide" : "Eligibility & funding"}
         </button>
-        {saved && (
-          <Link to="/opportunities/$id" params={{ id: opp.id }} className="btn btn-ghost btn-sm">
-            Open details
-          </Link>
-        )}
+        <Link
+          to="/opportunities/$id"
+          params={{ id: opp.id }}
+          className="btn btn-ghost btn-sm"
+          onClick={() => { if (!getOpportunity(opp.id)) addManualOpportunity(opp); }}
+        >
+          View brief
+        </Link>
       </div>
       {open && (
         <div className="mt-4 grid gap-4 md:grid-cols-2">

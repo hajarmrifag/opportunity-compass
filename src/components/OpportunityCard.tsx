@@ -36,7 +36,7 @@ export function OpportunityCard({ opp }: { opp: Opportunity }) {
       </p>
       <div className="mt-auto flex flex-wrap gap-2 border-t border-border pt-4">
         <Link to="/opportunities/$id" params={{ id: opp.id }} className="btn btn-outline btn-sm">
-          View details
+          View brief
         </Link>
         <button
           className="btn btn-sm"
