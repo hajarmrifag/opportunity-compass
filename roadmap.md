@@ -76,3 +76,8 @@
 - [x] Save to Tracker button on listing cards (idempotent, sign-in prompt when logged out); bearer middleware in start.ts
 - [x] Types, 44 tests, production build pass
 - [ ] BLOCKED (main thread only): enable email sign-in; migration applies when draft is accepted — tracker cannot be exercised end-to-end in this draft
+
+## Draft motion handoff
+
+- [x] Merge six presentation source files; retain Tracker and all teammate contracts
+- [ ] Verify TypeScript, automatic build, regression tests and command/motion preview

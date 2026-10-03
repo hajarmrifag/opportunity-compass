@@ -1,4 +1,4 @@
-import { Link } from "@tanstack/react-router";
+import { Link, useRouterState } from "@tanstack/react-router";
 import type { ReactNode } from "react";
 import {
   ArrowUpRight,
@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import { useStore } from "@/lib/store";
 import { CompareTray } from "./CompareTray";
+import { CommandCenter } from "./CommandCenter";
 
 const NAV = [
   { to: "/", label: "Home", mobileLabel: "Home", icon: Orbit },
@@ -25,6 +26,7 @@ const NAV = [
 
 export function AppShell({ children }: { children: ReactNode }) {
   const { error, dismissError, applications } = useStore();
+  const pathname = useRouterState({ select: (state) => state.location.pathname });
   return (
     <div className="atlas-shell min-h-screen md:flex">
       <a href="#main" className="skip-link">
@@ -68,6 +70,7 @@ export function AppShell({ children }: { children: ReactNode }) {
           LOCAL
         </p>
       </aside>
+      <CommandCenter />
       <div className="flex min-w-0 flex-1 flex-col pb-20 md:pb-0">
         <header className="atlas-mobile-header flex items-center justify-between border-b border-border bg-sidebar px-4 py-3 md:hidden">
           <Link to="/" className="font-display text-xl font-black">
@@ -92,7 +95,9 @@ export function AppShell({ children }: { children: ReactNode }) {
           id="main"
           className="mx-auto w-full max-w-[1500px] flex-1 overflow-hidden px-4 py-7 md:px-8 md:py-8 xl:px-12"
         >
-          {children}
+          <div key={pathname} className="atlas-route-enter">
+            {children}
+          </div>
         </main>
       </div>
       <nav
