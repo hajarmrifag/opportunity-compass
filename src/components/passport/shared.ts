@@ -8,7 +8,7 @@ export type IntakeDocument = {
   file?: File;
   text?: string;
   state: "ready" | "extracting" | "done" | "error";
-  error?: string;
+  error?: string | undefined;
 };
 
 export const uid = () => Math.random().toString(36).slice(2, 10);

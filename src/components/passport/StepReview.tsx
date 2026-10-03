@@ -144,19 +144,19 @@ export function StepReview({
           onToggle={() => toggle("education")}
           summary={
             <div className="divide-y divide-border">
-              <Row label="Degree level" source={provenance.degreeLevel}>
+              <Row label="Degree level" source={provenance["degreeLevel"]}>
                 {education?.degreeLevel ? DEGREE_LABELS[education.degreeLevel] : <NotProvided />}
               </Row>
-              <Row label="Degree" source={provenance.degreeName}>
+              <Row label="Degree" source={provenance["degreeName"]}>
                 {education?.degreeName || <NotProvided />}
               </Row>
-              <Row label="School" source={provenance.school}>
+              <Row label="School" source={provenance["school"]}>
                 {education?.school || <NotProvided />}
               </Row>
               <Row label="Field of study" source={provenance.field}>
                 {education?.field || <NotProvided />}
               </Row>
-              <Row label="GPA" source={provenance.gpaValue}>
+              <Row label="GPA" source={provenance["gpaValue"]}>
                 {draft.gpaValue.trim()
                   ? `${draft.gpaValue}${draft.gpaScale.trim() ? ` / ${draft.gpaScale}` : ""}`
                   : "Not provided"}
@@ -172,10 +172,10 @@ export function StepReview({
           onToggle={() => toggle("details")}
           summary={
             <div className="divide-y divide-border">
-              <Row label="Name" source={provenance.fullName}>
+              <Row label="Name" source={provenance["fullName"]}>
                 {draft.fullName || <NotProvided />}
               </Row>
-              <Row label="Graduation" source={provenance.graduationDate}>
+              <Row label="Graduation" source={provenance["graduationDate"]}>
                 {draft.graduationDate || <NotProvided />}
               </Row>
             </div>
@@ -258,7 +258,7 @@ export function StepReview({
           editing={open === "goals"}
           onToggle={() => toggle("goals")}
           summary={
-            <Row label="Your goals" source={provenance.goals}>
+            <Row label="Your goals" source={provenance["goals"]}>
               {draft.goals.trim() || <NotProvided />}
             </Row>
           }
