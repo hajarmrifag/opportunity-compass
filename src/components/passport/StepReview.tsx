@@ -153,7 +153,7 @@ export function StepReview({
               <Row label="School" source={provenance["school"]}>
                 {education?.school || <NotProvided />}
               </Row>
-              <Row label="Field of study" source={provenance.field}>
+              <Row label="Field of study" source={provenance["field"]}>
                 {education?.field || <NotProvided />}
               </Row>
               <Row label="GPA" source={provenance["gpaValue"]}>
@@ -189,10 +189,10 @@ export function StepReview({
           onToggle={() => toggle("skills")}
           summary={
             <div className="divide-y divide-border">
-              <Row label="Skills" source={provenance.skill}>
+              <Row label="Skills" source={provenance["skill"]}>
                 {draft.skills.length ? draft.skills.join(", ") : <NotProvided />}
               </Row>
-              <Row label="Languages" source={provenance.language}>
+              <Row label="Languages" source={provenance["language"]}>
                 {draft.languageDetails.length
                   ? draft.languageDetails
                       .map((lang) => (lang.level ? `${lang.name} (${lang.level})` : lang.name))
