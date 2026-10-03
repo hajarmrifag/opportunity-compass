@@ -57,6 +57,8 @@ export const EXTRACTION_PROMPT =
   "Extract facts about the single opportunity described on THIS page only. Use only text present on the page. " +
   "If a fact is not explicitly stated, use null (or 'unknown' for coverage). Never guess dates, funding or requirements. " +
   "An official page for ONE specific degree programme (e.g. one university's MSc page or its admissions page), job, internship, fellowship or scholarship counts as a listing (is_opportunity_listing=true). " +
+  "Set page_type='multi_listing_or_search' and is_opportunity_listing=false for job boards, search results, category/tag pages, or any page listing several opportunities, even if one entry looks prominent — never combine title, summary, deadline or funding from different entries. " +
+  "Set listings_on_page to the number of distinct opportunities described on the page. " +
   "Set is_opportunity_listing=false for news, directories or rankings of many programmes, blogs, forums, Q&A sites, social media posts, or search pages. Dates must be YYYY-MM-DD.";
 
 const cov = { type: "string", enum: ["covered", "partial", "not_covered", "unknown"] } as const;
@@ -64,6 +66,8 @@ export const EXTRACTION_SCHEMA = {
   type: "object",
   properties: {
     is_opportunity_listing: { type: "boolean" },
+    page_type: { type: "string", enum: ["single_opportunity_detail", "multi_listing_or_search", "other"] },
+    listings_on_page: { type: ["integer", "null"] },
     title: { type: ["string", "null"] },
     organization: { type: ["string", "null"] },
     category: { type: ["string", "null"], enum: [...Object.keys(CATEGORY_LABELS), null] },
@@ -81,11 +85,13 @@ export const EXTRACTION_SCHEMA = {
     payment_timing: { type: ["string", "null"] },
     apply_url: { type: ["string", "null"] },
   },
-  required: ["is_opportunity_listing"],
+  required: ["is_opportunity_listing", "page_type"],
 } as const;
 
 const extracted = z.object({
   is_opportunity_listing: z.boolean(),
+  page_type: z.string().nullish(),
+  listings_on_page: z.number().nullish(),
   title: z.string().nullish(),
   organization: z.string().nullish(),
   category: z.string().nullish(),
@@ -137,6 +143,23 @@ export function idFromUrl(u: string): string {
   return `live-${(h >>> 0).toString(36)}`;
 }
 
+// Job boards / aggregators: accepted only when the URL is a specific detail page.
+const AGGREGATOR_HOST = /(^|\.)(indeed|glassdoor|linkedin|ziprecruiter|jobsdb|ctgoodjobs|intrack|monster|simplyhired|joinhandshake|prosple|gradcareers|internships|wellfound|builtin|careerjet|jooble|adzuna|recruit|jobstreet|seek|reed|totaljobs|idealist|devex|findamasters|mastersportal|scholarshipportal)\./i;
+const DETAIL_PATH = /\/viewjob|\/rc\/clk|\/jobs\/view\/|\/job-listing\/|\/job\/[^/]+|\/jobs?\/[^/]*\d{5,}|\/c\/[^/]+\/job\/|\/studies\/\d+|\/scholarships?\/\d+/i;
+const SEARCH_PARAMS = ["q", "query", "keywords", "keyword", "search", "kw", "what", "k", "s"];
+const SEARCH_PATH = /\/q-[^/]*-jobs|-jobs\.html$|\/(search|results|browse)(\/|$)|\/(jobs|internships|vacancies|opportunities|positions|listings)\/?$/i;
+
+/** True when the URL is a search-results, category or multi-listing page rather than one opportunity. */
+export function isAggregateUrl(u: string): boolean {
+  let url: URL;
+  try { url = new URL(u); } catch { return true; }
+  const path = url.pathname;
+  if (SEARCH_PARAMS.some((k) => url.searchParams.get(k))) return true;
+  if (SEARCH_PATH.test(path)) return true;
+  if (AGGREGATOR_HOST.test(url.hostname) && !DETAIL_PATH.test(path)) return true;
+  return false;
+}
+
 export interface RawSearchHit { url: string; title?: string; description?: string; json?: unknown }
 
 /** Map one provider hit to an Opportunity, or null if it isn't a usable listing. */
@@ -146,6 +169,10 @@ export function mapHit(hit: RawSearchHit, retrievedAt: string): Opportunity | nu
   const parsed = extracted.safeParse(hit.json);
   if (!parsed.success || !parsed.data.is_opportunity_listing) return null;
   const d = parsed.data;
+  // Reject aggregate pages outright: facts on them may belong to different entries.
+  if (d.page_type !== "single_opportunity_detail") return null;
+  if (typeof d.listings_on_page === "number" && d.listings_on_page > 1) return null;
+  if (isAggregateUrl(source)) return null;
   const title = clip(d.title, 150) || clip(hit.title, 150);
   if (!title) return null;
   const reqs: Requirement[] = [];

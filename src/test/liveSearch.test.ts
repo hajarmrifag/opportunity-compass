@@ -1,5 +1,5 @@
 import { describe, expect, it, beforeEach, vi } from "vitest";
-import { applyFilters, buildQuery, dedupe, liveSearchInput, mapHit, normalizeUrl, idFromUrl } from "@/lib/liveSearchMapping";
+import { isAggregateUrl, applyFilters, buildQuery, dedupe, liveSearchInput, mapHit, normalizeUrl, idFromUrl } from "@/lib/liveSearchMapping";
 import { demoEligibilityAdapter } from "@/adapters/demoEligibility";
 import { DEMO_PROFILE } from "@/data/fixtures";
 
@@ -7,7 +7,7 @@ const T = "2026-10-03T06:00:00.000Z";
 const base = liveSearchInput.parse({ query: "climate fellowship" });
 const hit = (over: Record<string, unknown> = {}, url = "https://org.example/fellowship?utm_source=x#top") => ({
   url, title: "Page title",
-  json: { is_opportunity_listing: true, title: "Climate Fellowship", organization: "Org", category: "fellowship", mode: "remote",
+  json: { is_opportunity_listing: true, page_type: "single_opportunity_detail", listings_on_page: 1, title: "Climate Fellowship", organization: "Org", category: "fellowship", mode: "remote",
     deadline: "2026-11-30", degree_levels: ["Bachelor's"], languages: ["English"], other_requirements: ["Right to work in UK"],
     tuition: "not_covered", living: "covered", travel: "maybe", apply_url: "https://evil.example/apply", ...over },
 });
@@ -67,6 +67,41 @@ describe("live search mapping", () => {
   it("bounds input", () => {
     expect(liveSearchInput.safeParse({ query: "x".repeat(201) }).success).toBe(false);
     expect(liveSearchInput.safeParse({ query: "a" }).success).toBe(false);
+  });
+});
+
+describe("aggregate / multi-listing pages (regression: HK test 3 Oct 2026)", () => {
+  // Content the extractor returned for the two observed pages: a confident single-listing
+  // answer stitched together from different entries. URL rules must reject it regardless.
+  const stitched = { is_opportunity_listing: true, page_type: "single_opportunity_detail", listings_on_page: 1 };
+  it("rejects intrack.hk category page even when extracted as one Hang Seng listing", () => {
+    expect(isAggregateUrl("https://intrack.hk/internships/stem")).toBe(true);
+    expect(mapHit({ url: "https://intrack.hk/internships/stem", title: "STEM Internships in Hong Kong",
+      json: { ...stitched, title: "Software Engineer Intern", organization: "Hang Seng Bank", summary: "Summer Associate programme…", deadline: "2026-11-01" } }, T)).toBeNull();
+  });
+  it("rejects Indeed search-results page even when extracted as a Goldman Sachs listing", () => {
+    expect(isAggregateUrl("https://hk.indeed.com/q-software-intern-jobs.html")).toBe(true);
+    expect(mapHit({ url: "https://hk.indeed.com/q-software-intern-jobs.html", title: "Software Intern Jobs in Hong Kong",
+      json: { ...stitched, title: "Summer Analyst", organization: "Goldman Sachs" } }, T)).toBeNull();
+  });
+  it("rejects other search/category patterns and model-flagged multi-listing pages", () => {
+    for (const u of ["https://hk.indeed.com/jobs?q=software+intern&l=Hong+Kong", "https://www.linkedin.com/jobs/search/?keywords=intern",
+      "https://www.ziprecruiter.com/Jobs/Graduate-Analyst-Program", "https://hk.jobsdb.com/software-intern-jobs", "https://careers.example.com/search?q=intern",
+      "https://example.org/internships/"]) expect(isAggregateUrl(u), u).toBe(true);
+    expect(mapHit(hit({ page_type: "multi_listing_or_search" }), T)).toBeNull();
+    expect(mapHit(hit({ listings_on_page: 12 }), T)).toBeNull();
+    expect(mapHit(hit({ page_type: undefined }), T)).toBeNull();
+  });
+  it("keeps specific detail pages, including on job boards", () => {
+    for (const u of ["https://hk.indeed.com/viewjob?jk=abc123", "https://www.linkedin.com/jobs/view/4012345678",
+      "https://www.citadel.com/careers/details/software-engineer-intern-asia/", "https://job-boards.greenhouse.io/pdtpartners/jobs/8077685",
+      "https://cpo.noaa.gov/fellowships/"]) expect(isAggregateUrl(u), u).toBe(false);
+  });
+  it("preserves official master's programme pages", () => {
+    for (const u of ["https://datascience.uchicago.edu/education/masters-programs/ms-in-applied-data-science/", "https://mds.ics.uci.edu/admissions/"]) {
+      const o = mapHit(hit({ category: "masters", title: "MS in Applied Data Science", organization: "University" }, u), T);
+      expect(o?.category, u).toBe("masters");
+    }
   });
 });
 
