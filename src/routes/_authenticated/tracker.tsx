@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useStore } from "@/lib/store";
-import { emailMatchState, normalizeEmail } from "@/lib/profileExtraction";
+import { emailMatchState, normalizeEmail } from "@/lib/passportEmail";
 import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
@@ -117,9 +117,10 @@ function TrackerPage() {
       offers: byStatus("offer"),
       rejections: byStatus("rejected"),
       // Any chat dated this calendar month (or logged this month without a date).
-      chatsThisMonth: chats.filter((c) =>
-        c.date ? c.date.slice(0, 7) === monthKey : c.created_at.slice(0, 7) === monthKey,
-      ).length,
+      chatsThisMonth: chats.filter((c) => {
+        const stamp = c.date || c.created_at || "";
+        return stamp.slice(0, 7) === monthKey;
+      }).length,
       // Overdue or due within the next 7 days.
       followUpsDue: chats.filter((c) => c.follow_up_date && c.follow_up_date <= weekAhead).length,
     };
