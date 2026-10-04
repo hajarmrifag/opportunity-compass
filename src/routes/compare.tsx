@@ -15,12 +15,12 @@ import { safeHttpUrl } from "@/lib/validation";
 export const Route = createFileRoute("/compare")({
   head: () => ({
     meta: [
-      { title: "Compare opportunities — Source" },
+      { title: "Compare opportunities · Sourced" },
       {
         name: "description",
         content: "Compare shortlisted opportunities using stated source facts.",
       },
-      { property: "og:title", content: "Compare opportunities — Source" },
+      { property: "og:title", content: "Compare opportunities · Sourced" },
       {
         property: "og:description",
         content: "Compare shortlisted opportunities using stated source facts.",
@@ -40,7 +40,8 @@ function ComparePage() {
     return (
       <>
         <PageHeader
-          title="Compare opportunities"
+          kicker="Decision"
+          title="Compare"
           sub="Review facts side by side without turning unknowns into assumptions."
         />
         <EmptyState
@@ -60,7 +61,8 @@ function ComparePage() {
   return (
     <>
       <PageHeader
-        title="Compare opportunities"
+        kicker="Decision"
+        title="Compare"
         sub="Facts from each listing. Live web results are retrieved, not human-verified."
         right={
           <label className="flex items-center gap-2 font-normal">

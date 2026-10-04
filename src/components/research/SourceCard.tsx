@@ -95,7 +95,7 @@ export function SourceCard({
           </div>
           <AnimatePresence>
             {decided && (
-              <DecisionStamp key="stamp" keep={decided.keep} label={decided.keep ? "Kept" : "Rejected"} />
+              <DecisionStamp key="stamp" keep={decided.keep} label={decided.keep ? "Kept" : "Cut"} />
             )}
           </AnimatePresence>
         </motion.div>

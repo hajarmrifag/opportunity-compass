@@ -37,13 +37,13 @@ const STEPS = [
 export const Route = createFileRoute("/passport")({
   head: () => ({
     meta: [
-      { title: "Opportunity Passport — Source" },
+      { title: "Passport · Sourced" },
       {
         name: "description",
         content:
           "Build your student profile step by step: upload documents, review what we find, fill the gaps, and confirm. Saved privately in your browser.",
       },
-      { property: "og:title", content: "Opportunity Passport — Source" },
+      { property: "og:title", content: "Passport · Sourced" },
       {
         property: "og:description",
         content:
@@ -554,12 +554,12 @@ function Passport() {
   const canContinue = step === 1 ? !extracting : step === 2 ? emailOk : step < 4;
 
   return (
-    <div className="mx-auto max-w-[760px] pb-24">
-      <header className="flex flex-wrap items-start justify-between gap-3">
+    <div className="atlas-passport mx-auto max-w-[820px] pb-24">
+      <header className="atlas-page-header mb-8 flex flex-wrap items-end justify-between gap-3 pb-6">
         <div>
-          <p className="eyebrow">Opportunity Passport</p>
-          <h1 className="text-3xl">Build your profile</h1>
-          <p className="mt-1 text-muted-foreground">
+          <p className="atlas-kicker">Passport</p>
+          <h1 className="font-display">Build your profile</h1>
+          <p className="atlas-page-deck">
             Five short steps. Everything is saved privately in this browser as you go.
           </p>
         </div>
@@ -671,7 +671,7 @@ function Passport() {
         </p>
       )}
 
-      <div className="fixed inset-x-0 bottom-0 z-20 border-t border-border bg-background/95 backdrop-blur">
+      <div className="atlas-passport-dock fixed inset-x-0 bottom-0 z-20">
         <div className="mx-auto flex max-w-[760px] items-center justify-between gap-3 px-4 py-3">
           <div>
             {step > 0 && (

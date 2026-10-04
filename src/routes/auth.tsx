@@ -6,12 +6,12 @@ import { PageHeader } from "@/components/ui-bits";
 export const Route = createFileRoute("/auth")({
   head: () => ({
     meta: [
-      { title: "Sign in — Source" },
+      { title: "Sign in · Sourced" },
       {
         name: "description",
         content: "Sign in to save your tracker and resources to your account.",
       },
-      { property: "og:title", content: "Sign in — Source" },
+      { property: "og:title", content: "Sign in · Sourced" },
       {
         property: "og:description",
         content: "Sign in to save your tracker and resources to your account.",
@@ -60,10 +60,11 @@ function AuthPage() {
   return (
     <>
       <PageHeader
+        kicker="Account"
         title={mode === "signin" ? "Sign in" : "Create your account"}
-        sub="Your tracker and resources are saved to your account. Without an account, data stays in this browser only."
+        sub="Tracker and resources save to your account. My Journey already tracks applications in this browser with no sign-in."
       />
-      <form onSubmit={submit} className="card max-w-md space-y-4 p-6">
+      <form onSubmit={submit} className="atlas-paper-panel max-w-md space-y-4 p-6">
         <div>
           <label htmlFor="auth-email">Email</label>
           <input

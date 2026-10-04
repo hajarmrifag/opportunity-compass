@@ -9,7 +9,7 @@ export function CompareTray() {
   return (
     <aside
       aria-label="Comparison shortlist"
-      className="atlas-compare-tray fixed inset-x-3 bottom-20 z-30 mx-auto max-w-3xl border border-foreground bg-acid p-3 md:bottom-5"
+      className="atlas-compare-tray pointer-events-auto fixed inset-x-3 bottom-20 z-50 mx-auto max-w-3xl border border-foreground bg-acid p-3 md:bottom-5"
     >
       <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3">
         <div className="min-w-0">

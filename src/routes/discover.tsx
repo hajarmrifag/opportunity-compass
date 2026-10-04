@@ -54,6 +54,7 @@ function Discover() {
   return (
     <>
       <PageHeader
+        kicker="Field"
         title="Browse"
         sub="Fictional examples for testing. Use Search for real opportunities."
       />

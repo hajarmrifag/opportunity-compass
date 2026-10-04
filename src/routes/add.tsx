@@ -9,9 +9,9 @@ import { isValidIsoDate, oppKey } from "@/lib/validation";
 export const Route = createFileRoute("/add")({
   head: () => ({
     meta: [
-      { title: "Add opportunity — Source" },
+      { title: "Add opportunity · Sourced" },
       { name: "description", content: "Track an opportunity you found elsewhere." },
-      { property: "og:title", content: "Add opportunity — Source" },
+      { property: "og:title", content: "Add opportunity · Sourced" },
       { property: "og:description", content: "Track an opportunity you found elsewhere." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
@@ -104,10 +104,11 @@ function AddPage() {
   return (
     <>
       <PageHeader
+        kicker="Manual"
         title="Add an opportunity"
         sub="For opportunities you found elsewhere. Saved to this browser and tracked as Saved."
       />
-      <form onSubmit={submit} noValidate className="card grid max-w-3xl gap-4 p-6 md:grid-cols-2">
+      <form onSubmit={submit} noValidate className="atlas-paper-panel grid max-w-3xl gap-4 p-6 md:grid-cols-2">
         <div>
           <label htmlFor="t">Title *</label>
           <input id="t" value={v.title} onChange={set("title")} aria-invalid={!!errors["title"]} />

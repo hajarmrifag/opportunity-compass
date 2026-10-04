@@ -11,15 +11,14 @@ export function DecisionStamp({ keep, label }: { keep: boolean; label: string })
 
   if (reduced) {
     return (
-      <span className={`atlas-stamp ${tone}`} aria-hidden>
+      <span className={`atlas-stamp ${tone} w-[5.6rem] text-center`} aria-hidden>
         {label}
       </span>
     );
   }
 
   return (
-    <span className="atlas-stamp-slot" aria-hidden>
-      {/* Impact ring, like ink spreading out from the press. */}
+    <span className="atlas-stamp-slot w-[5.6rem]" aria-hidden>
       <motion.span
         className={`atlas-stamp-ring ${tone}`}
         initial={{ scale: 0.4, opacity: 0.55 }}
@@ -27,9 +26,9 @@ export function DecisionStamp({ keep, label }: { keep: boolean; label: string })
         transition={{ duration: 0.5, ease: "easeOut" }}
       />
       <motion.span
-        className={`atlas-stamp ${tone}`}
+        className={`atlas-stamp ${tone} w-[5.6rem] text-center`}
         initial={{ scale: 2.7, opacity: 0, rotate: -26 }}
-        animate={{ scale: 1, opacity: 1, rotate: keep ? -7 : 6 }}
+        animate={{ scale: 1, opacity: 1, rotate: 0 }}
         transition={spring.stamp}
       >
         {label}

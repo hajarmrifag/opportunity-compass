@@ -119,19 +119,21 @@ export function PageHeader({
   title,
   sub,
   right,
+  kicker = "Sourced",
 }: {
   title: string;
   sub?: string;
   right?: ReactNode;
+  kicker?: string;
 }) {
   return (
-    <header className="atlas-page-header mb-8 grid grid-cols-[minmax(0,1fr)_auto] items-end gap-4 border-b border-border pb-5">
+    <header className="atlas-page-header mb-10 flex flex-col items-start gap-5 pb-6 lg:grid lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end">
       <div className="min-w-0">
-        <p className="atlas-kicker">Source</p>
-        <h1 className="font-display text-4xl md:text-6xl">{title}</h1>
-        {sub && <p className="mt-1 text-muted-foreground">{sub}</p>}
+        <p className="atlas-kicker">{kicker}</p>
+        <h1 className="font-display">{title}</h1>
+        {sub && <p className="atlas-page-deck">{sub}</p>}
       </div>
-      {right}
+      {right ? <div className="atlas-page-actions flex flex-wrap gap-2">{right}</div> : null}
     </header>
   );
 }

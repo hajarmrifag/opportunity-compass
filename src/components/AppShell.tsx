@@ -28,13 +28,13 @@ const NAV = [
 ] as const;
 
 export function AppShell({ children }: { children: ReactNode }) {
-  const { error, dismissError, applications } = useStore();
+  const { error, dismissError, applications, compareIds } = useStore();
   const location = useRouterState({ select: (state) => state.location });
   const pathname = location.pathname;
   const cinema = isCinema(pathname, location.search);
   const reduced = useReducedMotion();
   const bleed = pathname === "/" || cinema;
-  const atmosphere = pathname === "/" || cinema ? "campaign" : "paper";
+  const atmosphere = "campaign";
 
   return (
     <div
@@ -42,14 +42,12 @@ export function AppShell({ children }: { children: ReactNode }) {
       data-route={pathname}
       data-atmosphere={atmosphere}
       {...(cinema ? { "data-cinema": "true" } : {})}
+      {...(compareIds.length > 0 ? { "data-compare": "true" } : {})}
+      {...(pathname === "/passport" ? { "data-passport": "true" } : {})}
     >
       <AmbientField />
-      {atmosphere === "campaign" && (
-        <>
-          <div className="atlas-grain" aria-hidden />
-          <VibeCursor />
-        </>
-      )}
+      <div className="atlas-grain" aria-hidden />
+      <VibeCursor />
       <a href="#main" className="skip-link">
         Skip to content
       </a>
@@ -99,7 +97,13 @@ export function AppShell({ children }: { children: ReactNode }) {
       <CommandCenter />
 
       <div
-        className={`atlas-atmosphere atlas-atmosphere-${atmosphere} relative z-1 flex min-w-0 flex-1 flex-col pb-20 md:pb-0`}
+        className={`atlas-atmosphere atlas-atmosphere-${atmosphere} relative z-1 flex min-w-0 flex-1 flex-col ${
+          compareIds.length > 0
+            ? "pb-44 md:pb-32"
+            : pathname === "/passport"
+              ? "pb-36 md:pb-24"
+              : "pb-24 md:pb-8"
+        }`}
       >
         <header className="atlas-mobile-header sticky top-0 z-30 flex items-center justify-between border-b border-border px-4 py-3 md:hidden">
           <Link to="/" className="font-display text-lg">

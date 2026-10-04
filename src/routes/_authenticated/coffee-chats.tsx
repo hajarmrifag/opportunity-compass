@@ -7,12 +7,12 @@ import { Loading, PageHeader } from "@/components/ui-bits";
 export const Route = createFileRoute("/_authenticated/coffee-chats")({
   head: () => ({
     meta: [
-      { title: "Coffee chat history — Source" },
+      { title: "Coffee chat history · Sourced" },
       {
         name: "description",
         content: "Every coffee chat you've logged, with outcomes, follow-ups and referrals.",
       },
-      { property: "og:title", content: "Coffee chat history — Source" },
+      { property: "og:title", content: "Coffee chat history · Sourced" },
       {
         property: "og:description",
         content: "Every coffee chat you've logged, with outcomes, follow-ups and referrals.",

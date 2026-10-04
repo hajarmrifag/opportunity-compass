@@ -287,6 +287,7 @@ function LiveSearchPage() {
   return (
     <>
       <PageHeader
+        kicker="Live web"
         title="Search"
         sub="Search the public web, then review every result against its original source."
       />

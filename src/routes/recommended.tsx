@@ -18,13 +18,13 @@ import { Button } from "@/components/ui/button";
 export const Route = createFileRoute("/recommended")({
   head: () => ({
     meta: [
-      { title: "Recommended for you — Source" },
+      { title: "Recommended for you · Sourced" },
       {
         name: "description",
         content:
           "Curated live searches per goal, built from your confirmed Passport. Every listing is read from the real web and labelled unverified.",
       },
-      { property: "og:title", content: "Recommended for you — Source" },
+      { property: "og:title", content: "Recommended for you · Sourced" },
       {
         property: "og:description",
         content:
@@ -104,8 +104,9 @@ function RecommendedPage() {
   return (
     <div className="flex flex-col gap-8">
       <PageHeader
+        kicker="Passport"
         title="Recommended"
-        sub="One focused live search per goal, built only from your confirmed Passport's degree level, field, skills and languages. Nothing personal leaves this browser. Searches run only when you press a button, and every listing is read from the real web and stays labelled unverified."
+        sub="One focused live search per goal, built only from your confirmed Passport. Searches run only when you press a button. Every listing is read from the real web and stays labelled unverified."
       />
 
       {!profile?.confirmed && (

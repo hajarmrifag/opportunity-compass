@@ -20,12 +20,12 @@ import { Loading, PageHeader } from "@/components/ui-bits";
 export const Route = createFileRoute("/tracker-io")({
   head: () => ({
     meta: [
-      { title: "Import & export tracker — Source" },
+      { title: "Import & export tracker · Sourced" },
       {
         name: "description",
         content: "Import or export your application tracker as a CSV spreadsheet.",
       },
-      { property: "og:title", content: "Import & export tracker — Source" },
+      { property: "og:title", content: "Import & export tracker · Sourced" },
       {
         property: "og:description",
         content: "Import or export your application tracker as a CSV spreadsheet.",

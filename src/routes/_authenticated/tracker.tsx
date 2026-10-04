@@ -36,13 +36,13 @@ import { Loading, PageHeader } from "@/components/ui-bits";
 export const Route = createFileRoute("/_authenticated/tracker")({
   head: () => ({
     meta: [
-      { title: "Tracker — Source" },
+      { title: "Tracker · Sourced" },
       {
         name: "description",
         content:
           "Your career dashboard: applications, coffee chats, follow-ups and honest AI advice.",
       },
-      { property: "og:title", content: "Tracker — Source" },
+      { property: "og:title", content: "Tracker · Sourced" },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
       {
@@ -143,8 +143,9 @@ function TrackerPage() {
   return (
     <>
       <PageHeader
+        kicker="Account"
         title="Tracker"
-        sub="Your career dashboard — counted from your own records, saved to your account. My Journey (browser-local) stays separate."
+        sub="Your career dashboard, counted from your own records and saved to your account. My Journey stays separate in this browser."
         right={
           <Link to="/resources" className="btn btn-ghost">
             Resources

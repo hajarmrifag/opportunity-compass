@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { AnimatePresence, LayoutGroup, motion, useReducedMotion } from "motion/react";
 import {
   PHASE_LABELS,
@@ -29,8 +30,9 @@ export function EvidenceTrail({
   const live = isRunning(state.phase);
   if (state.phase === "idle") return null;
 
-  // Rejected and discarded pages leave the board once their verdict has been read.
-  const board = state.sources.filter((s) => s.status !== "rejected");
+  const board = cinema
+    ? state.sources
+    : state.sources.filter((s) => s.status !== "rejected");
   const candidateFor = (id: string | null) =>
     id ? (state.candidates.find((c) => c.id === id) ?? null) : null;
 
@@ -176,7 +178,7 @@ function VerdictFlash({ kept, rejected }: { kept: number; rejected: number }) {
     return () => window.clearTimeout(timer);
   }, [kept, rejected, reduced]);
 
-  return (
+  const overlay = (
     <AnimatePresence>
       {flash && (
         <motion.div
@@ -188,11 +190,14 @@ function VerdictFlash({ kept, rejected }: { kept: number; rejected: number }) {
           transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
           aria-hidden
         >
-          {flash === "kept" ? "KEPT" : "CUT"}
+          <span>{flash === "kept" ? "KEPT" : "CUT"}</span>
         </motion.div>
       )}
     </AnimatePresence>
   );
+
+  if (typeof document === "undefined") return overlay;
+  return createPortal(overlay, document.body);
 }
 
 function Tally({
