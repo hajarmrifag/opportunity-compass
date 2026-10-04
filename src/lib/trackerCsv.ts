@@ -80,7 +80,7 @@ export function validateRows(rows: string[][], mapping: Mapping, opps: Opportuni
     if (catRaw) {
       const c = lookup(CATEGORY_LABELS, catRaw);
       if (c) category = c; else errors.push(`Unknown category "${catRaw}"`);
-    } else warnings.push("No category — defaults to Internship");
+    } else warnings.push("No category. Defaults to Internship");
 
     const stRaw = get("status");
     let status: ApplicationStatus = "saved";
@@ -99,12 +99,12 @@ export function validateRows(rows: string[][], mapping: Mapping, opps: Opportuni
 
     const key = oppKey(title, organization);
     const duplicateInFile = !!title && !!organization && seen.has(key);
-    if (duplicateInFile) warnings.push("Repeats an earlier row — will be skipped");
+    if (duplicateInFile) warnings.push("Repeats an earlier row. Will be skipped");
     seen.add(key);
     const existing = title && organization ? byKey.get(key) : undefined;
     const existingApp = existing ? apps.find((a) => a.opportunityId === existing.id) : undefined;
     if (existingApp) warnings.push("Already in My Journey");
-    else if (existing) warnings.push("Matches an existing opportunity — will track it");
+    else if (existing) warnings.push("Matches an existing opportunity. Will track it");
 
     return {
       line: idx + 2, title, organization, category, status, deadline, link,

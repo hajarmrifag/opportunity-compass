@@ -272,8 +272,8 @@ export function canConfirmProfile(profile: Profile, unresolvedConflictCount: num
     return {
       ok: false,
       reason: profile.email?.trim()
-        ? "That email doesn't look right — check it, or tick that you don't need email tracking."
-        : "Email missing — add your email, or tick that you don't need email tracking.",
+        ? "That email doesn't look right. Check it, or tick that you don't need email tracking."
+        : "Email missing. Add your email, or tick that you don't need email tracking.",
     };
   }
   if (unresolvedConflictCount > 0) {

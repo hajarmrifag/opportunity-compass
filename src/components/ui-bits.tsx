@@ -35,7 +35,7 @@ export function DeadlineText({ iso }: { iso: string | null }) {
   const { state, days } = deadlineState(iso);
   if (state === "unknown") return <span className="text-muted-foreground">Deadline unknown</span>;
   if (state === "invalid")
-    return <span className="text-destructive">Invalid deadline — check date</span>;
+    return <span className="text-destructive">Invalid deadline. Check the date</span>;
   const label =
     state === "expired"
       ? "Closed"

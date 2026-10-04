@@ -203,7 +203,7 @@ export const scanGmailInbox = createServerFn({ method: "POST" })
     if (!connectionAPIKey) {
       return {
         connected: false,
-        message: "Connect your Gmail first — then scanning can suggest updates here.",
+        message: "Connect your Gmail first, then scanning can suggest updates here.",
         found: 0,
       };
     }
@@ -216,7 +216,7 @@ export const scanGmailInbox = createServerFn({ method: "POST" })
         return {
           connected: false,
           reconnectRequired: true,
-          message: "Your Gmail access needs to be renewed — reconnect and try again.",
+          message: "Your Gmail access needs to be renewed. Reconnect and try again.",
           found: 0,
         };
       }
@@ -289,7 +289,7 @@ export const scanGmailInbox = createServerFn({ method: "POST" })
     } catch {
       return {
         connected: true,
-        message: "The AI couldn't read the emails right now — try again in a moment.",
+        message: "The AI couldn't read the emails right now. Try again in a moment.",
         found: 0,
       };
     }
@@ -342,7 +342,7 @@ export const scanGmailInbox = createServerFn({ method: "POST" })
       connected: true,
       message:
         inserted === 0
-          ? "Checked your inbox — no new application updates."
+          ? "Checked your inbox. No new application updates."
           : `From your email: ${applied} application${applied === 1 ? "" : "s"} updated automatically${
               pending > 0 ? `, ${pending} possible update${pending === 1 ? "" : "s"} need your review below` : ""
             }.`,

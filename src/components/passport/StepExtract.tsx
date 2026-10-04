@@ -24,7 +24,7 @@ export function ExtractionProgress({ running }: { running: boolean }) {
         <p className="text-lg font-semibold">{STAGE_MESSAGES[stage]}</p>
       </div>
       <p className="mt-2 text-sm text-muted-foreground">
-        This usually takes a few seconds per document. You can leave this page — your draft is
+        This usually takes a few seconds per document. You can leave this page. Your draft is
         saved.
       </p>
     </div>
@@ -85,7 +85,7 @@ export function ExtractionSummary({
       </ul>
       {found.missing.length > 0 && (
         <p className="mt-3 text-sm text-muted-foreground">
-          Missing so far: {found.missing.join(", ")} — you can add these in the next steps.
+          Missing so far: {found.missing.join(", ")}. You can add these in the next steps.
         </p>
       )}
       {errors.length > 0 && (

@@ -516,13 +516,13 @@ function Passport() {
           autoComplete="email"
           aria-invalid={Boolean(draft.email?.trim()) && !normalizeEmail(draft.email)}
           value={draft.email ?? ""}
-          placeholder={draft.email ? undefined : "Not in your documents — type it here"}
+          placeholder={draft.email ? undefined : "Not in your documents. Type it here"}
           onChange={(event) => manual("email", { ...draft, email: event.target.value })}
         />
       </F>
       {Boolean(draft.email?.trim()) && !normalizeEmail(draft.email) && (
         <p className="text-sm text-destructive" role="alert">
-          That email doesn't look right — it should look like name@example.com, with no spaces.
+          That email doesn't look right. It should look like name@example.com, with no spaces.
           Fix it, or tick the box below to continue without one.
         </p>
       )}

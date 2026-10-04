@@ -46,7 +46,7 @@ describe("Tracker insights", () => {
     );
     fireEvent.click(screen.getByRole("button", { name: /AI feedback/i }));
     await waitFor(() =>
-      expect(screen.getByText(/Preview — AI feedback isn't connected yet/i)).toBeInTheDocument(),
+      expect(screen.getByText(/Preview. AI feedback isn't connected yet/i)).toBeInTheDocument(),
     );
   });
 });

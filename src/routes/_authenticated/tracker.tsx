@@ -283,7 +283,7 @@ function SuggestionRow({
     <li className="rounded-md border border-border p-3 text-sm">
       <p>
         <span className="font-medium">{suggestion.company ?? "Unknown company"}</span>
-        {suggestion.role ? ` — ${suggestion.role}` : ""}
+        {suggestion.role ? `, ${suggestion.role}` : ""}
         {suggestion.email_type && (
           <span className="ml-2 text-xs text-muted-foreground">{suggestion.email_type}</span>
         )}
@@ -454,7 +454,7 @@ function StatusHistory({ applicationId }: { applicationId: string }) {
     <ul className="mt-2 space-y-1 text-xs text-muted-foreground">
       {events.map((e) => (
         <li key={e.id}>
-          {new Date(e.date).toLocaleString()} — {STATUS_LABEL[e.status] ?? e.status}
+          {new Date(e.date).toLocaleString()} · {STATUS_LABEL[e.status] ?? e.status}
           {e.source === "gmail" ? " (from Gmail)" : ""}
         </li>
       ))}
@@ -570,7 +570,7 @@ function CoffeeChatSection({
               onChange={(e) => setFollowUp(e.target.value === "yes")}
             >
               <option value="no">No</option>
-              <option value="yes">Yes — remind me in 21 days</option>
+              <option value="yes">Yes, remind me in 21 days</option>
             </select>
           </div>
           <div className="sm:col-span-2">
@@ -602,7 +602,7 @@ function CoffeeChatSection({
           <p className="text-sm text-muted-foreground">
             {chats.length === 0
               ? "No coffee chats logged yet."
-              : `${chats.length} coffee chat${chats.length === 1 ? "" : "s"} logged — update outcomes, follow-ups and referrals there.`}
+              : `${chats.length} coffee chat${chats.length === 1 ? "" : "s"} logged. Update outcomes, follow-ups and referrals there.`}
           </p>
         </div>
         <Link to="/coffee-chats" className="btn btn-outline btn-sm">

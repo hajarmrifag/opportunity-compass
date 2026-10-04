@@ -118,7 +118,7 @@ function RecommendedPage() {
             <h2 id="rec-passport">Confirm your Passport first</h2>
             <p>
               Recommendations are shaped by your confirmed degree level, field and skills. Until you
-              confirm, searches would be guesswork — so they stay off.
+              confirm, searches would be guesswork, so they stay off.
             </p>
           </div>
           <Link to="/passport" className="atlas-text-link">
@@ -130,7 +130,7 @@ function RecommendedPage() {
       {profile?.confirmed && !usable && (
         <EmptyState
           title="Your Passport needs a field or a few skills"
-          body="Add your field of study or at least one skill in your Passport, confirm it, then come back — that is all the recommendations use."
+          body="Add your field of study or at least one skill in your Passport, confirm it, then come back. That is all the recommendations use."
           action={
             <Link to="/passport" className="btn">
               Complete Passport

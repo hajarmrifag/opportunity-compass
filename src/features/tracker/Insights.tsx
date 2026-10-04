@@ -96,7 +96,7 @@ export function TrackerInsights({
       {preview && (
         <div className="mt-4">
           <p className="inline-block rounded border border-border px-2 py-0.5 text-xs text-muted-foreground">
-            Preview — AI feedback isn't connected yet. Example output below.
+            Preview. AI feedback isn't connected yet. Example output below.
           </p>
           <p className="mt-2 text-sm leading-relaxed">
             You have {apps.length} tracked application(s) and {chats.length} coffee chat(s). Once AI

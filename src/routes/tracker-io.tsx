@@ -244,7 +244,7 @@ function TrackerIO() {
                     value={mapping[f]}
                     onChange={(e) => setMapping({ ...mapping, [f]: Number(e.target.value) })}
                   >
-                    <option value={-1}>— not imported —</option>
+                    <option value={-1}>Not imported</option>
                     {headers.map((h, i) => (
                       <option key={i} value={i}>
                         {h || `Column ${i + 1}`}
@@ -315,10 +315,10 @@ function TrackerIO() {
                           {ACTION_LABEL[actions[i]!].t}
                         </span>
                       </td>
-                      <td className="p-2">{r.title || "—"}</td>
-                      <td className="p-2">{r.organization || "—"}</td>
+                      <td className="p-2">{r.title || "Not set"}</td>
+                      <td className="p-2">{r.organization || "Not set"}</td>
                       <td className="p-2">{r.status}</td>
-                      <td className="p-2">{r.deadline ?? "—"}</td>
+                      <td className="p-2">{r.deadline ?? "Not set"}</td>
                       <td className="p-2">
                         {r.errors.map((e) => (
                           <div key={e} className="text-destructive">

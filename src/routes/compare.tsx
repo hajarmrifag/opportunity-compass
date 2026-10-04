@@ -138,7 +138,7 @@ function ComparePage() {
                         ? "Needs verification"
                         : eligibility.overall === "not_eligible"
                           ? "Listed criterion not met"
-                          : "Meets listed criteria — verify"
+                          : "Meets listed criteria. Verify"
                     }
                     highlight={false}
                   />
@@ -177,7 +177,7 @@ function ComparePage() {
                     </a>
                   ) : (
                     <p className="text-sm text-muted-foreground">
-                      Source unavailable — needs verification.
+                      Source unavailable. Needs verification.
                     </p>
                   )}
                 </div>

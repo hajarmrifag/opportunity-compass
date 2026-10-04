@@ -460,7 +460,7 @@ export const scanGmail = createServerFn({ method: "POST" })
     return {
       connected: false,
       message:
-        "Gmail connection is not set up yet. Once it is, scanning will propose status updates here for you to accept or dismiss — nothing changes automatically.",
+        "Gmail connection is not set up yet. Once it is, scanning will propose status updates here for you to accept or dismiss. Nothing changes automatically.",
       found: 0,
     };
   });
@@ -549,7 +549,7 @@ export const generateAdvice = createServerFn({ method: "POST" })
     const resourceList = allResources
       .map((r) => `- id:${r.id} | ${r.title} | tag:${r.tag} | ${r.notes}`)
       .join("\n");
-    const prompt = `You are advising a student on their internship search. These are their real numbers, counted from their own records (never invent others): ${JSON.stringify(stats)}. The coffee chat entries include each chat's outcome, referral yes/no and the student's comments — use them to spot problems (e.g. several chats that produced no referral, chats ghosted after follow-up, or a comment that shows something went wrong) and name the problem gently if you see one. Write 3-5 short, honest, encouraging sentences: what the numbers say, one concrete next step for applications, and one for coffee chats. Then, from this curated resource list, pick up to 3 that genuinely fit the situation (e.g. a course when many applications stall before interview, a coffee-chat workshop when chats are ghosted). Return ONLY JSON: {"advice":"...","resourceIds":["..."]}. If none fit, use an empty array. Resources:\n${resourceList || "(none)"}`;
+    const prompt = `You are advising a student on their internship search. These are their real numbers, counted from their own records (never invent others): ${JSON.stringify(stats)}. The coffee chat entries include each chat's outcome, referral yes/no and the student's comments. Use them to spot problems (e.g. several chats that produced no referral, chats ghosted after follow-up, or a comment that shows something went wrong) and name the problem gently if you see one. Write 3-5 short, honest, encouraging sentences: what the numbers say, one concrete next step for applications, and one for coffee chats. Do not use em dashes or en dashes. Use commas, periods, or the word and. Then, from this curated resource list, pick up to 3 that genuinely fit the situation (e.g. a course when many applications stall before interview, a coffee-chat workshop when chats are ghosted). Return ONLY JSON: {"advice":"...","resourceIds":["..."]}. If none fit, use an empty array. Resources:\n${resourceList || "(none)"}`;
 
     let advice = "";
     let picked: Resource[] = [];
@@ -562,12 +562,15 @@ export const generateAdvice = createServerFn({ method: "POST" })
         advice?: string;
         resourceIds?: string[];
       };
-      advice = (parsed.advice ?? "").trim();
+      advice = (parsed.advice ?? "")
+        .trim()
+        .replace(/[\u2013\u2014]/g, ",")
+        .replace(/,\s*,/g, ",");
       const ids = new Set(parsed.resourceIds ?? []);
       picked = allResources.filter((r) => ids.has(r.id));
     } catch {
       advice =
-        "The AI suggestion could not be generated right now. Your numbers above are still accurate — try again in a moment.";
+        "The AI suggestion could not be generated right now. Your numbers above are still accurate. Try again in a moment.";
     }
 
     await supabase.from("advice_log").insert({

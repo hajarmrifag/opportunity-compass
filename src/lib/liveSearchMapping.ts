@@ -65,7 +65,7 @@ export const EXTRACTION_PROMPT =
   "Extract facts about the single opportunity described on THIS page only. Use only text present on the page. " +
   "If a fact is not explicitly stated, use null (or 'unknown' for coverage). Never guess dates, funding or requirements. " +
   "An official page for ONE specific degree programme (e.g. one university's MSc page or its admissions page), job, internship, fellowship or scholarship counts as a listing (is_opportunity_listing=true). " +
-  "Set page_type='multi_listing_or_search' and is_opportunity_listing=false for job boards, search results, category/tag pages, or any page listing several opportunities, even if one entry looks prominent — never combine title, summary, deadline or funding from different entries. " +
+  "Set page_type='multi_listing_or_search' and is_opportunity_listing=false for job boards, search results, category/tag pages, or any page listing several opportunities, even if one entry looks prominent. Never combine title, summary, deadline or funding from different entries. " +
   "Set listings_on_page to the number of distinct opportunities described on the page. " +
   "Set is_opportunity_listing=false for news, directories or rankings of many programmes, blogs, forums, Q&A sites, social media posts, or search pages. Dates must be YYYY-MM-DD.";
 

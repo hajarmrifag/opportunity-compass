@@ -96,7 +96,7 @@ export function CoffeeChatRow({ chat, onChanged }: { chat: CoffeeChat; onChanged
                 save({ outcome: e.target.value as never });
               }}
             >
-              <option value="">—</option>
+              <option value="">Not set</option>
               {COFFEE_CHAT_OUTCOMES.map((o) => (
                 <option key={o} value={o}>
                   {OUTCOME_LABEL[o]}
@@ -157,7 +157,7 @@ export function CoffeeChatRow({ chat, onChanged }: { chat: CoffeeChat; onChanged
           </button>
           {aiNote && (
             <p role="status" className="mt-1 text-xs text-muted-foreground">
-              AI comment analysis isn't connected yet — your comment is saved and will be analysed
+              AI comment analysis isn't connected yet. Your comment is saved and will be analysed
               once it is.
             </p>
           )}
