@@ -3312,6 +3312,33 @@
   letter-spacing: -0.03em;
 }
 
+.atlas-gmail {
+  border: 1px solid var(--hairline);
+  background: color-mix(in oklab, var(--ultra) 16%, var(--ink-800));
+  padding: clamp(1.25rem, 3vw, 2rem);
+}
+.atlas-gmail-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1rem;
+}
+.atlas-gmail-head h2 {
+  margin-top: 0.35rem;
+  font-size: clamp(2.4rem, 6vw, 4.6rem);
+  line-height: 0.84;
+  text-transform: uppercase;
+  letter-spacing: -0.04em;
+}
+.atlas-gmail-deck {
+  max-width: 54ch;
+  margin-top: 1rem;
+  color: var(--fg-dim);
+  font-size: 1.02rem;
+  line-height: 1.5;
+}
+
 .atlas-atmosphere-campaign .card {
   border: 1px solid var(--hairline);
   background: color-mix(in oklab, var(--ink-700) 62%, transparent);

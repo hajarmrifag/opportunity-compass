@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 
 export const Route = createFileRoute("/oauth/google_mail/return")({
   head: () => ({
-    meta: [{ title: "Connecting Gmail — OpportunityOS" }],
+    meta: [{ title: "Connecting Gmail · Sourced" }],
   }),
   component: OAuthReturn,
 });

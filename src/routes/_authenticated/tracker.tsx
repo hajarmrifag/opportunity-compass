@@ -145,11 +145,16 @@ function TrackerPage() {
       <PageHeader
         kicker="Account"
         title="Tracker"
-        sub="Your career dashboard, counted from your own records and saved to your account. My Journey stays separate in this browser."
+        sub="Applications, coffee chats, and inbox updates from the Gmail you connect. My Journey stays separate in this browser."
         right={
-          <Link to="/resources" className="btn btn-ghost">
-            Resources
-          </Link>
+          <div className="flex flex-wrap gap-2">
+            <a href="#gmail-scan" className="btn btn-outline">
+              Gmail
+            </a>
+            <Link to="/resources" className="btn btn-ghost">
+              Resources
+            </Link>
+          </div>
         }
       />
       {(appsQuery.error || chatsQuery.error) && (
@@ -175,6 +180,8 @@ function TrackerPage() {
       </div>
 
       <>
+        <GmailSection suggestions={suggestions} lastEmailUpdate={lastEmailUpdate} onChanged={refresh} />
+
         {/* 2. Due today */}
         <section className="card mt-6 p-5" aria-labelledby="due-today">
           <h2 id="due-today" className="text-lg font-semibold">
@@ -211,9 +218,6 @@ function TrackerPage() {
             </ul>
           )}
         </section>
-
-        {/* 3. Results from email — passive, no manual scan button */}
-        <GmailSection suggestions={suggestions} lastEmailUpdate={lastEmailUpdate} onChanged={refresh} />
 
         {/* 5. Applications */}
         <section className="mt-8" aria-labelledby="apps-heading">
@@ -754,22 +758,17 @@ function GmailSection({
   }, [connected]);
 
   return (
-    <section className="card mt-8 p-5" aria-labelledby="gmail-scan">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <h2 id="gmail-scan" className="text-lg font-semibold">
-          Gmail updates
-        </h2>
-        <div className="flex gap-2">
+    <section className="atlas-gmail mt-8" aria-labelledby="gmail-scan">
+      <div className="atlas-gmail-head">
+        <div>
+          <p className="atlas-kicker">Inbox</p>
+          <h2 id="gmail-scan">Gmail</h2>
+        </div>
+        <div className="flex flex-wrap gap-2">
           {connected ? (
-            <>
-              <button
-                className="btn btn-ghost"
-                disabled={busy !== null}
-                onClick={disconnect}
-              >
-                {busy === "disconnect" ? "Disconnecting…" : "Disconnect"}
-              </button>
-            </>
+            <button className="btn btn-ghost" disabled={busy !== null} onClick={disconnect}>
+              {busy === "disconnect" ? "Disconnecting…" : "Disconnect"}
+            </button>
           ) : (
             <button className="btn" disabled={busy !== null} onClick={connect}>
               {busy === "connect" ? "Connecting…" : reconnect ? "Reconnect Gmail" : "Connect Gmail"}
@@ -777,12 +776,12 @@ function GmailSection({
           )}
         </div>
       </div>
-      <p className="mt-1 text-sm text-muted-foreground">
+      <p className="atlas-gmail-deck">
         {connected
-          ? `Reading ${status?.inboxEmail ?? "your inbox"} (read-only). Clear emails from companies — confirmations, assessments, interviews, offers, rejections — update the matching application automatically; unclear ones wait for you below. Checked when you open the Tracker and every 10 minutes while it's open.`
+          ? `Reading ${status?.inboxEmail ?? "your inbox"} (read-only). Clear emails from companies (confirmations, assessments, interviews, offers, rejections) update the matching application. Unclear ones wait for you below. Checked when you open Tracker, and every 10 minutes while it is open.`
           : reconnect
             ? "Your Gmail access needs to be renewed. Reconnect to keep updates coming."
-            : "Connect your Gmail so emails from companies update your application statuses. Read-only: we never send, delete or change your email."}
+            : "Connect Gmail and company emails can move a matching application forward. Read-only: we never send, delete, or change your mail."}
       </p>
       <p className="mt-2 text-xs text-muted-foreground" role="status">
         {busy === "scan"
@@ -791,7 +790,7 @@ function GmailSection({
             ? `Last updated ${new Date(lastEmailUpdate).toLocaleString()}`
             : connected
               ? "Last updated: no email results yet."
-              : "Last updated: never — Gmail isn't connected yet, so no email results are available."}
+              : "Last updated: never. Gmail is not connected yet."}
       </p>
       <PassportEmailNote inboxEmail={connected ? status?.inboxEmail : null} />
       {error && (
@@ -835,7 +834,7 @@ function PassportEmailNote({ inboxEmail }: { inboxEmail?: string | null | undefi
           <Link to="/passport" className="underline">
             Add it in your Passport
           </Link>{" "}
-          — when Gmail is connected we'll check it's the same inbox.
+          so when Gmail is connected we can check it is the same inbox.
         </>
       ) : status === "mismatch" ? (
         <>
