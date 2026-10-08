@@ -1,5 +1,9 @@
 # Roadmap
 
+## Walkthrough correction
+- [x] Produce an 86.7-second revision with line-timed narration and accurate fetched-versus-demo listing descriptions
+- [x] Verify equal audio/video duration, clean decoding and sampled scenes; deliver as a review draft, with full playback and exact moment-by-moment sync unverified
+
 ## Exact Sourced homepage handoff
 - [x] Replace src/routes/index.tsx with the supplied content verbatim
 - [x] Supply missing motion exports and preserve the demo search parameter
