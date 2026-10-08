@@ -15,6 +15,6 @@ Do **not** say: "AI matched", "verified", "you are eligible", "chance of accepta
 
 ## Fallbacks
 - **Data in a weird state:** open DevTools → Application → Local Storage → delete key `opportunityos`, then refresh. Or use a private window.
-- **Preview won't load:** present the screenshots in the QA checklist evidence, then walk through `docs/TEAM_INTEGRATION.md` §3 fixtures.
+- **Preview won't load:** present the screenshots in the QA checklist evidence, then walk through `docs/archive/TEAM_INTEGRATION.md` §3 fixtures.
 - **Fonts slow/offline:** the app falls back to system fonts. Everything still works offline once loaded, because there are no network calls.
 - **Deadline numbers differ from slides:** the countdown is relative to today's date on the demo machine. That's expected.

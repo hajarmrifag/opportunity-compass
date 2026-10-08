@@ -25,7 +25,7 @@ No language model generates listings from memory. If the search returns nothing,
 
 ## Approvals needed before activation
 1. **Link the Firecrawl connector** (Lovable-managed, gateway mode) to this project. This adds the server secret `FIRECRAWL_API_KEY` (a `lovc_…` connection key). A workspace admin approves this in Connectors.
-2. **Lovable Cloud is NOT required.** Search runs in the app's existing server functions, and saved items stay in browser storage. Cloud is needed later only for accounts and a shared database (see AUTH_DB_PLAN.md).
+2. **Lovable Cloud is NOT required.** Search runs in the app's existing server functions, and saved items stay in browser storage. The original account/database proposal is archived in `archive/AUTH_DB_PLAN.md`.
 3. No Perplexity or AI model is used, so there's no AI Gateway spend for search.
 
 ## Cost — two separate kinds of credit
