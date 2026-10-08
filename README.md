@@ -67,7 +67,7 @@ npm run lint      # ESLint and Prettier rules
 | `src/server/` | Server-only helpers |
 | `src/test/` | Vitest tests |
 | `supabase/` | Database migrations and edge functions |
-| `docs/` | Setup, integration, QA, and demo notes; start with the [docs index](docs/README.md) |
+| `docs/` | Current guides and an `archive/` for early plans; start with the [docs index](docs/README.md) |
 
 TanStack Start generates `src/routeTree.gen.ts`; edit route files, not the generated tree. Shared data shapes live in `src/domain/types.ts`. The project’s [architecture rules](AGENTS.md) describe the boundaries that protect demo data, user consent, and source integrity.
 
