@@ -1,8 +1,8 @@
 # Roadmap
 
 ## Walkthrough correction
-- [ ] Produce a narrated walkthrough of at most 90 seconds with screen-aligned narration and accurate fetched-versus-demo listing descriptions
-- [ ] Verify timing and deliver the corrected version without changing app data or features
+- [x] Produce an 86.7-second revision with line-timed narration and accurate fetched-versus-demo listing descriptions
+- [x] Verify equal audio/video duration, clean decoding and sampled scenes; deliver as a review draft, with full playback and exact moment-by-moment sync unverified
 
 ## Exact Sourced homepage handoff
 - [x] Replace src/routes/index.tsx with the supplied content verbatim
