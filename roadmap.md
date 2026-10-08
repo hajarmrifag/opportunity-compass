@@ -1,6 +1,7 @@
 # Roadmap
 
 ## Customer pitch video and live script
+- [ ] Expand the 90-second pitch with actual Tracker, coffee chat, AI insight interactions and Gmail connection steps using a separate synthetic account
 - [ ] Record document upload and review using a synthetic demonstration profile, then real internship retrieval, comparison and planning in an isolated browser
 - [ ] Produce a natural-voice customer pitch video of at most 90 seconds plus a matching presenter-led script
 - [ ] Check audio/screen timing and deliver with accurate verification notes; no app or account changes
