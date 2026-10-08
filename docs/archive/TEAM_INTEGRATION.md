@@ -8,7 +8,7 @@ Status: frontend milestone 1. All data is **browser-local**. Opportunities are *
 |---|---|---|
 | Typed contracts (single source of truth) | `src/domain/types.ts` | everyone, change only additively |
 | Fictional fixtures (6 opps + demo profile "Maya") | `src/data/fixtures.ts` | Verified-data teammate replaces |
-| Persistence (`Repository`, versioned localStorage) | `src/data/storage.ts` | Backend/auth teammate (see `docs/AUTH_DB_PLAN.md`) |
+| Persistence (`Repository`, versioned localStorage) | `src/data/storage.ts` | Backend/auth teammate (see `docs/archive/AUTH_DB_PLAN.md`) |
 | Demo eligibility + relevance (`EligibilityAdapter`) | `src/adapters/demoEligibility.ts` | Matching teammate |
 | App state / actions (`useStore`) | `src/lib/store.tsx` | SWE |
 | Validators: dates, URLs, deadline timing, duplicate key | `src/lib/validation.ts` | SWE |
@@ -148,7 +148,7 @@ EligibilityResult for the opportunity above + confirmed Maya profile (actual out
 
 **Funding intelligence** — fill `Opportunity.funding`. Use `"unknown"` (and `paymentTiming: null`) whenever not explicitly sourced; put the evidence in `note`. UI already renders all four states and highlights the user's needs.
 
-**Persistence / auth** — implement `Repository`; see `docs/AUTH_DB_PLAN.md`.
+**Persistence / auth** — implement `Repository`; see `docs/archive/AUTH_DB_PLAN.md`.
 
 ## 5. Compatibility rules
 

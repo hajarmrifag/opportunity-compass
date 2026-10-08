@@ -91,7 +91,7 @@ Known harmless test-only warning: React logs `href=""` for the stylesheet link, 
 
 1. (Resolved) Template routing tests repaired.
 2. Demo data only: opportunities fictional, matching rule-based, no verified sources, no CV upload, no AI.
-3. Browser-local storage: no sync across devices; clearing site data erases it. The auth/DB plan is in `docs/AUTH_DB_PLAN.md` and needs approvals.
+3. Browser-local storage: no sync across devices; clearing site data erases it. The original auth/DB plan is archived in `docs/archive/AUTH_DB_PLAN.md`.
 4. CSV import caps at 1 MB / 500 rows. Imported "submitted" statuses are accepted because they are user-provided data.
 5. Mobile nav has 4 tabs. Add and Import/Export are reached from the header and from My Journey.
 6. Full screen-reader audit (NVDA/VoiceOver) not yet performed.
