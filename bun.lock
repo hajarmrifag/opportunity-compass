@@ -3,7 +3,7 @@
   "configVersion": 1,
   "workspaces": {
     "": {
-      "name": "sourced-hackathon",
+      "name": "tanstack_start_ts",
       "dependencies": {
         "@ai-sdk/openai": "^4.0.83",
         "@hookform/resolvers": "^5.2.2",

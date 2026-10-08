@@ -48,11 +48,10 @@ Open the URL printed by Vite. The checked-in `.env` contains the public Supabase
 The browser-local Journey and fictional Browse data are useful for a first look. Account-backed Tracker features need a configured Supabase project. Live search, document extraction, Gmail, and AI features also depend on server-side credentials or managed connectors; their availability is shown in the app. See [live search setup](docs/LIVE_SEARCH.md) for the search integration.
 
 ```bash
-npm run check     # typecheck, Vitest suite, and production build
+npm run build     # production build
+npm test          # Vitest suite
 npm run lint      # ESLint and Prettier rules
 ```
-
-The project uses GitHub Actions to run `check` on pull requests and pushes to the active branches. Lint currently has a formatting and typing backlog, so it remains a separate command until those issues are resolved.
 
 ## Repository map
 
