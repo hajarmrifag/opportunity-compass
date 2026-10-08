@@ -1,5 +1,10 @@
 # Roadmap
 
+## Customer pitch video and live script
+- [ ] Record document upload and review using a synthetic demonstration profile, then real internship retrieval, comparison and planning in an isolated browser
+- [ ] Produce a natural-voice customer pitch video of at most 90 seconds plus a matching presenter-led script
+- [ ] Check audio/screen timing and deliver with accurate verification notes; no app or account changes
+
 ## Exact Sourced homepage handoff
 - [x] Replace src/routes/index.tsx with the supplied content verbatim
 - [x] Supply missing motion exports and preserve the demo search parameter
